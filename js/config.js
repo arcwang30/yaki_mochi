@@ -21,6 +21,7 @@ const WIN = { GREAT: 0.05, NICE: 0.09, GOOD: 0.13, BAD: 0.18 };  // 判定時間
 const POINTS = { GREAT: 300, NICE: 200, GOOD: 100, BAD: 0 };
 const COMBO_BONUS = 4, COMBO_CAP = 50;                           // 每次命中加 min(連擊, 50) × 4
 const OKO_BONUS = 1000;                                          // 合成一份廣島燒的獎勵
+const OKO_FX_Y = 430;                                            // 「廣島燒完成！」演出的中心高度（在主角頭頂上方，不擋臉）
 
 // ---- 食材 ----
 const TYPES = ['noodles', 'cabbage', 'crepe', 'bacon'];
@@ -32,35 +33,16 @@ const ING = {
 };
 
 // ---- 節奏 ----
-// 每段 MEASURES 小節，最後一小節休息（顯示 SPEED UP）；節奏隨時間變快
+// 每首歌分成數段，每段 MEASURES 小節，最後一小節休息（顯示 SPEED UP）；各段 BPM 與難度定義在 js/songs.js
 const MEASURES = FAST ? 3 : 8;
-const SECTIONS = [
-  { bpm: 96,  lv: [0] }, { bpm: 104, lv: [0, 1] }, { bpm: 112, lv: [1] },
-  { bpm: 122, lv: [1, 2] }, { bpm: 134, lv: [2, 3] }, { bpm: 146, lv: [3] },
-];
 // 節奏型（小節內的拍點，0.5 = 八分音符反拍）；兩小節一組重複，像「節奏天國」一樣先聽再打
+// 難度 0～3；每首歌的每一段指定要用哪幾級
 const PATTERNS = [
   [[0, 2], [0], [0, 1], [2], [0, 2, 3], [0, 1, 2]],
   [[0, 1, 2], [0, 2, 3], [1, 2], [0, 1, 3], [0, 2, 2.5], [0, 1, 2, 3]],
   [[0, 1, 2, 3], [0, 0.5, 2], [0, 2, 2.5], [1, 2, 3], [0, 1.5, 2], [0, 0.5, 1, 2]],
   [[0, 0.5, 1, 2], [0, 1, 1.5, 2, 3], [0, 0.5, 2, 2.5], [0, 1.5, 3], [1, 1.5, 2, 3], [0, 0.5, 1, 1.5, 3]],
 ];
-
-// ---- 樂曲（D 大調五聲音階，8 小節循環） ----
-const MELODY = [
-  [12, null, 9, null, 7, 9, 12, null], [14, null, 12, 9, 7, null, null, null],
-  [9, null, 7, 4, 2, 4, 7, null], [4, null, 2, 0, 2, null, null, null],
-  [12, null, 14, null, 16, 14, 12, null], [9, null, 12, 9, 7, null, 4, null],
-  [7, 9, 12, 9, 7, 4, 2, 4], [0, null, null, null, null, null, null, null],
-];
-const BASS_ROOT = [0, 0, 5, 7, 0, 5, 7, 0];
-const TAIKO = {
-  normal: { 0: 'don', 2: 'ka', 4: 'don', 5: 'don', 6: 'ka' },
-  vary:   { 0: 'don', 2: 'ka', 3: 'ka', 4: 'don', 6: 'don', 7: 'ka' },
-  fill:   { 0: 'don', 1: 'don', 2: 'don', 3: 'ka', 4: 'don', 5: 'don', 6: 'don', 7: 'don' },
-};
-const MENU_BPM = 92;
-
 // ---- 主角姿勢 ----
 // 跳躍姿勢的原圖人物畫得較小（頭寬約站姿的 0.68 倍），在此放大並以臉（口罩中心）對齊站姿。
 // a = 該圖口罩中心、t = 站姿口罩中心（皆為 560x526 圖內座標），lift = 往上跳的高度
@@ -88,6 +70,7 @@ const LANTERNS = [
 // 每個職稱可列多位
 const CREDITS = [
   ['企劃', ['Arc Wang', '大王KUNI']],
+  ['特別感謝', ['Kelvin Lo']],
 ];
 
 // ---- 小工具 ----

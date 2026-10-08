@@ -1,9 +1,20 @@
 {
+  "id": "./",
   "name": "大王焼き リズム屋台",
   "short_name": "大王焼き",
-  "start_url": ".",
-  "display": "fullscreen",
+  "description": "跟著節拍按一顆按鈕，處理食材、合成廣島燒的日式屋台節奏遊戲。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
   "orientation": "portrait",
   "background_color": "#0d1024",
-  "theme_color": "#0d1024"
+  "theme_color": "#0d1024",
+  "categories": ["games", "music"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }

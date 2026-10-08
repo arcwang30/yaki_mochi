@@ -71,7 +71,8 @@ const Scene = {
     this.chef(pulse);
     this.griddle();
   },
-  background(pulse) {
+  // lit(i)：第 i 盞燈籠的亮度 0～1（開場用來一盞一盞點亮；省略 = 全亮）
+  background(pulse, lit) {
     const img = IMG.bg_stall;
     if (img) {
       const s = Math.max(W / img.width, H / img.height); this.bg = { s, x: (W - img.width * s) / 2, y: (H - img.height * s) / 2 };
@@ -81,11 +82,12 @@ const Scene = {
     const B = this.bg;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     LANTERNS.forEach(([lx, ly, c], i) => {
+      const on = lit ? lit(i) : 1; if (on <= 0) return;
       const x = B.x + lx * B.s, y = B.y + ly * B.s;
       const flick = 0.75 + 0.25 * Math.sin(Game.time * 7 + i * 1.7) * Math.sin(Game.time * 3.1 + i);
       const r = (i < 10 ? 70 : 42) * (1 + pulse * 0.25);
       const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, hexA(c, 0.42 * flick * (0.7 + pulse * 0.5))); g.addColorStop(1, hexA(c, 0));
+      g.addColorStop(0, hexA(c, 0.42 * on * flick * (0.7 + pulse * 0.5))); g.addColorStop(1, hexA(c, 0));
       ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
     });
     for (const e of Fx.embers) {
@@ -94,14 +96,15 @@ const Scene = {
     }
     ctx.restore();
   },
-  chef(pulse) {
+  // dx / dy / rot：開場走進來時的位移與搖晃
+  chef(pulse, dx = 0, dy = 0, rot = 0) {
     const img = IMG['chef_' + chef.pose] || IMG.chef_idle;
     if (!img) return;
     const w = 620, h = w * img.height / img.width, f = w / img.width;
     const idle = chef.pose === 'idle' || chef.pose === 'wave';
     const sy = idle ? 1 - pulse * 0.02 : 1;
     const bob = idle ? pulse * 6 : 0;
-    ctx.save(); ctx.translate(ZONE.x, 543 + h + bob - chef.lift); ctx.scale(1, sy);
+    ctx.save(); ctx.translate(ZONE.x + dx, 543 + h + bob - chef.lift + dy); if (rot) ctx.rotate(rot); ctx.scale(1, sy);
     ctx.translate(-w / 2, -h); // 之後以原圖座標 × f 繪製
     const adj = POSE_ADJ[chef.pose];
     if (adj) {
@@ -115,69 +118,49 @@ const Scene = {
     ctx.drawImage(img, 0, GRIDDLE_Y, W, W * img.height / img.width);
   },
   // 選單用的節拍脈動（跟著選單音樂的速度）
-  idlePulse() { const ph = Game.time * MENU_BPM / 60; return Math.exp(-(ph % 1) * 5); },
+  idlePulse() { const p = Sound.bgmPulse(); if (p !== null) return p; const ph = Game.time * 92 / 60; return Math.exp(-(ph % 1) * 5); },
 };
 
 // ---------- 譜面產生 ----------
 let bag = [];
 function nextType() { if (!bag.length) bag = TYPES.slice().sort(() => Math.random() - 0.5); return bag.pop(); }
 
-function buildChart(t0) {
-  const measures = [], notes = [], events = [];
+function buildChart(song, t0) {
+  const SEC = song.sections, measures = [], notes = [], events = [];
   let t = t0;
-  measures.push({ kind: 'count', bpm: SECTIONS[0].bpm, start: t, sec: 0, idx: -1 });
-  t += 4 * 60 / SECTIONS[0].bpm;
-  SECTIONS.forEach((s, si) => {
+  measures.push(measureInfo(song, { kind: 'count', bpm: SEC[0].bpm, start: t, sec: 0, idx: -1 }));
+  t += 4 * 60 / SEC[0].bpm;
+  SEC.forEach((s, si) => {
     let pat = null;
     for (let m = 0; m < MEASURES; m++) {
-      const bd = 60 / s.bpm, ms = { kind: m === MEASURES - 1 ? 'rest' : 'play', bpm: s.bpm, start: t, sec: si, idx: m };
+      const ms = measureInfo(song, { kind: m === MEASURES - 1 ? 'rest' : 'play', bpm: s.bpm, start: t, sec: si, idx: m });
       measures.push(ms);
       if (ms.kind === 'play') {
         if (m % 2 === 0) { const lv = s.lv[(Math.random() * s.lv.length) | 0]; pat = PATTERNS[lv][(Math.random() * PATTERNS[lv].length) | 0]; }
-        for (const b of pat) notes.push({ t: t + b * bd, throwT: t + (b - LEAD_BEATS) * bd, type: nextType(), side: Math.random() < 0.5 ? -1 : 1, state: 'fly' });
+        for (const b of pat) {
+          // 反拍（.5）依樂曲的搖擺比例落點，跟著音樂的「晃」
+          const nt = ms.at(Math.floor(b) * 2 + (b % 1 ? 1 : 0));
+          notes.push({ t: nt, throwT: nt - LEAD_BEATS * ms.bd, type: nextType(), side: Math.random() < 0.5 ? -1 : 1, state: 'fly' });
+        }
       }
-      t += 4 * bd;
+      t += 4 * ms.bd;
     }
   });
-  const lastBpm = SECTIONS[SECTIONS.length - 1].bpm;
-  measures.push({ kind: 'outro', bpm: lastBpm, start: t, sec: SECTIONS.length - 1, idx: 8 });
-  const end = t + 4 * 60 / lastBpm;
-  // 樂曲事件（隨段落加入拍手、鉦、笛，越後面越熱鬧）
+  const last = SEC[SEC.length - 1].bpm;
+  measures.push(measureInfo(song, { kind: 'outro', bpm: last, start: t, sec: SEC.length - 1, idx: 8 }));
+  const end = t + 4 * 60 / last;
+  // 樂曲事件：倒數木魚 → 各小節由樂曲編曲 → 結尾
+  const add = (tt, f) => events.push({ t: tt, f });
   for (const ms of measures) {
-    const bd = 60 / ms.bpm, sd = bd / 2, st = ms.start;
-    if (ms.kind === 'count') {
-      for (let b = 0; b < 4; b++) events.push({ t: st + b * bd, f: x => SND.wood(x, b === 0) });
-      events.push({ t: st, f: x => SND.don(x, 0.7) });
-      continue;
-    }
-    if (ms.kind === 'outro') {
-      [0, 1, 2].forEach(b => events.push({ t: st + b * bd, f: x => SND.don(x, 1) }));
-      events.push({ t: st + 2 * bd, f: x => { [0, 4, 7, 12].forEach((n, i) => SND.shamisen(x + i * 0.03, mel(n))); SND.kane(x, 1.5); SND.bass(x, bassF(0), 1.2); } });
-      continue;
-    }
-    const mi = ms.idx % 8, tk = ms.kind === 'rest' ? TAIKO.fill : (mi === 3 ? TAIKO.vary : TAIKO.normal);
-    for (let s = 0; s < 8; s++) {
-      const tt = st + s * sd;
-      if (tk[s] === 'don') events.push({ t: tt, f: x => SND.don(x, 0.8) });
-      else if (tk[s] === 'ka') events.push({ t: tt, f: x => SND.ka(x) });
-      const n = MELODY[mi][s];
-      if (n !== null) {
-        events.push({ t: tt, f: x => SND.shamisen(x, mel(n)) });
-        if (ms.sec >= 4) events.push({ t: tt, f: x => SND.fue(x, mel(n) * 2, sd * 1.6) });
-      }
-      const r = BASS_ROOT[mi];
-      if (s === 0 || s === 3 || s === 6) events.push({ t: tt, f: x => SND.bass(x, bassF(r), sd * 1.2) });
-      if (s === 4) events.push({ t: tt, f: x => SND.bass(x, bassF(r + 7), sd * 1.2) });
-      if (ms.sec >= 2 && s % 2 === 1) events.push({ t: tt, f: x => SND.kane(x, 0.8) });
-      if (ms.sec >= 1 && (s === 2 || s === 6)) events.push({ t: tt, f: x => SND.clap(x) });
-    }
-    if (ms.kind === 'rest' && ms.sec < SECTIONS.length - 1) events.push({ t: st + 2 * bd, f: x => SND.speedUp(x, bd) });
+    if (ms.kind === 'count') { for (let b = 0; b < 4; b++) add(ms.start + b * ms.bd, (x, d) => SND.wood(x, b === 0, d)); continue; }
+    if (ms.kind === 'outro') { song.outro(ms, add); continue; }
+    song.arrange(ms, add);
+    if (ms.kind === 'rest' && ms.sec < SEC.length - 1) add(ms.start + 2 * ms.bd, x => SND.speedUp(x, ms.bd));
   }
-  for (const n of notes) events.push({ t: n.throwT, f: x => SND.cue(x, n.type) });
+  for (const n of notes) add(n.throwT, x => SND.cue(x, n.type));
   events.sort((a, b) => a.t - b.t);
   return { measures, notes, events, end, evIdx: 0 };
 }
-
 // ---------- 遊戲 ----------
 const GRADE_STYLE = { NICE: ['#fff2a8', '#ff9a1a', '#6e2a00'], GOOD: ['#d8f2ff', '#3d8fe0', '#0c2c63'], BAD: ['#eee6ff', '#8e7cc0', '#2b2050'] };
 const RESUME_BEATS = 3;   // 暫停後繼續時的倒數拍數
@@ -187,12 +170,16 @@ const Game = {
   s: null,     // 本局狀態
   result: null,
 
-  newRun() {
+  song: null,   // 正在玩的樂曲
+
+  newRun(song) {
     Sound.init(); Sound.stopBgm(); Sound.duck(false);
+    this.song = song || this.song || SONGS[0];
+    Save.data.lastSong = this.song.id; Save.store();
     bag = [];
     const t0 = A.ctx.currentTime + 0.6;
     this.s = {
-      chart: buildChart(t0), off: 0, paused: false, pauseAt: 0, resumeT: 0, ended: false,
+      chart: buildChart(this.song, t0), off: 0, paused: false, pauseAt: 0, resumeT: 0, ended: false,
       score: 0, combo: 0, maxCombo: 0, grades: { GREAT: 0, NICE: 0, GOOD: 0, BAD: 0 },
       stock: { noodles: 0, cabbage: 0, crepe: 0, bacon: 0 }, oko: 0, errs: [],
       bump: {}, okoAnims: [], gradeFx: null, pressT: -9,
@@ -221,7 +208,7 @@ const Game = {
     const ch = s.chart, now = A.ctx.currentTime;
     while (ch.evIdx < ch.events.length && ch.events[ch.evIdx].t + s.off < now + 0.2) {
       const e = ch.events[ch.evIdx++], at = e.t + s.off;
-      if (at >= now - 0.02) e.f(Math.max(at, now));
+      if (at >= now - 0.02) e.f(Math.max(at, now), A.music);
     }
   },
 
@@ -365,7 +352,7 @@ const Game = {
     const s = this.s;
     s.ended = true;
     const e = s.errs, avg = e.length ? e.reduce((a, b) => a + b, 0) / e.length : 0;
-    this.result = { score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length };
+    this.result = { song: this.song.id, score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length };
     App.goto('result');
   },
 
@@ -494,7 +481,7 @@ const Game = {
     const s = this.s;
     // 左上：SCORE / HISCORE（窄版，避開招牌）
     pill(8, 8, 162, 50); txt('SCORE', 26, 27, 12, '#ffd25a', { align: 'left' }); txt(pad(s.score, 7), 156, 50, 22, '#fff', { align: 'right' });
-    pill(8, 62, 162, 40); txt('HISCORE', 26, 78, 10, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(), s.score), 7), 156, 96, 16, '#fff', { align: 'right' });
+    pill(8, 62, 162, 40); txt('HISCORE', 26, 78, 10, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(this.song.id), s.score), 7), 156, 96, 16, '#fff', { align: 'right' });
     // 右上：廣島燒成品（較顯眼）＋四種食材
     const ob = s.bump.oko ? Math.max(0, 1 - Math.abs(this.time - s.bump.oko) * 4) : 0;
     ctx.fillStyle = 'rgba(16,22,52,.82)'; rrect(568, 8, 144, 70, 20); ctx.fill(); ctx.strokeStyle = '#ff9a3c'; ctx.lineWidth = 4; ctx.stroke();
@@ -513,6 +500,9 @@ const Game = {
     const prog = clamp((st - ch.measures[0].start) / (ch.end - ch.measures[0].start), 0, 1);
     ctx.fillStyle = 'rgba(16,22,52,.7)'; rrect(14, 136, 156, 9, 4.5); ctx.fill();
     ctx.fillStyle = '#ffb84a'; rrect(14, 136, Math.max(9, 156 * prog), 9, 4.5); ctx.fill();
+    ctx.font = `15px ${FONT}`; ctx.textAlign = 'left'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = '#101634'; ctx.lineWidth = 5; ctx.strokeText('♪ ' + this.song.title, 14, 172);
+    ctx.fillStyle = this.song.color; ctx.fillText('♪ ' + this.song.title, 14, 172);
     if (s.combo >= 3) {
       const k = 1 + pulse * 0.08;
       ctx.save(); ctx.translate(100, 300); ctx.scale(k, k);
@@ -524,8 +514,8 @@ const Game = {
   drawOkoAnims() {
     for (const a of this.s.okoAnims) {
       let x, y, w;
-      if (a.t < 0.55) { const k = ease(Math.min(1, a.t / 0.25)); x = ZONE.x; y = 600; w = 330 * k * (1 + 0.08 * Math.sin(a.t * 30) * (1 - a.t / 0.55)); }
-      else { const k = ease((a.t - 0.55) / 0.4); x = ZONE.x + (612 - ZONE.x) * k; y = 600 + (43 - 600) * k; w = 330 + (84 - 330) * k; }
+      if (a.t < 0.55) { const k = ease(Math.min(1, a.t / 0.25)); x = ZONE.x; y = OKO_FX_Y; w = 330 * k * (1 + 0.08 * Math.sin(a.t * 30) * (1 - a.t / 0.55)); }
+      else { const k = ease((a.t - 0.55) / 0.4); x = ZONE.x + (612 - ZONE.x) * k; y = OKO_FX_Y + (43 - OKO_FX_Y) * k; w = 330 + (84 - 330) * k; }
       if (a.t >= 0.95) continue;
       if (a.t < 0.55) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -543,7 +533,7 @@ const Game = {
     if (m.kind === 'count') {
       const b = Math.floor(ph), k = ph - b, label = ['3', '2', '1', 'GO!'][b];
       if (label) { const sc = 1.4 - k * 0.4; ctx.save(); ctx.translate(ZONE.x, 540); ctx.scale(sc, sc); txt(label, 0, 0, 96, '#fff', { stroke: '#c43a1a', lw: 16 }); ctx.restore(); }
-    } else if (m.kind === 'rest' && m.sec < SECTIONS.length - 1) {
+    } else if (m.kind === 'rest' && m.sec < this.song.sections.length - 1) {
       const sc = 1 + Math.abs(Math.sin(ph * Math.PI)) * 0.12;
       ctx.save(); ctx.translate(ZONE.x, 540); ctx.rotate(-0.06); ctx.scale(sc, sc);
       txt('SPEED UP!', 0, 0, 64, '#ffe066', { stroke: '#c43a1a', lw: 14 }); ctx.restore();

@@ -12,8 +12,8 @@ $out = Join-Path $root "builds\DaioYaki_v$Version.zip"
 $stage = Join-Path $env:TEMP "daioyaki_build_$Version"
 if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force "$stage\assets" | Out-Null
-foreach ($item in @('index.html', 'manifest.json', 'css', 'js')) { Copy-Item -Recurse (Join-Path $root $item) $stage }
-Copy-Item -Recurse (Join-Path $root 'assets\images') "$stage\assets\images"
+foreach ($item in @('index.html', 'manifest.json', 'sw.js', 'css', 'js')) { Copy-Item -Recurse (Join-Path $root $item) $stage }
+foreach ($dir in @('images', 'icons')) { Copy-Item -Recurse (Join-Path $root "assets\$dir") "$stage\assets\$dir" }
 if (Test-Path $out) { Remove-Item $out }
 $zip = [System.IO.Compression.ZipFile]::Open($out, [System.IO.Compression.ZipArchiveMode]::Create)
 try {

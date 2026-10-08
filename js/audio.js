@@ -21,8 +21,70 @@ function nz(t, dur, peak, dest, o = {}) {
   env(g, t, 0.002, peak, dur); s.connect(fl); fl.connect(g); g.connect(dest); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
 }
 
+// 通用音色：波形＋（可選）低通濾波掃頻、顫音、延音
+function voice(type, f, t, dur, peak, dest, o = {}) {
+  const C = A.ctx, os = C.createOscillator(), g = C.createGain(), att = o.att || 0.005, hold = o.hold || 0;
+  os.type = type; os.frequency.setValueAtTime(f, t);
+  if (o.detune) os.detune.value = o.detune;
+  let node = os;
+  if (o.lp) {
+    const fl = C.createBiquadFilter(); fl.type = 'lowpass'; fl.Q.value = o.q || 1;
+    fl.frequency.setValueAtTime(o.lp, t);
+    if (o.lpTo) fl.frequency.exponentialRampToValueAtTime(o.lpTo, t + (o.lpT || dur));
+    os.connect(fl); node = fl;
+  }
+  let lfo = null;
+  if (o.vib) {
+    lfo = C.createOscillator(); const lg = C.createGain();
+    lfo.frequency.value = o.vibRate || 5.5; lg.gain.value = f * o.vib;
+    lfo.connect(lg); lg.connect(os.frequency); lfo.start(t + (o.vibDelay || 0)); lfo.stop(t + att + hold + dur + 0.05);
+  }
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att);
+  if (hold) g.gain.setValueAtTime(peak, t + att + hold);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + att + hold + dur);
+  node.connect(g); g.connect(dest); os.start(t); os.stop(t + att + hold + dur + 0.05);
+}
+const m2f = n => 440 * Math.pow(2, (n - 69) / 12);   // MIDI 音高 → 頻率
+
 // 樂器與音效（t = AudioContext 時間）
 const SND = {
+  // ---- 鼓組 ----
+  kick(t, v = 1, dest = A.music) { osc('sine', 130, t, 0.26, 0.95 * v, dest, { to: 42, bend: 0.12 }); nz(t, 0.012, 0.35 * v, dest, { type: 'highpass', f: 2500 }); },
+  snare(t, v = 1, dest = A.music) { nz(t, 0.16, 0.42 * v, dest, { f: 1900, q: 0.7 }); osc('triangle', 195, t, 0.08, 0.3 * v, dest, { to: 150 }); },
+  hat(t, v = 1, dest = A.music, open = false) { nz(t, open ? 0.24 : 0.04, 0.22 * v, dest, { type: 'highpass', f: 7500 }); },
+  ride(t, v = 1, dest = A.music) { nz(t, 0.34, 0.12 * v, dest, { type: 'highpass', f: 5200 }); osc('sine', 3150, t, 0.3, 0.03 * v, dest); osc('sine', 4720, t, 0.2, 0.015 * v, dest); },
+  rim(t, v = 1, dest = A.music) { osc('square', 1750, t, 0.018, 0.08 * v, dest); nz(t, 0.03, 0.25 * v, dest, { f: 2600, q: 4 }); },
+  shaker(t, v = 1, dest = A.music) { nz(t, 0.05, 0.1 * v, dest, { type: 'highpass', f: 6000 }); },
+  crash(t, v = 1, dest = A.music) { nz(t, 1.3, 0.22 * v, dest, { type: 'highpass', f: 4200 }); },
+  scratch(t, v = 1, dest = A.music) { nz(t, 0.035, 0.3 * v, dest, { f: 2300, q: 2.5 }); },   // 放克吉他刷弦
+  riser(t, dur, dest = A.music) { nz(t, dur, 0.18, dest, { f: 400, to: 6000, q: 1.2 }); },
+  // ---- 旋律 / 和聲 ----
+  koto(t, n, v = 1, dest = A.music) {   // 和琴：明亮撥弦，微微上滑
+    const f = m2f(n);
+    voice('triangle', f * 0.985, t, 0.9, 0.2 * v, dest, { att: 0.004 });
+    voice('sine', f * 2, t, 0.35, 0.06 * v, dest, { att: 0.002 });
+  },
+  pad(t, notes, dur, v = 1, dest = A.music, type = 'triangle') {
+    notes.forEach(n => { voice(type, m2f(n), t, 0.6, 0.045 * v, dest, { att: 0.18, hold: Math.max(0, dur - 0.5), detune: -6 });
+                         voice(type, m2f(n), t, 0.6, 0.035 * v, dest, { att: 0.22, hold: Math.max(0, dur - 0.5), detune: 7 }); });
+  },
+  piano(t, notes, v = 1, dest = A.music, dur = 0.5) {
+    notes.forEach(n => { voice('triangle', m2f(n), t, dur, 0.09 * v, dest, { att: 0.003 }); voice('sine', m2f(n) * 2, t, dur * 0.5, 0.03 * v, dest, { att: 0.002 }); });
+  },
+  trumpet(t, n, dur, v = 1, dest = A.music) {   // 弱音小號
+    voice('sawtooth', m2f(n), t, 0.12, 0.09 * v, dest, { att: 0.025, hold: Math.max(0, dur - 0.1), lp: 1500, q: 2, vib: 0.008, vibDelay: 0.12 });
+  },
+  walk(t, n, dur, v = 1, dest = A.music) { voice('triangle', m2f(n), t, dur, 0.55 * v, dest, { att: 0.004, lp: 900 }); },
+  slap(t, n, v = 1, dest = A.music) { voice('square', m2f(n), t, 0.2, 0.22 * v, dest, { att: 0.002, lp: 2600, lpTo: 260, lpT: 0.16, q: 4 }); },
+  brass(t, notes, dur, v = 1, dest = A.music) {
+    notes.forEach(n => voice('sawtooth', m2f(n), t, 0.1, 0.05 * v, dest, { att: 0.012, hold: dur, lp: 2200, lpTo: 900, q: 1.5 }));
+  },
+  lead(t, n, dur, v = 1, dest = A.music) { voice('square', m2f(n), t, 0.08, 0.06 * v, dest, { att: 0.006, hold: Math.max(0, dur - 0.06), lp: 2400, q: 1 }); },
+  supersaw(t, n, dur, v = 1, dest = A.music) {
+    [-14, 0, 14].forEach(d => voice('sawtooth', m2f(n), t, 0.12, 0.04 * v, dest, { att: 0.006, hold: Math.max(0, dur - 0.08), detune: d, lp: 4200, q: 0.8 }));
+  },
+  pluck(t, n, v = 1, dest = A.music) { voice('square', m2f(n), t, 0.1, 0.045 * v, dest, { att: 0.002, lp: 3200, lpTo: 600, lpT: 0.09 }); },
+  sub(t, n, dur, v = 1, dest = A.music) { voice('sawtooth', m2f(n), t, 0.06, 0.16 * v, dest, { att: 0.004, hold: Math.max(0, dur - 0.05), lp: 700, q: 2 }); },
   don(t, v = 1, dest = A.music) { osc('sine', 150, t, 0.34, 0.9 * v, dest, { to: 58, bend: 0.2 }); osc('sine', 88, t, 0.5, 0.3 * v, dest); nz(t, 0.05, 0.5 * v, dest, { type: 'lowpass', f: 500 }); },
   ka(t, v = 1, dest = A.music) { nz(t, 0.045, 0.45 * v, dest, { f: 3300, q: 4 }); osc('square', 1150, t, 0.02, 0.06 * v, dest); },
   kane(t, v = 1, dest = A.music) { [1, 2.41, 3.93].forEach((r, i) => osc('sine', 1750 * r, t, 0.13, 0.06 * v / (i + 1), dest)); },
@@ -110,29 +172,43 @@ const Sound = {
       case 'tick': SND.wood(t, false, u); break;
       case 'go': SND.wood(t, true, u); break;
       case 'sfxPreview': SND.hit('cabbage', 'GREAT', u); break;
-      case 'musicPreview': if (!this.ducked) SND.shamisen(t, mel(12)); break;
+      case 'musicPreview': if (!this.ducked) SND.shamisen(t, m2f(74)); break;
     }
   },
 
   vibrate(ms) { if (Save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) { /* ignore */ } } },
 
-  // ---- 選單背景音樂（同一段旋律，較輕的編制） ----
-  startBgm() { if (!this.bgmOn) { this.bgmOn = true; this.bgm = { next: 0, step: 0 }; } },
-  stopBgm() { this.bgmOn = false; },
+  // ---- 選單音樂 / 選曲試聽：循環播放某首歌的某一段 ----
+  // 每次換歌建立新的音量節點，舊的直接淡出斷開（已排入的音符不會殘留）
+  bgm: null,
+  startBgm(song = SONGS[MENU_SONG], sec = 0) {
+    if (this.bgmOn && this.bgm && this.bgm.song === song && this.bgm.sec === sec) return;
+    this.stopBgm();
+    this.bgmOn = true;
+    this.bgm = { song, sec, next: 0, m: 0, bus: null, anchor: 0 };
+  },
+  stopBgm() {
+    this.bgmOn = false;
+    const b = this.bgm && this.bgm.bus;
+    if (b && A.ctx) { b.gain.setTargetAtTime(0, A.ctx.currentTime, 0.04); setTimeout(() => { try { b.disconnect(); } catch (e) { /* ignore */ } }, 400); }
+    if (this.bgm) this.bgm.bus = null;
+  },
+  bgmBpm() { return this.bgmOn && this.bgm ? this.bgm.song.sections[this.bgm.sec].bpm : 0; },
+  // 選單畫面的節拍脈動（對齊正在播放的試聽）
+  bgmPulse() {
+    if (!this.bgmOn || !this.bgm || !this.bgm.anchor || !A.ctx) return null;
+    const ph = (A.ctx.currentTime - Sound.latency() - this.bgm.anchor) / (60 / this.bgmBpm());
+    return ph < 0 ? 0 : Math.exp(-(ph % 1) * 5);
+  },
   tick() {
     if (!this.bgmOn || !A.ctx || A.ctx.state !== 'running' || this.ducked) return;
-    const now = A.ctx.currentTime, sd = 60 / MENU_BPM / 2;
-    if (!this.bgm.next || this.bgm.next < now - 0.3) this.bgm.next = now + 0.08;
-    while (this.bgm.next < now + 0.2) {
-      const st = this.bgm.step, t = this.bgm.next, mi = Math.floor(st / 8) % 8, s = st % 8;
-      const tk = TAIKO.normal[s];
-      if (tk === 'don') SND.don(t, 0.5); else if (tk === 'ka') SND.ka(t, 0.5);
-      const n = MELODY[mi][s];
-      if (n !== null) SND.shamisen(t, mel(n), A.music, 0.8);
-      const r = BASS_ROOT[mi];
-      if (s === 0 || s === 4) SND.bass(t, bassF(s === 4 ? r + 7 : r), sd * 1.5);
-      if (s % 2 === 1) SND.kane(t, 0.35);
-      this.bgm.step++; this.bgm.next += sd;
+    const p = this.bgm, now = A.ctx.currentTime, bd = 60 / this.bgmBpm();
+    if (!p.bus) { p.bus = A.ctx.createGain(); p.bus.gain.value = 0.85; p.bus.connect(A.music); }
+    if (!p.next || p.next < now - 0.3) { p.next = now + 0.08; p.anchor = p.next; p.m = 0; }
+    while (p.next < now + 0.3) {
+      const ms = measureInfo(p.song, { kind: 'play', bpm: this.bgmBpm(), start: p.next, sec: p.sec, idx: p.m % 8 });
+      p.song.arrange(ms, (t, f) => f(Math.max(t, now), p.bus));
+      p.m++; p.next += 4 * bd;
     }
   },
 

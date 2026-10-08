@@ -41,21 +41,162 @@ Screens.boot = {
   }
 };
 
-// ---------- 開始畫面（點擊 / 按任意鍵，以解除瀏覽器音效限制） ----------
+// ---------- 夜空（開始畫面與開場共用）：漸層、星星、月亮、遠處的燈籠串 ----------
+function drawNightSky() {
+  const t = Game.time;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#070b24'); g.addColorStop(0.6, '#1a1446'); g.addColorStop(1, '#2a1838');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  const R = mulberry(77);
+  for (let i = 0; i < 90; i++) {
+    const x = R() * W, y = R() * H * 0.7, s = 0.6 + R() * 1.8, tw = 0.45 + 0.55 * Math.sin(t * (1 + R() * 2) + i);
+    ctx.fillStyle = `rgba(255,255,240,${0.25 + tw * 0.6})`; ctx.beginPath(); ctx.arc(x, y, s, 0, 7); ctx.fill();
+  }
+  // 月亮
+  ctx.save(); ctx.shadowColor = 'rgba(255,240,190,.8)'; ctx.shadowBlur = 40;
+  ctx.fillStyle = '#fff4cf'; ctx.beginPath(); ctx.arc(586, 150, 52, 0, 7); ctx.fill(); ctx.restore();
+  ctx.fillStyle = 'rgba(230,210,160,.45)'; ctx.beginPath(); ctx.arc(570, 140, 9, 0, 7); ctx.arc(600, 170, 6, 0, 7); ctx.fill();
+  // 遠處燈籠串（垂墜曲線＋光點）
+  [[700, 0.55], [860, 0.75]].forEach(([y0, sc], k) => {
+    ctx.strokeStyle = 'rgba(20,10,30,.8)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-20, y0 - 60); ctx.quadraticCurveTo(W / 2, y0 + 60, W + 20, y0 - 60); ctx.stroke();
+    for (let i = 0; i <= 12; i++) {
+      const u = i / 12, x = -20 + u * (W + 40), y = (1 - u) * (1 - u) * (y0 - 60) + 2 * u * (1 - u) * (y0 + 60) + u * u * (y0 - 60) + 14 * sc;
+      const fl = 0.75 + 0.25 * Math.sin(t * 6 + i * 2 + k);
+      const gg = ctx.createRadialGradient(x, y, 0, x, y, 26 * sc);
+      gg.addColorStop(0, `rgba(255,140,60,${0.7 * fl})`); gg.addColorStop(1, 'rgba(255,140,60,0)');
+      ctx.fillStyle = gg; ctx.fillRect(x - 30, y - 30, 60, 60);
+      ctx.fillStyle = i % 4 === 1 ? '#ffd040' : '#ff6a30'; ctx.beginPath(); ctx.ellipse(x, y, 7 * sc, 9 * sc, 0, 0, 7); ctx.fill();
+    }
+  });
+}
+// 對話框
+function speechBubble(x, y, str, a = 1) {
+  str = tr(str);
+  ctx.save(); ctx.globalAlpha = a;
+  ctx.font = `30px ${FONT}`;
+  const w = ctx.measureText(str).width + 50, h = 64;
+  ctx.fillStyle = '#fffdf3'; rrect(x - w / 2, y - h / 2, w, h, 26); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(x - 46, y + h / 2 - 2); ctx.lineTo(x - 66, y + h / 2 + 26); ctx.lineTo(x - 16, y + h / 2 - 2); ctx.fill();
+  ctx.lineWidth = 4; ctx.strokeStyle = '#1f2a5a'; rrect(x - w / 2, y - h / 2, w, h, 26); ctx.stroke();
+  ctx.restore();
+  UI.text(str, x, y + 2, 30, { fill: '#c8321e', stroke: null, raw: true, alpha: a });
+}
+
+// ---------- 開始畫面（點擊 / 按任意鍵，以解除瀏覽器音效限制）：夜空 ----------
 Screens.title = {
   enter() { chef.idlePose = 'wave'; chef.queue = []; },
   frame() {
-    const pulse = Scene.idlePulse();
-    Scene.draw(pulse);
+    drawNightSky();
+    const t = Game.time, pulse = 0.5 + 0.5 * Math.sin(t * 3);
+    UI.wood(150, 70, 420, 130, { r: 14, seed: 'title-sign' });
+    UI.text('大王焼き', W / 2, 138, 76, { fill: '#2a1408', stroke: 'rgba(255,236,200,.5)', sw: 3, raw: true });
     UI.noren(W / 2, 252, 460, 118, 'リズム屋台');
-    UI.tanzaku(W / 2, 404, '節奏熱炒遊戲');
+    // 廣島燒徽章（與 APP 圖示同設計）
+    const cy = 640, R = 170 + pulse * 4;
+    ctx.save(); ctx.shadowColor = 'rgba(255,150,60,.8)'; ctx.shadowBlur = 50;
+    ctx.fillStyle = '#f2c25a'; ctx.beginPath(); ctx.arc(W / 2, cy, R + 10, 0, 7); ctx.fill(); ctx.restore();
+    const rg = ctx.createLinearGradient(0, cy - R, 0, cy + R); rg.addColorStop(0, '#e8502e'); rg.addColorStop(1, '#a3200f');
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(W / 2, cy, R, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.16)'; ctx.beginPath(); ctx.ellipse(W / 2, cy - R * 0.55, R * 0.75, R * 0.28, 0, 0, 7); ctx.fill();
+    drawImgW(IMG.okonomiyaki, W / 2, cy + 6, R * 1.7, Math.sin(t * 1.5) * 0.04);
+    UI.tanzaku(W / 2, 880, '節奏熱炒遊戲');
     const label = Input.touchMode ? 'TAP TO START' : Input.padConnected ? 'PRESS START' : 'PRESS ANY KEY';
-    UI.text(label, W / 2, 1080, 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: 0.6 + 0.4 * Math.sin(Game.time * 4) });
+    UI.text(label, W / 2, 1080, 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: 0.6 + 0.4 * Math.sin(t * 4) });
     drawButtonImg(W / 2, 1220, 130 + pulse * 6);
     UI.copyright();
-    if (Input.was('anykey')) { Sound.init(); Sound.play('confirm'); App.goto('menu'); }
+    if (Input.was('anykey')) { Sound.init(); Sound.play('confirm'); App.goto('intro'); }
   }
 };
+
+// ---------- 開場：野台升起 → 燈籠點亮 → 主角走進來揮手 → 暖簾落下 → 主選單（點一下即可跳過） ----------
+Screens.intro = {
+  t: 0, cues: null,
+  T: { rise: 2.2, lights: 0.8, walk0: 3.0, walk1: 4.8, noren: 5.5, end: 7.0 },
+  enter() {
+    this.t = 0; this.cues = {}; this.skipLock = 0.35;
+    chef.queue = []; chef.idlePose = 'idle'; chef.pose = 'idle'; chef.lift = 0;
+    Sound.stopBgm();
+    this.bus = null;
+    if (A.ctx) { this.bus = A.ctx.createGain(); this.bus.connect(A.ui); noiseRumble(this.T.rise, this.bus); }
+  },
+  // 開場的音效走自己的音量節點：跳過時立刻收掉（例如還在響的轟隆聲）
+  leave() {
+    const b = this.bus; this.bus = null;
+    if (b) { b.gain.setTargetAtTime(0, A.ctx.currentTime, 0.05); setTimeout(() => { try { b.disconnect(); } catch (e) { /* ignore */ } }, 400); }
+  },
+  once(key, fn) { if (!this.cues[key]) { this.cues[key] = true; fn(); } },
+  frame(dt) {
+    this.t += dt;
+    const t = this.t, T = this.T;
+    // 跳過（開場一開始的 0.35 秒不收，避免把開始畫面的那一下當成跳過）
+    this.skipLock -= dt;
+    if (this.skipLock <= 0 && (Input.was('anykey') || Input.taps.length)) { this.finish(); return; }
+
+    drawNightSky();
+    // 1. 野台由下往上緩緩升起
+    const p = clamp(t / T.rise, 0, 1), rise = (1 - (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)) * H;
+    let shake = 0;
+    if (t >= T.rise) {
+      this.once('land', () => {
+        if (this.bus) { SND.kick(A.ctx.currentTime, 1, this.bus); SND.don(A.ctx.currentTime, 0.8, this.bus); }
+        for (let i = 0; i < 26; i++) Fx.particles.push({ x: rand(0, W), y: H - rand(0, 30), vx: rand(-60, 60), vy: rand(-140, -40), life: rand(0.6, 1.2), max: 1.2, size: rand(14, 26), g: -10, kind: 'steam' });
+      });
+      shake = Math.max(0, 1 - (t - T.rise) / 0.35) * Math.sin(t * 70) * 7;
+    }
+    // 2. 燈籠一盞一盞亮起
+    const litStart = T.rise, per = T.lights / LANTERNS.length;
+    const lit = i => clamp((t - litStart - i * per) / 0.15, 0, 1);
+    LANTERNS.forEach((_, i) => { if (t >= litStart + i * per && i % 3 === 0) this.once('l' + i, () => { if (this.bus) osc('sine', 700 + (i % 5) * 90, A.ctx.currentTime, 0.08, 0.12, this.bus); }); });
+
+    ctx.save(); ctx.translate(shake * 0.4, rise + shake);
+    Scene.background(0.3, lit);
+    ctx.restore();
+    // 3. 主角從右邊一蹦一跳走進來（在吧台後面）
+    if (t >= T.walk0) {
+      const wp = clamp((t - T.walk0) / (T.walk1 - T.walk0), 0, 1), e = 1 - Math.pow(1 - wp, 2);
+      const walking = wp < 1, phase = (t - T.walk0) * 5.2;
+      const dx = (1 - e) * (W * 0.75), hop = walking ? -Math.abs(Math.sin(phase * Math.PI)) * 18 : 0, rot = walking ? Math.sin(phase * Math.PI) * 0.05 : 0;
+      if (walking) { const step = Math.floor(phase); this.once('step' + step, () => { if (this.bus) SND.wood(A.ctx.currentTime, false, this.bus); }); }
+      if (!walking) {
+        this.once('wave', () => {
+          chef.idlePose = 'wave';
+          if (this.bus) { SND.don(A.ctx.currentTime, 0.9, this.bus); SND.kane(A.ctx.currentTime + 0.12, 1.2, this.bus); }
+          Sound.startBgm();   // 主選單音樂從這裡開始，接到主選單不中斷
+        });
+      }
+      Scene.chef(0, dx, hop, rot);
+    }
+    ctx.save(); ctx.translate(shake * 0.4, rise + shake); Scene.griddle(); ctx.restore();
+    Fx.draw();
+    // 4. 歡迎光臨！
+    if (t >= T.walk1 && t < T.end) {
+      const k = clamp((t - T.walk1) / 0.2, 0, 1), a = t > T.end - 0.4 ? (T.end - t) / 0.4 : 1;
+      ctx.save(); ctx.translate(500, 560); ctx.scale(0.6 + 0.4 * ease(k), 0.6 + 0.4 * ease(k));
+      speechBubble(0, 0, '歡迎光臨！', a); ctx.restore();
+    }
+    // 5. 暖簾從上方落下、彈一下
+    if (t >= T.noren) {
+      const k = clamp((t - T.noren) / 0.6, 0, 1);
+      const bounce = k < 1 ? Math.sin(k * Math.PI * 2.5) * (1 - k) * 40 : 0;
+      const y = lerp(-180, 252, Math.min(1, k * 1.6)) + bounce;
+      this.once('noren', () => { if (this.bus) nz(A.ctx.currentTime, 0.25, 0.25, this.bus, { f: 900, to: 300, q: 1 }); });
+      UI.noren(W / 2, y, 460, 118, 'リズム屋台');
+    }
+    UI.text('SKIP ▶▶', W - 20, H - 26, 20, { align: 'right', fill: 'rgba(255,255,255,.75)', stroke: 'rgba(0,0,0,.6)', sw: 4, raw: true });
+    if (t >= T.end) this.finish();
+  },
+  finish() {   // App.goto 在轉場中會忽略重複呼叫
+    chef.idlePose = 'wave'; chef.queue = [];
+    App.goto('menu');
+  },
+};
+// 野台升起時低沉的轟隆聲
+function noiseRumble(dur, dest) {
+  const t = A.ctx.currentTime;
+  nz(t, dur, 0.35, dest, { type: 'lowpass', f: 180, to: 420, q: 0.8 });
+  osc('sine', 48, t, dur, 0.25, dest, { att: 0.4 });
+}
 
 // ---------- 主選單 ----------
 // 按鈕放在畫面最下方（攤位前的吧台與板凳上），不擋主角：
@@ -70,10 +211,10 @@ Screens.menu = {
     gr.addColorStop(0, 'rgba(8,10,30,0)'); gr.addColorStop(1, 'rgba(8,10,30,.82)');
     ctx.fillStyle = gr; ctx.fillRect(0, 930, W, H - 930);
     UI.noren(W / 2, 252, 460, 118, 'リズム屋台');
-    UI.tanzaku(W / 2, 404, 'HISCORE  ' + pad(Save.best(), 7));
+    UI.tanzaku(W / 2, 404, '節奏熱炒遊戲');
 
     UI.begin(this);
-    if (UI.button(this, '開始遊戲', 170, 980, 380, 92, { lacquer: true, sub: 'sub.start', size: 40 })) App.goto('game');
+    if (UI.button(this, '開始遊戲', 170, 980, 380, 92, { lacquer: true, sub: 'sub.start', size: 40 })) App.goto('songs');
     UI.pole(16, 1098, W - 32);
     this.TAGS.forEach(([label, sub, dest], k) => {
       if (UI.button(this, label, 33 + k * 166, 1122, 154, 94, { tag: true, sub, size: 27, ropeH: 24 })) App.goto(dest);
@@ -93,11 +234,77 @@ Screens.menu = {
   }
 };
 
+// ---------- 選擇樂曲 ----------
+// 卡片：編號、歌名、副標・風格、BPM、星級、HISCORE；選中的卡片會試聽（停留 0.3 秒才開始，快速捲動不會一直重播）
+Screens.songs = {
+  sel: 0, previewIdx: -1, previewT: 0, bs: { sel: -1, n: 0 },
+  CARD: { x: 40, y0: 188, w: 640, h: 150, gap: 12 },
+  enter() {
+    const i = SONGS.findIndex(s => s.id === Save.data.lastSong);
+    this.sel = i >= 0 ? i : 0; this.previewIdx = -1; this.previewT = 0.15; this.bs.sel = -1;
+    chef.idlePose = 'wave'; Sound.init(); Sound.duck(false);
+  },
+  select(i) { if (i !== this.sel) { this.sel = i; this.previewT = 0.3; Sound.play('select'); } },
+  start() { Sound.play('confirm'); App.goto('game', { song: SONGS[this.sel] }); },
+  frame(dt) {
+    menuBackdrop(0.66);
+    UI.header('選擇樂曲', 'SELECT SONG');
+    if (this.previewIdx !== this.sel) {
+      this.previewT -= dt;
+      if (this.previewT <= 0) { this.previewIdx = this.sel; const s = SONGS[this.sel]; Sound.startBgm(s, Math.min(2, s.sections.length - 1)); }
+    }
+    const C = this.CARD;
+    SONGS.forEach((song, i) => {
+      const y = C.y0 + i * (C.h + C.gap), on = i === this.sel;
+      if (Input.ptr.moved && UI.inside(Input.ptr.x, Input.ptr.y, C.x, y, C.w, C.h) && !on) this.select(i);
+      for (const t of Input.taps) if (UI.inside(t.x, t.y, C.x, y, C.w, C.h)) { if (on) this.start(); else this.select(i); }
+      this.card(song, i, C.x, y, C.w, C.h, on);
+    });
+    if (Input.was('up')) { this.bs.sel = -1; this.select((this.sel + SONGS.length - 1) % SONGS.length); }
+    if (Input.was('down')) { this.bs.sel = -1; this.select((this.sel + 1) % SONGS.length); }
+    if (Input.was('confirm') && this.bs.sel !== 0) this.start();   // 滑鼠停在「返回」上時不開始
+    UI.begin(this.bs);
+    if (UI.button(this.bs, '返回', 50, 1040, 210, 76, { back: true }) || Input.was('back')) App.goto('menu');
+    if (UI.button(this.bs, '開始遊戲', 280, 1034, 390, 86, { lacquer: true, sub: 'sub.start', size: 36 })) this.start();
+    UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : '↑↓ 選曲　ENTER 開始　ESC 返回');
+  },
+  card(song, i, x, y, w, h, on) {
+    const loc = o => o[Save.data.lang] || o.zh;
+    ctx.save();
+    if (on) {
+      const s = 1.02 + Math.sin(Game.time * 6) * 0.004;
+      ctx.translate(x + w / 2, y + h / 2); ctx.scale(s, s); ctx.translate(-(x + w / 2), -(y + h / 2));
+      ctx.save(); ctx.shadowColor = 'rgba(255,170,60,.95)'; ctx.shadowBlur = 26; rrect(x, y, w, h, 16); ctx.fillStyle = 'rgba(255,170,60,.6)'; ctx.fill(); ctx.restore();
+    }
+    rrect(x + 4, y + 7, w, h, 16); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
+    UI.wood(x, y, w, h, { r: 16, seed: 'song' + i, light: on });
+    // 編號圓牌（樂曲代表色）
+    const bx = x + 54, by = y + h / 2;
+    ctx.fillStyle = song.color; ctx.beginPath(); ctx.arc(bx, by, 34, 0, 7); ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = '#3e2210'; ctx.stroke();
+    UI.text(String(i + 1), bx, by + 2, 34, { fill: '#fff', stroke: '#3e2210', sw: 6, raw: true });
+    const ink = on ? '#9a1a08' : '#3a1d0a', soft = on ? '#8a3a10' : '#6a3c18';
+    UI.text(song.title, x + 104, y + 40, 32, { align: 'left', fill: ink, stroke: null, raw: true, maxW: 320 });
+    UI.text(loc(song.sub) + '・' + loc(song.genre), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: 330 });
+    const S = song.sections;
+    UI.text(`BPM ${S[0].bpm}–${S[S.length - 1].bpm}`, x + 104, y + 116, 17, { align: 'left', fill: soft, stroke: null, raw: true });
+    if (on && this.previewIdx === i) {
+      const b = Math.abs(Math.sin(Game.time * 5)) * 4;
+      UI.text('♪', x + 262, y + 114 - b, 20, { fill: '#c43a1a', stroke: null, raw: true });
+      UI.text(tr('試聽中'), x + 280, y + 116, 16, { align: 'left', fill: '#c43a1a', stroke: null, raw: true });
+    }
+    drawStars(x + w - 118, y + 40, song.stars, 24);
+    UI.text('HISCORE', x + w - 24, y + 84, 14, { align: 'right', fill: soft, stroke: null, raw: true });
+    UI.text(pad(Save.best(song.id), 7), x + w - 24, y + 114, 24, { align: 'right', fill: ink, stroke: null, raw: true });
+    ctx.restore();
+  },
+};
+
 // ---------- 遊戲（含暫停選單） ----------
 Screens.game = {
   sel: 0, n: 0, pauseReq: false,
   enter(arg) {
-    if (!(arg && arg.resume)) Game.newRun();
+    if (!(arg && arg.resume)) Game.newRun(arg && arg.song);
     this.sel = 0; this.pauseReq = false;
     Sound.stopBgm();
     Input.onHit = (x, y, t) => this.onHit(x, y, t);
@@ -171,7 +378,7 @@ Screens.howto = {
       [(x, y) => drawButtonImg(x - 14, y + 20, 92), '跟著節拍按按鈕', '食材會從左右兩邊丟到鐵板中央的金色框裡，落下的瞬間按下按鈕！'],
       [(x, y) => drawImgW(IMG.cabbage_raw, x, y, 96), '先聽，再按', '食材丟出時會發出「咻～啵」提示音，2 拍之後落下。跟著音樂的節拍就對了。'],
       [(x, y) => drawImgW(IMG.okonomiyaki, x, y, 110), '湊齊四種食材', '炒麵、高麗菜、煎餅、培根各處理好 1 個，就會自動合成一份廣島燒，加 1000 分！'],
-      ['⏩', '越來越快', '每 8 小節節奏加快一次，共 6 段，從 96 一路加速到 146 BPM。'],
+      ['⏩', '越來越快', '每 8 小節節奏加快一次。共 5 首樂曲，越後面的歌越快、越難（★ 越多）。'],
       ['🏆', '排行榜', '遊戲結束時，分數進入前 20 名就能登錄姓名。'],
     ];
     rows.forEach(([ic, t, d], i) => this.row(222 + i * 164, ic, t, d));
@@ -241,8 +448,12 @@ Screens.howto = {
 // ---------- 設定 ----------
 Screens.settings = {
   sel: 0, n: 0, from: 'menu',
-  ROWS: 6,
-  enter(arg) { this.sel = 0; this.from = arg && arg.from === 'game' ? 'game' : 'menu'; if (this.from === 'menu') Sound.startBgm(); },
+  ROWS: 7,
+  enter(arg) {
+    this.from = arg && arg.from === 'game' ? 'game' : 'menu';
+    this.sel = arg && arg.sel !== undefined ? arg.sel : 0;
+    if (this.from === 'menu') Sound.startBgm();
+  },
   back() { if (this.from === 'game') App.goto('game', { resume: true }); else App.goto('menu'); },
   setVol(key, v) {
     v = clamp(v, 0, 5);
@@ -328,9 +539,20 @@ Screens.settings = {
       if (Input.was('right')) this.setLang(LANGS[(idx + 1) % LANGS.length][0]);
     }
 
-    // 5 返回
-    UI.begin(this); this.n = 5;
-    if (UI.button(this, this.from === 'game' ? '返回遊戲' : '返回', 230, 1060, 260, 72, { back: true }) || Input.was('back')) this.back();
+    // 5 安裝到主畫面（APP）
+    const y5 = 928, inst = PWA.installed();
+    this.panel(5, y5, 100);
+    UI.text('安裝到主畫面', 84, y5 + 34, 30, { align: 'left', maxW: 400 });
+    UI.text(inst ? '已經是 APP 模式' : '變成 APP，全螢幕、離線也能玩', 84, y5 + 72, 17, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
+    UI.panel(500, y5 + 22, 140, 56, 28, inst ? '#2fc46a' : '#e8502a', '#fff');
+    UI.text(inst ? '✓' : '教學 ▶', 570, y5 + 51, 24, { stroke: '#5a0f05', sw: 5 });
+    const openInstall = () => { Sound.play('confirm'); App.goto('install', { from: this.from }); };
+    if (UI.tapIn(50, y5, 620, 100)) { this.sel = 5; openInstall(); }
+    if (this.sel === 5 && Input.was('confirm')) openInstall();
+
+    // 6 返回
+    UI.begin(this); this.n = 6;
+    if (UI.button(this, this.from === 'game' ? '返回遊戲' : '返回', 230, 1062, 260, 68, { back: true }) || Input.was('back')) this.back();
     this.n = this.ROWS;
     if (Input.was('up')) { this.sel = (this.sel + this.ROWS - 1) % this.ROWS; Sound.play('select'); }
     if (Input.was('down')) { this.sel = (this.sel + 1) % this.ROWS; Sound.play('select'); }
@@ -338,51 +560,128 @@ Screens.settings = {
   }
 };
 
-// ---------- 排行榜 ----------
+// ---------- 安裝到主畫面（APP 簡易教學） ----------
+Screens.install = {
+  sel: 0, n: 0, from: 'menu', busy: false,
+  GUIDES: {
+    ios: ['iPhone／iPad（Safari）', ['點畫面下方的「分享」按鈕 ⬆', '往下滑，選「加入主畫面」', '按右上角「新增」就完成了'], '※ 請用 Safari 開啟本頁'],
+    android: ['Android（Chrome）', ['點右上角的「︙」選單', '選「安裝應用程式」或「加到主畫面」', '按「安裝」就完成了'], ''],
+    desktop: ['電腦（Chrome／Edge）', ['點網址列右邊的「安裝」圖示 ⊕', '按「安裝」，桌面就會出現圖示'], ''],
+  },
+  enter(arg) { this.from = arg && arg.from || 'menu'; this.sel = 0; this.busy = false; },
+  back() { App.goto('settings', { from: this.from, sel: 5 }); },
+  frame() {
+    if (this.from === 'game') { Game.draw(); UI.dim(0.78); } else menuBackdrop(0.72);
+    UI.header('安裝到主畫面', 'INSTALL APP');
+    UI.panel(30, 190, 660, 850, 26);
+    UI.wrap('安裝後可以從主畫面直接開啟：全螢幕、開啟更快，沒有網路也能玩。', 60, 232, 600, 32, 21, { fill: '#fff' });
+
+    UI.begin(this);
+    let y = 316;
+    if (PWA.installed()) {
+      UI.text('✓ 目前已經是 APP 模式', W / 2, y + 20, 26, { fill: '#8dff8a', stroke: null });
+      y += 64;
+    } else if (PWA.canPrompt()) {
+      if (UI.button(this, '立即安裝', 190, y - 4, 340, 76, { lacquer: true, sub: 'INSTALL', size: 34 }) && !this.busy) {
+        this.busy = true; PWA.install().finally(() => { this.busy = false; });
+      }
+      y += 96;
+    }
+    // 目前的裝置排第一個並標亮
+    const mine = PWA.platform();
+    ['ios', 'android', 'desktop'].sort((a, b) => (b === mine) - (a === mine)).forEach(key => {
+      const [title, steps, note] = this.GUIDES[key], on = key === mine;
+      const h = 62 + steps.length * 38 + (note ? 30 : 0);
+      UI.panel(50, y, 620, h, 18, on ? 'rgba(255,190,60,.18)' : 'rgba(255,255,255,.06)', on ? '#ffd23f' : 'rgba(255,255,255,.25)');
+      UI.text(title, 76, y + 32, 25, { align: 'left', fill: on ? '#fff27a' : '#cfe0ff', stroke: null, maxW: 420 });
+      if (on) { UI.panel(520, y + 14, 132, 36, 18, '#e8502a', '#fff'); UI.text('你的裝置', 586, y + 32, 17, { stroke: null, maxW: 116 }); }
+      steps.forEach((st, i) => {
+        const sy = y + 74 + i * 38;
+        ctx.fillStyle = on ? '#e8502a' : 'rgba(255,255,255,.3)'; ctx.beginPath(); ctx.arc(90, sy, 14, 0, 7); ctx.fill();
+        UI.text(String(i + 1), 90, sy + 1, 17, { stroke: null, raw: true });
+        UI.text(st, 116, sy, 20, { align: 'left', fill: '#fff', stroke: null, maxW: 530 });
+      });
+      if (note) UI.text(note, 76, y + h - 22, 17, { align: 'left', fill: '#ffb0a0', stroke: null, maxW: 560 });
+      y += h + 16;
+    });
+
+    if (UI.button(this, '返回', 250, 1062, 220, 68, { back: true }) || Input.was('back')) this.back();
+    UI.nav(this);
+    UI.navHint();
+  }
+};
+
+// ---------- 排行榜（每首歌一個；← → 切換樂曲） ----------
 Screens.ranking = {
-  sel: 0, n: 0, hl: null, hlId: null, list: null, loading: false, err: false,
+  sel: 0, n: 0, hl: null, hlId: null, list: null, loading: false, err: false, idx: 0,
   enter(arg) {
     this.hl = arg && arg.entry; this.hlId = arg && arg.entryId; this.sel = 0;
+    const id = (arg && arg.song) || Save.data.lastSong;
+    this.idx = Math.max(0, SONGS.findIndex(s => s.id === id));
     chef.idlePose = 'wave'; Sound.startBgm();
-    this.list = null; this.err = false; this.loading = false;
-    if (Online.enabled) {
-      this.loading = true;
-      Online.top().then(l => { this.list = l; this.loading = false; })
-        .catch(() => { this.err = true; this.list = []; this.loading = false; });
-    }
+    this.load();
   },
+  load() {
+    this.list = null; this.err = false; this.loading = false;
+    if (!Online.enabled) return;
+    const id = SONGS[this.idx].id; this.loading = true;
+    Online.top(id).then(l => { if (SONGS[this.idx].id === id) { this.list = l; this.loading = false; } })
+      .catch(() => { if (SONGS[this.idx].id === id) { this.err = true; this.list = []; this.loading = false; } });
+  },
+  move(d) { this.idx = (this.idx + d + SONGS.length) % SONGS.length; this.hl = null; this.hlId = null; Sound.play('select'); this.load(); },
   frame() {
     menuBackdrop(0.72);
     UI.header('排行榜', Online.enabled ? 'LEADERBOARD（線上）' : 'LEADERBOARD（本機）');
-    UI.panel(30, 190, 660, 860, 26);
+    // 樂曲切換列
+    const song = SONGS[this.idx];
+    UI.wood(60, 182, 600, 66, { r: 14, seed: 'rank-bar' });
+    UI.text(song.title, W / 2, 205, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 420 });
+    drawStars(W / 2, 233, song.stars, 16);
+    UI.text('◀', 92, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 }); UI.text('▶', 628, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 });
+    if (Input.was('left') || UI.tapIn(40, 176, 120, 80)) this.move(-1);
+    if (Input.was('right') || UI.tapIn(560, 176, 120, 80)) this.move(1);
+
+    UI.panel(30, 262, 660, 790, 26);
     const C = { rank: 82, name: 136, oko: 478, score: 660 };
-    UI.text('名次', C.rank, 226, 18, { fill: '#7fe4ff', stroke: null });
-    UI.text('姓名', C.name, 226, 18, { align: 'left', fill: '#7fe4ff', stroke: null });
-    UI.text('廣島燒', C.oko, 226, 18, { fill: '#7fe4ff', stroke: null });
-    UI.text('分數', C.score, 226, 18, { align: 'right', fill: '#7fe4ff', stroke: null });
-    const glob = Online.enabled, b = glob ? (this.list || []) : Save.board();
-    if (glob && this.loading) UI.text('讀取中…', W / 2, 600, 30);
+    UI.text('名次', C.rank, 290, 18, { fill: '#7fe4ff', stroke: null });
+    UI.text('姓名', C.name, 290, 18, { align: 'left', fill: '#7fe4ff', stroke: null });
+    UI.text('廣島燒', C.oko, 290, 18, { fill: '#7fe4ff', stroke: null });
+    UI.text('分數', C.score, 290, 18, { align: 'right', fill: '#7fe4ff', stroke: null });
+    const glob = Online.enabled, b = glob ? (this.list || []) : Save.board(song.id);
+    if (glob && this.loading) UI.text('讀取中…', W / 2, 640, 30);
     for (let i = 0; i < 20; i++) {
-      const y = 268 + i * 38, e = b[i];
+      const y = 326 + i * 35.5, e = b[i];
       const isHl = e && (glob ? (this.hlId && e.id === this.hlId) : e === this.hl);
       ctx.fillStyle = isHl ? `rgba(255,210,63,${0.35 + 0.25 * Math.sin(Game.time * 8)})` : (i % 2 ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.12)');
-      ctx.fillRect(42, y - 18, 636, 36);
+      ctx.fillRect(42, y - 17, 636, 34);
       const col = i === 0 ? '#ffd23f' : i === 1 ? '#e0e6f0' : i === 2 ? '#f0a070' : '#ffffff';
-      UI.text(String(i + 1), C.rank, y, 22, { fill: col, stroke: null });
+      UI.text(String(i + 1), C.rank, y, 21, { fill: col, stroke: null });
       if (e) {
-        UI.text(e.name, C.name, y, 22, { align: 'left', fill: isHl ? '#fff27a' : '#fff', stroke: null, maxW: 280, raw: true });
-        UI.text('×' + (e.oko || 0), C.oko, y, 20, { fill: '#ffb0a0', stroke: null });
-        UI.text(pad(e.score, 7), C.score, y, 22, { align: 'right', fill: col, stroke: null });
-      } else UI.text('---', C.name, y, 22, { align: 'left', fill: 'rgba(255,255,255,.4)', stroke: null });
+        UI.text(e.name, C.name, y, 21, { align: 'left', fill: isHl ? '#fff27a' : '#fff', stroke: null, maxW: 280, raw: true });
+        UI.text('×' + (e.oko || 0), C.oko, y, 19, { fill: '#ffb0a0', stroke: null });
+        UI.text(pad(e.score, 7), C.score, y, 21, { align: 'right', fill: col, stroke: null });
+      } else UI.text('---', C.name, y, 21, { align: 'left', fill: 'rgba(255,255,255,.4)', stroke: null });
     }
-    if (this.err) UI.text('無法連線，暫時無法顯示線上排行', W / 2, 1030, 17, { fill: '#ff9fb5', stroke: null });
+    if (this.err) UI.text('無法連線，暫時無法顯示線上排行', W / 2, 1036, 17, { fill: '#ff9fb5', stroke: null });
     UI.begin(this);
     if (UI.button(this, '返回主選單', 220, 1076, 280, 70, { back: true }) || Input.was('back')) App.goto('menu');
     UI.nav(this);
+    UI.hint('← → 切換樂曲');
     UI.copyright();
   }
 };
 
+// 星級（最多 5 顆）
+function drawStars(cx, cy, n, size, max = 5) {
+  ctx.save(); ctx.font = `${size}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  const gap = size * 1.15, x0 = cx - (max - 1) * gap / 2;
+  for (let i = 0; i < max; i++) {
+    const on = i < n, x = x0 + i * gap;
+    ctx.lineWidth = size * 0.28; ctx.strokeStyle = on ? '#5a2a00' : 'rgba(40,20,0,.35)'; ctx.strokeText('★', x, cy);
+    ctx.fillStyle = on ? '#ffc21a' : 'rgba(255,255,255,.28)'; ctx.fillText('★', x, cy);
+  }
+  ctx.restore();
+}
 // ---------- CREDIT ----------
 Screens.credits = {
   sel: 0, n: 0, t: 0,
@@ -415,7 +714,8 @@ Screens.result = {
   sel: 0, n: 0, t: 0, r: null, qualifies: false, checked: false, submitted: false, newRecord: false, input: null,
   enter() {
     this.r = Game.result; this.t = 0; this.sel = 0; this.checked = false; this.submitted = false; this.shownInput = false;
-    this.newRecord = this.r.score > Save.best();
+    this.song = songById(this.r.song);
+    this.newRecord = this.r.score > Save.best(this.song.id);
     Sound.duck(false);
     SND.fanfare(A.ctx.currentTime + 0.2);
     const o = this.r.oko;
@@ -423,7 +723,7 @@ Screens.result = {
     this.input = document.getElementById('nameInput');
     this.input.value = Save.data.name || '';
     this.input.onkeydown = e => { if (e.key === 'Enter') this.submit(); };
-    if (Online.enabled) Online.top().catch(() => {});
+    if (Online.enabled) Online.top(this.song.id).catch(() => {});
   },
   leave() { this.input.style.display = 'none'; this.input.blur(); chef.idlePose = 'wave'; },
   submit() {
@@ -431,11 +731,12 @@ Screens.result = {
     this.submitted = true;
     const nm = (this.input.value || '').trim().slice(0, 8) || 'PLAYER';
     const r = this.r, entry = { name: nm, score: r.score, oko: r.oko, combo: r.maxCombo };
-    Save.add(entry);
+    const id = this.song.id;
+    Save.add(entry, id);
     Sound.play('confirm');
     if (Online.enabled) {
-      Online.submit(entry).then(id => App.goto('ranking', { entry, entryId: id })).catch(() => App.goto('ranking', { entry }));
-    } else App.goto('ranking', { entry });
+      Online.submit(entry, id).then(eid => App.goto('ranking', { entry, entryId: eid, song: id })).catch(() => App.goto('ranking', { entry, song: id }));
+    } else App.goto('ranking', { entry, song: id });
   },
   frame(dt) {
     this.t += dt;
@@ -453,7 +754,7 @@ Screens.result = {
     const cnt = clamp((t - 0.4) / 1.0, 0, 1);
     UI.text(String(Math.floor(r.score * cnt)), W / 2, y + 344, 64, { fill: '#1f2a5a', stroke: null });
     if (this.newRecord && t > 1.4) UI.text('★ NEW RECORD ★', W / 2, y + 400, 26, { fill: '#d6462a', stroke: null, alpha: 0.6 + 0.4 * Math.sin(Game.time * 6) });
-    else UI.text('HISCORE  ' + pad(Save.best(), 7), W / 2, y + 400, 22, { fill: '#6b4a2a', stroke: null });
+    else UI.text('HISCORE  ' + pad(Save.best(this.song.id), 7), W / 2, y + 400, 22, { fill: '#6b4a2a', stroke: null });
     ['GREAT', 'NICE', 'GOOD', 'BAD'].forEach((g, i) => {
       const gx = x + 80 + i * 153;
       drawGradeText(g, gx, y + 466, 1, 1, 26);
@@ -464,7 +765,7 @@ Screens.result = {
     ctx.restore();
 
     if (t < 1.6) { if (t > 0.4 && (Input.taps.length || Input.was('confirm'))) { this.t = 1.6; Input.taps.length = 0; Input.pressed.delete('confirm'); } return; }
-    if (!this.checked) { this.checked = true; this.qualifies = Online.enabled ? Online.qualifies(r.score) : Save.qualifies(r.score); }
+    if (!this.checked) { this.checked = true; this.qualifies = Online.enabled ? Online.qualifies(r.score, this.song.id) : Save.qualifies(r.score, this.song.id); }
     UI.begin(this);
     if (this.qualifies && !this.submitted) {
       UI.text('進榜！請輸入你的姓名', W / 2, 880, 30, { fill: '#ffd23f', sw: 8 });
@@ -474,9 +775,10 @@ Screens.result = {
       if (UI.button(this, '略過', 370, 1060, 220, 70, { back: true })) App.goto('menu');
     } else {
       this.input.style.display = 'none';
-      if (UI.button(this, '再玩一次', 160, 880, 400, 70, { c1: '#8dff8a', c2: '#2fc46a' })) App.goto('game');
-      if (UI.button(this, '排行榜', 160, 968, 400, 70, { c1: '#ffe680', c2: '#ffb02e' })) App.goto('ranking');
-      if (UI.button(this, '回主選單', 160, 1056, 400, 70, { c1: '#ffb3d1', c2: '#ff6b9a', back: true })) App.goto('menu');
+      if (UI.button(this, '再玩一次', 160, 872, 400, 64, { lacquer: true })) App.goto('game', { song: this.song });
+      if (UI.button(this, '選擇樂曲', 160, 946, 400, 64)) App.goto('songs');
+      if (UI.button(this, '排行榜', 160, 1020, 400, 64)) App.goto('ranking', { song: this.song.id });
+      if (UI.button(this, '回主選單', 160, 1094, 400, 64, { back: true })) App.goto('menu');
     }
     UI.nav(this);
   }

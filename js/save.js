@@ -1,21 +1,26 @@
 'use strict';
 
-// ===== 本機存檔：設定與本機排行榜（localStorage） =====
+// ===== 本機存檔：設定與本機排行榜（localStorage；每首歌一個排行榜） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, lang: null, name: '', board: null },
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, lang: null, name: '', lastSong: null, boards: null },
+
+  // 各曲預設排行榜的分數倍率（曲子越難、音符越多，分數越高）
+  SEED_SCALE: { tsukimi: 0.75, yatai: 1, swing: 1.05, funk: 1.12, hyper: 1.2 },
 
   load() {
     try {
       const raw = localStorage.getItem(this.key);
       if (raw) Object.assign(this.data, JSON.parse(raw));
     } catch (e) { /* ignore */ }
-    if (!Array.isArray(this.data.board) || !this.data.board.length) this.seed();
-    if (!this.data.lang) {   // 第一次：依瀏覽器語言
+    const d = this.data;
+    if (!d.boards || typeof d.boards !== 'object' || Array.isArray(d.boards)) d.boards = {};
+    // 舊版只有一首歌的排行榜：搬到「屋台ばやし」
+    if (Array.isArray(d.board)) { if (d.board.length && !d.boards.yatai) d.boards.yatai = d.board; delete d.board; }
+    if (!d.lang) {   // 第一次：依瀏覽器語言
       const l = (navigator.language || 'zh').toLowerCase();
-      this.data.lang = l.startsWith('ja') ? 'ja' : l.startsWith('zh') ? 'zh' : 'en';
+      d.lang = l.startsWith('ja') ? 'ja' : l.startsWith('zh') ? 'zh' : 'en';
     }
-    this.sort();
   },
 
   store() {
@@ -23,37 +28,43 @@ const Save = {
   },
 
   // 預設排行榜（讓第一次玩的人也有目標）
-  seed() {
+  seed(id) {
     const names = ['TAKOYAKI', 'RAMEN', 'ONIGIRI', 'MOCHI', 'DANGO', 'TAIYAKI', 'GYOZA', 'UDON', 'SOBA', 'TEMPURA',
       'SUSHI', 'KATSU', 'NABE', 'MISO', 'YAKITORI', 'DAIFUKU', 'MATCHA', 'KUNI', 'SAKURA', 'DARUMA'];
-    this.data.board = names.map((n, i) => ({ name: n, score: 52000 - i * 2400, oko: Math.max(1, 16 - Math.round(i * 0.75)), seed: true }));
+    const k = this.SEED_SCALE[id] || 1;
+    this.data.boards[id] = names.map((n, i) => ({ name: n, score: Math.round((52000 - i * 2400) * k / 100) * 100, oko: Math.max(1, Math.round((16 - i * 0.75) * k)), seed: true }));
     this.store();
   },
 
-  board() { return this.data.board; },
+  board(id) {
+    const b = this.data.boards;
+    if (!Array.isArray(b[id]) || !b[id].length) this.seed(id);
+    return b[id];
+  },
 
-  sort() {
-    const b = this.data.board;
+  sort(id) {
+    const b = this.board(id);
     b.sort((x, y) => y.score - x.score);
     b.length = Math.min(b.length, 20);
   },
 
-  qualifies(score) {
-    const b = this.board();
+  qualifies(score, id) {
+    const b = this.board(id);
     return score > 0 && (b.length < 20 || score > b[b.length - 1].score);
   },
 
-  add(entry) {
-    this.board().push(entry);
-    this.sort();
+  add(entry, id) {
+    this.board(id).push(entry);
+    this.sort(id);
     this.data.name = entry.name;
     this.store();
-    return this.board().indexOf(entry);
+    return this.board(id).indexOf(entry);
   },
 
-  // HISCORE = 排行榜第一名（有線上排行榜時用線上的）
-  best() {
-    const l = Online.enabled && Online.cache && Online.cache.length ? Online.cache : this.board();
+  // HISCORE = 該曲排行榜第一名（有線上排行榜時用線上的）
+  best(id) {
+    const c = Online.enabled && Online.cache[id];
+    const l = c && c.length ? c : this.board(id);
     return l.length ? l[0].score : 0;
   },
 };

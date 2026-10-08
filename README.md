@@ -13,7 +13,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 ```
 
 然後開啟 http://localhost:5173
-- 網址加 `?fast` 每段只有 3 小節（約 40 秒一局），方便測試結算與排行榜流程。
+- 網址加 `?fast` 每段只有 3 小節（約 30～40 秒一局），方便測試結算與排行榜流程。
 
 ## 資料夾結構
 
@@ -22,16 +22,19 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `index.html` | 進入頁面 |
 | `css/style.css` | 版面、縮放、姓名輸入框 |
 | `js/config.js` | 全域參數（判定時間窗、計分、BPM、節奏型、食材、製作名單）— **調整難度改這裡** |
+| `js/songs.js` | 5 首樂曲（歌名、星級、各段 BPM／難度、編曲）— **新增或調整樂曲改這裡** |
 | `js/game.js` | 遊戲核心（譜面產生、可暫停的樂曲時鐘、判定、主角姿勢、特效、HUD） |
-| `js/screens.js` | 畫面管理與各畫面：開始、主選單、遊戲 / 暫停、操作說明、設定、排行榜、CREDIT、結算 |
+| `js/screens.js` | 畫面管理與各畫面：開始（夜空）、開場演出、主選單、選曲、遊戲 / 暫停、操作說明、設定、排行榜、CREDIT、結算 |
 | `js/audio.js` | 即時合成的樂器、音效與選單音樂（音量 0~5） |
 | `js/input.js` | 鍵盤 / 遊戲控制器 / 滑鼠與觸控 |
 | `js/ui.js` | 即時模式 UI（按鈕、面板、標題帶） |
 | `js/assets.js` | 圖片載入與繪圖小工具 |
 | `js/save.js` | 設定與本機排行榜（localStorage） |
+| `js/pwa.js`, `sw.js`, `manifest.json` | PWA：Service Worker（離線快取）、安裝提示、APP 設定 |
 | `js/i18n.js` | 中文／日本語／English 翻譯表（以中文原文為鍵，新增文字時在此補翻譯） |
 | `js/online.js`, `js/firebase-config.js` | 線上排行榜（選用） |
 | `assets/images/` | 遊戲用圖（已去背、裁切、壓縮） |
+| `assets/icons/` | APP 圖示（192／512／maskable／Apple／favicon） |
 | `assets/source/` | 原始圖片（企畫附圖、Excel 內的圖） |
 | `tools/` | `serve.ps1` 本機伺服器、`build.ps1` 封裝、`prep.html` + `prep_server.ps1` 素材前處理 |
 | `docs/企畫書.md` | 遊戲企畫 |
@@ -39,6 +42,19 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `prototypes/stack-flip/` | 早期雛形「疊料＋翻面」 |
 | `builds/` | 封裝發佈版本（zip），**不進 git** |
 
+## 樂曲
+
+| # | 歌名 | 風格 | BPM | 難度 |
+| --- | --- | --- | --- | --- |
+| 1 | 月見ちょうちん（月見燈籠） | Lo-fi・和琴 | 80 → 104 | ★ |
+| 2 | 屋台ばやし（屋台祭典囃子） | 祭典太鼓・三味線 | 100 → 136 | ★★ |
+| 3 | 鉄板スウィング（鐵板搖擺） | 搖擺爵士（反拍 64% 搖擺） | 112 → 148 | ★★★ |
+| 4 | ソース・ファンク（醬汁放克） | 迪斯可放克 | 118 → 158 | ★★★★ |
+| 5 | 大王ハイパービート（大王超速節拍） | 歐陸節拍 Eurobeat | 148 → 182 | ★★★★★ |
+
+- 每首歌分 5～6 段，每段 8 小節，最後一小節休息（SPEED UP），越後段樂器越多。
+- 排行榜每首歌各自一個（本機或 Firebase 集合 `leaderboard_<歌曲id>`）。
+- 新增樂曲：在 `js/songs.js` 的 `SONGS` 加一筆（`sections` 定義速度與節奏難度、`arrange()` 編寫一小節的音樂、`outro()` 結尾），並在 `firebase/firestore.rules` 的集合清單補上。
 ## 操作
 
 | 操作 | 鍵盤 | 遊戲手把（Xbox 標準配置） | 手機 |
@@ -61,6 +77,13 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 
 主角跳躍姿勢（`chef_great`、`chef_cheer`）原圖人物較小，遊戲內以 `js/config.js` 的 `POSE_ADJ` 放大對齊；換成大小一致的圖時把對應設定刪掉。
 
+## PWA（安裝到主畫面）
+
+- 支援安裝成 APP：全螢幕直式、從主畫面直接開啟，第一次開啟後離線也能玩。
+- 遊戲內「設定 → 安裝到主畫面」有 iPhone／Android／電腦的簡易教學；支援的瀏覽器（Chrome、Edge、Android）會多一顆「立即安裝」。
+- Service Worker 只在 `https://` 或 `localhost` 下運作（例如 GitHub Pages）；直接雙擊 `index.html` 時不會啟用，但遊戲照常可玩。
+- 快取策略：網頁與程式「先上網拿最新版，離線用快取」；圖片與字型「先用快取」。
+- **更新圖片後要發佈新版時，把 `sw.js` 開頭的 `VERSION` 加 1**，玩家下次開啟就會換成新圖。
 ## 版本控制與封裝
 
 ```
