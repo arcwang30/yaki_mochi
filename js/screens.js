@@ -891,10 +891,11 @@ Screens.result = {
       if (!this.shownInput) { this.shownInput = true; if (!Input.touchMode) { this.input.focus(); this.input.select(); } }
       if (UI.button(this, '登錄', 130, 1060, 220, 70, { c1: '#8dff8a', c2: '#2fc46a' })) this.submit();
       if (UI.button(this, '略過', 370, 1060, 220, 70, { back: true })) App.goto('menu');
+      if (UI.button(this, '返回選擇樂曲', 160, 1146, 400, 64)) App.goto('songs');
     } else {
       this.input.style.display = 'none';
       if (UI.button(this, '再玩一次', 160, 872, 400, 64, { lacquer: true })) App.goto('game', { song: this.song });
-      if (UI.button(this, '選擇樂曲', 160, 946, 400, 64)) App.goto('songs');
+      if (UI.button(this, '返回選擇樂曲', 160, 946, 400, 64)) App.goto('songs');
       if (UI.button(this, '排行榜', 160, 1020, 400, 64)) App.goto('ranking', { song: this.song.id });
       if (UI.button(this, '回主選單', 160, 1094, 400, 64, { back: true })) App.goto('menu');
     }
