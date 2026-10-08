@@ -33,7 +33,9 @@
   window.addEventListener('keydown', unlock);
 
   // 切到背景 / 失去焦點 / 手機轉橫：遊戲自動暫停
-  const pauseGame = () => { if (App.name === 'game' && Game.s && !Game.s.paused && !Game.s.ended) Screens.game.pause(); };
+  const playing = () => App.name === 'game' || (App.name === 'tutorial' && Screens.tutorial.phase === 'play');
+  const scheduling = () => App.name === 'game' || (App.name === 'tutorial' && Screens.tutorial.phase !== 'intro');   // 教學完成卡片後面伴奏繼續
+  const pauseGame = () => { if (playing() && Game.s && !Game.s.paused && !Game.s.ended) App.cur.pause(); };
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) { pauseGame(); Sound.suspend(); } else Sound.resume();
   });
@@ -41,7 +43,7 @@
   const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
 
   // 樂曲排程另外用計時器跑，畫面掉幀時音樂也不會斷
-  setInterval(() => { if (App.name === 'game') Game.schedule(); Sound.tick(); }, 25);
+  setInterval(() => { if (scheduling()) Game.schedule(); Sound.tick(); }, 25);
 
   App.start('boot');
   const fonts = Promise.race([document.fonts.load('40px "Mochiy Pop One"'), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
@@ -60,7 +62,7 @@
     Input.update();
     Fx.update(dt);
     updateChef(dt);
-    if (App.name === 'game') Game.schedule();
+    if (scheduling()) Game.schedule();
     Sound.tick();
     ctx.setTransform(RES, 0, 0, RES, 0, 0);
     App.frame(dt);

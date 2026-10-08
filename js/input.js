@@ -10,6 +10,7 @@ const Input = {
   ptr: { x: -1, y: -1, moved: false },
   touchMode: false,
   padConnected: false,
+  swipe: null,          // 這一幀的滑動方向：'left' / 'right'
   onHit: null,          // (x, y, timeMs) => void；x/y 只有觸控 / 滑鼠才有
   lockUntil: 0,
   _pad: {},
@@ -53,15 +54,19 @@ const Input = {
       e.preventDefault();
     });
     canvas.addEventListener('pointermove', e => {
+      const p = pos(e), st = this.starts.get(e.pointerId);
+      if (st) { st.cx = p.x; st.cy = p.y; }   // 拖曳中的位置（滑動換頁用）
       if (e.pointerType === 'touch') return;
-      const p = pos(e); this.ptr.x = p.x; this.ptr.y = p.y; this.ptr.moved = true;
+      this.ptr.x = p.x; this.ptr.y = p.y; this.ptr.moved = true;
     });
-    // 選單按鈕在「放開」時才算點擊（移動很少才算）
+    // 選單按鈕在「放開」時才算點擊（移動很少才算）；橫向快速滑動算「滑動」（swipe = 手指往 'left' / 'right'）
     const up = (e, cancel) => {
       const st = this.starts.get(e.pointerId), p = pos(e);
       this.starts.delete(e.pointerId);
       if (!st || cancel) return;
-      if (Math.hypot(p.x - st.x, p.y - st.y) < 24) this.taps.push({ x: st.x, y: st.y });
+      const dx = p.x - st.x, dy = p.y - st.y;
+      if (Math.hypot(dx, dy) < 24) this.taps.push({ x: st.x, y: st.y });
+      else if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.4) this.swipe = dx < 0 ? 'left' : 'right';
     };
     canvas.addEventListener('pointerup', e => up(e, false));
     canvas.addEventListener('pointercancel', e => up(e, true));
@@ -75,7 +80,7 @@ const Input = {
 
   // 每幀呼叫：讀取遊戲控制器
   update() {
-    if (this.locked()) { this.pressed.clear(); this.taps.length = 0; }
+    if (this.locked()) { this.pressed.clear(); this.taps.length = 0; this.swipe = null; }
     const pads = (navigator.getGamepads && navigator.getGamepads()) || [];
     let gp = null;
     for (const p of pads) if (p && p.connected) { gp = p; break; }
@@ -100,7 +105,17 @@ const Input = {
     axis('u', ay < -0.6, 'up'); axis('d', ay > 0.6, 'down'); axis('l', ax < -0.6, 'left'); axis('r', ax > 0.6, 'right');
   },
 
+  // 目前手指橫向拖曳的距離（只有一根手指、而且偏橫向時；畫面跟著手指移動用）
+  dragX() {
+    if (this.starts.size !== 1) return 0;
+    const st = this.starts.values().next().value;
+    if (st.cx === undefined) return 0;
+    const dx = st.cx - st.x, dy = st.cy - st.y;
+    return Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) ? dx : 0;
+  },
+
   endFrame() {
+    this.swipe = null;
     this.pressed.clear();
     this.taps.length = 0;
     this.ptr.moved = false;

@@ -175,6 +175,13 @@ function buildChart(song, t0) {
   events.sort((a, b) => a.t - b.t);
   return { measures, notes, events, end, evIdx: 0 };
 }
+// 新手教學的譜面：只有開頭的倒數，之後由 Game.tutExtend 邊玩邊補
+const TUT_BPM = 84;
+function tutChart(song, t0) {
+  const ms = measureInfo(song, { kind: 'count', bpm: TUT_BPM, start: t0, sec: 0, idx: -1 }), events = [];
+  for (let b = 0; b < 4; b++) events.push({ t: t0 + b * ms.bd, f: (x, d) => SND.wood(x, b === 0, d) });
+  return { measures: [ms], notes: [], events, end: Infinity, evIdx: 0, next: t0 + 4 * ms.bd, idx: 0 };
+}
 // ---------- 遊戲 ----------
 const GRADE_STYLE = { NICE: ['#fff2a8', '#ff9a1a', '#6e2a00'], GOOD: ['#d8f2ff', '#3d8fe0', '#0c2c63'], BAD: ['#eee6ff', '#8e7cc0', '#2b2050'] };
 const RESUME_BEATS = 3;   // 暫停後繼續時的倒數拍數
@@ -186,14 +193,16 @@ const Game = {
 
   song: null,   // 正在玩的樂曲
 
-  newRun(song) {
+  // tut = true：新手教學（譜面邊玩邊產生，見 tutExtend）
+  newRun(song, tut = false) {
     Sound.init(); Sound.stopBgm(); Sound.duck(false);
     this.song = song || this.song || SONGS[0];
-    Save.data.lastSong = this.song.id; Save.store();
+    if (!tut) { Save.data.lastSong = this.song.id; Save.store(); }
     bag = [];
     const t0 = A.ctx.currentTime + 0.6;
     this.s = {
-      chart: buildChart(this.song, t0), off: 0, paused: false, pauseAt: 0, resumeT: 0, ended: false,
+      chart: tut ? tutChart(this.song, t0) : buildChart(this.song, t0), tut: tut ? { pat: null, sec: 0 } : null,
+      off: 0, paused: false, pauseAt: 0, resumeT: 0, ended: false,
       score: 0, combo: 0, maxCombo: 0, grades: { GREAT: 0, NICE: 0, GOOD: 0, BAD: 0 },
       stock: { noodles: 0, cabbage: 0, crepe: 0, bacon: 0 }, oko: 0, errs: [],
       bump: {}, okoAnims: [], gradeFx: null, pressT: -9,
@@ -219,6 +228,7 @@ const Game = {
   schedule() {
     const s = this.s;
     if (!s || s.paused || s.ended || !A.ctx || A.ctx.state !== 'running') return;
+    if (s.tut) this.tutExtend();
     const ch = s.chart, now = A.ctx.currentTime;
     while (ch.evIdx < ch.events.length && ch.events[ch.evIdx].t + s.off < now + 0.2) {
       const e = ch.events[ch.evIdx++], at = e.t + s.off;
@@ -297,7 +307,25 @@ const Game = {
     }
     for (const a of s.okoAnims) a.t += dt;
     s.okoAnims = s.okoAnims.filter(a => a.t < 1.2);
-    if (st > s.chart.end + 0.4) this.finish();
+    if (!s.tut && st > s.chart.end + 0.4) this.finish();
+  },
+  // 新手教學：樂曲時鐘往前 2 小節內的小節還沒產生就補上（節奏型 = 教學畫面目前指定的 s.tut.pat；null = 只有音樂）
+  tutExtend() {
+    const s = this.s, ch = s.chart, song = this.song, bd = 60 / TUT_BPM;
+    let added = false;
+    while (ch.next < this.clock() + 8 * bd) {
+      const ms = measureInfo(song, { kind: 'play', bpm: TUT_BPM, start: ch.next, sec: s.tut.sec, idx: ch.idx++ });
+      ch.measures.push(ms);
+      song.arrange(ms, (t, f) => ch.events.push({ t, f }));
+      for (const b of s.tut.pat || []) {
+        const nt = ms.at(b * 2), n = { t: nt, throwT: nt - LEAD_BEATS * bd, type: nextType(), side: Math.random() < 0.5 ? -1 : 1, state: 'fly' };
+        ch.notes.push(n);
+        ch.events.push({ t: n.throwT, f: x => SND.cue(x, n.type) });
+      }
+      ch.next += 4 * bd; added = true;
+    }
+    // 只重排還沒排進音訊的部分（新加的事件都在未來）
+    if (added) { const rest = ch.events.splice(ch.evIdx).sort((a, b) => a.t - b.t); ch.events.push(...rest); }
   },
 
   // ---- 打擊（tMs = 按下的時間，performance.now 時間軸）----
@@ -497,7 +525,7 @@ const Game = {
     const s = this.s;
     // 左上：SCORE / HISCORE（窄版，避開招牌）
     pill(8, 8, 162, 50); txt('SCORE', 26, 27, 12, '#ffd25a', { align: 'left' }); txt(pad(s.score, 7), 156, 50, 22, '#fff', { align: 'right' });
-    pill(8, 62, 162, 40); txt('HISCORE', 26, 78, 10, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(this.song.id), s.score), 7), 156, 96, 16, '#fff', { align: 'right' });
+    if (!s.tut) { pill(8, 62, 162, 40); txt('HISCORE', 26, 78, 10, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(this.song.id), s.score), 7), 156, 96, 16, '#fff', { align: 'right' }); }
     // 右上：廣島燒成品（較顯眼）＋四種食材
     const ob = s.bump.oko ? Math.max(0, 1 - Math.abs(this.time - s.bump.oko) * 4) : 0;
     ctx.fillStyle = 'rgba(16,22,52,.82)'; rrect(568, 8, 144, 70, 20); ctx.fill(); ctx.strokeStyle = '#ff9a3c'; ctx.lineWidth = 4; ctx.stroke();

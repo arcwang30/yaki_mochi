@@ -282,7 +282,7 @@ Screens.menu = {
     UI.tanzaku(W / 2, 404, '節奏熱炒遊戲');
 
     UI.begin(this);
-    if (UI.button(this, '開始遊戲', 170, 980, 380, 92, { lacquer: true, sub: 'sub.start', size: 40 })) App.goto('songs');
+    if (UI.button(this, '開始遊戲', 170, 980, 380, 92, { lacquer: true, sub: 'sub.start', size: 40 })) App.goto(Save.data.tutorialDone ? 'songs' : 'tutorial');   // 第一次先玩新手教學
     UI.pole(16, 1098, W - 32);
     this.TAGS.forEach(([label, sub, dest], k) => {
       if (UI.button(this, label, 33 + k * 166, 1122, 154, 94, { tag: true, sub, size: 27, ropeH: 24 })) App.goto(dest);
@@ -347,10 +347,12 @@ Screens.songs = {
     }
     if (Input.was('up')) { this.bs.sel = -1; this.select((this.sel + SONGS.length - 1) % SONGS.length); }
     if (Input.was('down')) { this.bs.sel = -1; this.select((this.sel + 1) % SONGS.length); }
-    if (Input.was('confirm') && this.bs.sel !== 0) this.start();   // 滑鼠停在「返回」上時不開始
+    if (Input.was('confirm') && (this.bs.sel === -1 || this.bs.sel === 1)) this.start();   // 滑鼠停在「返回」「新手教學」上時不開始
     UI.begin(this.bs);
     if (UI.button(this.bs, '返回', 50, 1040, 210, 76, { back: true }) || Input.was('back')) App.goto('menu');
     if (UI.button(this.bs, '開始遊戲', 280, 1034, 390, 86, { lacquer: true, sub: 'sub.start', size: 36 })) this.start();
+    // 小顆的「新手教學」：隨時可以回去複習
+    if (UI.button(this.bs, '新手教學', 270, 1138, 180, 48, { size: 21 })) App.goto('tutorial', { from: 'songs' });
     UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : '↑↓ 選曲　← → 換頁　ENTER 開始');
   },
   card(song, i, x, y, w, h, on) {
@@ -432,26 +434,224 @@ Screens.game = {
   }
 };
 
+// ---------- 新手教學（可以玩的練習） ----------
+// intro（說明＋開始 / 略過）→ play（3 個步驟，達成目標自動進下一步）→ done（完成卡片）
+// 用慢速的「月見ちょうちん」伴奏；譜面依步驟邊玩邊產生（Game.tutExtend）
+Screens.tutorial = {
+  sel: 0, n: 0, phase: 'intro', step: 0, base: 0, clearT: -1, doneT: 0, pauseReq: false, from: 'menu',
+  STEPS: [
+    { pat: [0], goal: 4, guide: true, title: '看準時機，按下去！', text: '食材丟出時會「啵」一聲，2 拍後落進金色框。落下的瞬間按下按鈕（手機點畫面任何地方）！' },
+    { pat: [0, 2], goal: 6, guide: true, title: '跟著拍子連續打', text: '節奏變密囉！跟著音樂「咚、咚」的拍子按，比盯著食材更準。' },
+    { pat: [0, 1, 2], goal: 1, oko: true, title: '做出廣島燒！', text: '炒麵、高麗菜、煎餅、培根各處理 1 個，就會合成一份廣島燒，+1000 分！右上角可以看收集進度。' },
+  ],
+  enter(arg) {
+    this.from = arg && arg.from === 'songs' ? 'songs' : 'menu';
+    this.phase = 'intro'; this.sel = 1; this.pauseReq = false;
+    chef.idlePose = 'wave'; chef.queue = [];
+    Sound.init(); Sound.duck(false); Sound.startBgm(songById('tsukimi'), 0);
+  },
+  leave() { Input.onHit = null; if (Game.s && Game.s.tut) Game.s.ended = true; },
+  // 教學用樂曲：月見ちょうちん的編曲，固定 84 BPM
+  song() { return Object.assign({}, songById('tsukimi'), { id: 'tutorial', title: tr('新手教學'), sections: [{ bpm: TUT_BPM, lv: [0] }] }); },
+  begin() {
+    Sound.play('confirm'); Sound.stopBgm();
+    Game.newRun(this.song(), true);
+    this.phase = 'play'; this.step = 0; this.clearT = -1; this.sel = 0;
+    this.setStep(0);
+    Input.onHit = (x, y, t) => {
+      if (x !== undefined && Math.hypot(x - PAUSE_BTN.x, y - PAUSE_BTN.y) < PAUSE_BTN.r + 16) { this.pauseReq = true; return; }
+      Game.hit(t);
+    };
+  },
+  setStep(i) {
+    const s = Game.s, st = this.STEPS[i];
+    this.step = i; this.clearT = -1;
+    this.base = st.oko ? s.oko : this.goodHits();
+    s.tut.pat = st.pat; s.tut.sec = Math.min(i + 1, 2);   // 伴奏隨步驟加樂器
+  },
+  goodHits() { const g = Game.s.grades; return g.GREAT + g.NICE + g.GOOD; },
+  progress() { const st = this.STEPS[this.step]; return Math.min(st.goal, (st.oko ? Game.s.oko : this.goodHits()) - this.base); },
+  // 完成教學：之後按「開始遊戲」就直接進選曲
+  complete() { if (!Save.data.tutorialDone) { Save.data.tutorialDone = true; Save.store(); } },
+  exit(dest) { this.complete(); App.goto(dest); },
+  pause() { Game.pause(); this.sel = 0; Sound.play('pause'); },
+
+  frame(dt) {
+    if (this.phase === 'intro') return this.intro();
+    const s = Game.s;
+    if (this.phase === 'play') {
+      const toggle = Input.was('pause') || this.pauseReq;
+      this.pauseReq = false;
+      if (!s.paused) { if (toggle) this.pause(); }
+      else if (s.resumeT > 0) { if (toggle || Input.was('back')) Game.pause(); }
+      else if (toggle || Input.was('back')) Game.resume();
+    }
+    Game.update(dt);
+    Game.draw();
+    if (this.phase === 'play') {
+      if (!s.paused) this.advance();
+      this.drawGuide();
+      if (!s.paused) this.drawCard();
+      if (s.paused) this.pauseMenu();
+    } else this.doneCard(dt);
+  },
+  // 達成目標 → 卡片顯示「完成！」1.8 秒（這段只有伴奏）→ 下一步；最後一步完成且食材都處理完 → 完成卡片
+  advance() {
+    const s = Game.s, last = this.step === this.STEPS.length - 1;
+    if (this.clearT < 0) {
+      if (this.progress() >= this.STEPS[this.step].goal) {
+        this.clearT = Game.time; s.tut.pat = null;
+        SND.kane(A.ctx.currentTime + 0.05, 1.6, A.sfx);
+      }
+      return;
+    }
+    if (Game.time - this.clearT < 1.8) return;
+    if (!last) this.setStep(this.step + 1);
+    else if (!s.chart.notes.some(n => n.state === 'fly') && !s.okoAnims.length) {
+      this.phase = 'done'; this.doneT = 0; this.sel = 0;
+      Input.onHit = null; chef.queue = []; chef.idlePose = 'cheer';
+      this.complete();
+      SND.fanfare(A.ctx.currentTime + 0.1);
+    }
+  },
+  // 前兩步的時機提示：金框外的圈圈隨食材飛近縮小，落下瞬間剛好貼合，並顯示「就是現在！」
+  drawGuide() {
+    const s = Game.s;
+    if (!this.STEPS[this.step].guide || s.paused) return;
+    const st = Game.songTime();
+    for (const n of s.chart.notes) {
+      if (n.state !== 'fly' || st < n.throwT) continue;
+      const p = clamp((st - n.throwT) / (n.t - n.throwT), 0, 1), k = 1 - p;
+      ctx.save();
+      ctx.strokeStyle = `rgba(255,240,150,${0.25 + p * 0.75})`; ctx.lineWidth = 3 + p * 3;
+      ctx.beginPath(); ctx.ellipse(ZONE.x, ZONE.y, ZONE.w / 2 + 10 + k * 170, ZONE.h / 2 + 8 + k * 80, 0, 0, 7); ctx.stroke();
+      ctx.restore();
+      if (Math.abs(st - n.t) < 0.12) {
+        const sc = 1 + (0.12 - Math.abs(st - n.t)) * 2;
+        ctx.save(); ctx.translate(ZONE.x, 836); ctx.scale(sc, sc);
+        txt(tr('就是現在！'), 0, 0, 40, '#fff27a', { stroke: '#c43a1a', lw: 10 });
+        ctx.restore();
+      }
+      break;   // 只提示最近的一個
+    }
+  },
+  // 上方的步驟卡片：STEP n/3、標題、說明、進度點
+  drawCard() {
+    const s = Game.s, st = this.STEPS[this.step], cleared = this.clearT >= 0;
+    const x = 24, y = 232, w = 612, txtW = w - 48;   // 招牌下方（不擋 LOGO）
+    const lines = UI.lines(tr(st.text), txtW, 19);
+    const h = 104 + lines.length * 27;
+    // 「廣島燒完成！」的字會出現在卡片位置：那時卡片變淡
+    const fade = s.okoAnims.some(a => a.t < 0.6) ? 0.15 : 1;
+    ctx.save(); ctx.globalAlpha *= fade;
+    UI.panel(x, y, w, h, 20, 'rgba(16,22,52,.88)', cleared ? '#8dff8a' : '#e8b64a');
+    const chip = 'STEP ' + (this.step + 1) + ' / ' + this.STEPS.length;
+    ctx.fillStyle = cleared ? '#2fc46a' : '#c8321e'; rrect(x + 20, y + 18, 118, 30, 15); ctx.fill();
+    UI.text(chip, x + 79, y + 34, 15, { fill: '#fff', stroke: null, raw: true });
+    UI.text(st.title, x + 154, y + 34, 26, { align: 'left', fill: '#fff27a', stroke: null, maxW: w - 300 });
+    lines.forEach((ln, i) => UI.text(ln, x + 24, y + 78 + i * 27, 19, { align: 'left', fill: '#fff', stroke: null, raw: true }));
+    // 進度：右上角的圓點（廣島燒那一步是小廣島燒圖示）
+    const done = cleared ? st.goal : this.progress(), py = y + 34;
+    if (cleared) UI.text('✔ ' + tr('完成！'), x + w - 22, py, 22, { align: 'right', fill: '#8dff8a', stroke: null, raw: true });
+    else if (st.oko) {
+      drawImgW(IMG.okonomiyaki, x + w - 92, py, 46, 0, done ? 1 : 0.35);
+      UI.text(done + ' / ' + st.goal, x + w - 22, py + 1, 20, { align: 'right', fill: '#fff', stroke: null, raw: true });
+    } else {
+      for (let i = 0; i < st.goal; i++) {
+        const cx = x + w - 30 - (st.goal - 1 - i) * 22;
+        ctx.fillStyle = i < done ? '#ffd23f' : 'rgba(255,255,255,.22)';
+        ctx.beginPath(); ctx.arc(cx, py, 8, 0, 7); ctx.fill();
+      }
+    }
+    ctx.restore();
+  },
+  pauseMenu() {
+    const s = Game.s;
+    if (s.resumeT > 0) {
+      UI.dim(0.3);
+      const k = Game.countdown();
+      if (k) UI.text(String(k), W / 2, 560, 140, { fill: '#fff', stroke: '#c43a1a', sw: 20 });
+      UI.text('跟著拍子準備！', W / 2, 680, 30, { fill: '#ffe066', sw: 8 });
+      return;
+    }
+    UI.dim(0.62);
+    UI.text('PAUSE', W / 2, 400, 96, { fill: '#fff27a', stroke: '#c43a1a', sw: 16 });
+    UI.begin(this);
+    if (UI.button(this, '繼續練習', 160, 492, 400, 70, { c1: '#8dff8a', c2: '#2fc46a' })) Game.resume();
+    if (UI.button(this, '從頭開始', 160, 578, 400, 70)) this.begin();
+    if (UI.button(this, '略過教學', 160, 664, 400, 70)) { s.ended = true; this.exit('songs'); }
+    if (UI.button(this, '回主選單', 160, 750, 400, 70, { back: true })) { s.ended = true; App.goto('menu'); }
+    UI.nav(this);
+    UI.navHint();
+  },
+  intro() {
+    menuBackdrop(0.25);
+    const x = 50, y = 800, w = 620;
+    const lines = UI.lines(tr('只要一顆按鈕！先用一首慢歌，練習跟著節拍處理食材吧。'), w - 60, 21);
+    UI.panel(x, y, w, 130 + lines.length * 32, 24);
+    UI.ribbon(W / 2, y, tr('新手教學'), 34, 320);
+    UI.text('歡迎光臨！', W / 2, y + 66, 32, { fill: '#fff27a', stroke: null });
+    lines.forEach((ln, i) => UI.text(ln, W / 2, y + 112 + i * 32, 21, { fill: '#fff', stroke: null, raw: true }));
+    UI.begin(this);
+    if (UI.button(this, '略過', 50, 1104, 200, 76, { back: true })) this.exit('songs');
+    if (UI.button(this, '開始練習', 270, 1098, 400, 88, { lacquer: true, size: 36 })) this.begin();
+    if (Input.was('left')) this.sel = 0;
+    if (Input.was('right')) this.sel = 1;
+    if (Input.was('back')) App.goto(this.from);
+    UI.navHint();
+  },
+  doneCard(dt) {
+    this.doneT += dt;
+    const k = ease(clamp(this.doneT / 0.35, 0, 1));
+    UI.dim(0.55 * k);
+    ctx.save(); ctx.globalAlpha *= k; ctx.translate(0, (1 - k) * 40);
+    const x = 60, y = 330, w = 600;
+    UI.panel(x, y, w, 330, 26);
+    UI.ribbon(W / 2, y, tr('教學完成！'), 40, 380);
+    const tips = ['跟著音樂的拍子按，比盯著食材更準', '每 8 小節會 SPEED UP，節奏越來越快', '連擊越多加分越多，BAD 會中斷連擊', '四種食材湊齊就是一份廣島燒！'];
+    tips.forEach((t, i) => {
+      ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(x + 46, y + 92 + i * 64, 7, 0, 7); ctx.fill();
+      UI.wrap(t, x + 66, y + 92 + i * 64, w - 100, 26, 21, { fill: '#fff' });
+    });
+    ctx.restore();
+    if (this.doneT < 0.5) return;
+    UI.begin(this);
+    if (UI.button(this, '前往選擇樂曲', 160, 700, 400, 86, { lacquer: true, size: 34 })) App.goto('songs');
+    if (UI.button(this, '再練習一次', 160, 806, 400, 66)) this.begin();
+    UI.nav(this);
+    UI.navHint();
+  },
+};
+
 // ---------- 操作說明 ----------
 Screens.howto = {
   page: 0, sel: 0, n: 0,
   PAGES: ['遊戲規則', '操作方式', '判定與計分', '食材圖鑑'],
-  enter() { this.page = 0; this.sel = 0; chef.idlePose = 'wave'; },
-  frame() {
+  slideDir: 0, slideT: 1,
+  enter() { this.page = 0; this.sel = 0; this.slideT = 1; chef.idlePose = 'wave'; },
+  frame(dt) {
     menuBackdrop(0.7);
     UI.header('操作說明', `${tr(this.PAGES[this.page])}  (${this.page + 1}/${this.PAGES.length})`);
     UI.panel(30, 190, 660, 860, 26);
-    [this.p1, this.p2, this.p3, this.p4][this.page].call(this);
 
     const N = this.PAGES.length;
-    const go = d => { this.page = (this.page + d + N) % N; Sound.play('select'); };
-    if (Input.was('left') || UI.tapIn(30, 1072, 120, 80)) go(-1);
-    if (Input.was('right') || UI.tapIn(570, 1072, 120, 80)) go(1);
+    const go = d => { this.page = (this.page + d + N) % N; this.slideDir = d; this.slideT = 0; Sound.play('select'); };
+    // 換頁：← → / 點 ◀ ▶ / 手機上左右滑動（手指往左 = 下一頁）
+    if (Input.was('left') || UI.tapIn(30, 1072, 120, 80) || Input.swipe === 'right') go(-1);
+    if (Input.was('right') || UI.tapIn(570, 1072, 120, 80) || Input.swipe === 'left') go(1);
+    // 內容跟著手指移動；換頁時新的一頁從滑動的方向滑進來
+    this.slideT = Math.min(1, this.slideT + dt / 0.28);
+    const e = ease(this.slideT), off = this.slideDir * (1 - e) * 300 + Input.dragX() * 0.6;
+    ctx.save();
+    rrect(30, 190, 660, 860, 26); ctx.clip();
+    ctx.translate(off, 0); ctx.globalAlpha *= clamp(0.25 + 0.75 * e - Math.abs(Input.dragX()) / 900, 0, 1);
+    [this.p1, this.p2, this.p3, this.p4][this.page].call(this);
+    ctx.restore();
     UI.text('◀', 80, 1112, 48, { fill: '#ffd23f' }); UI.text('▶', 640, 1112, 48, { fill: '#ffd23f' });
     UI.begin(this);
     if (UI.button(this, '返回', 250, 1076, 220, 70, { back: true }) || Input.was('back')) App.goto('menu');
     UI.nav(this);
-    UI.hint('← → 換頁');
+    UI.hint(Input.touchMode ? '左右滑動可以換頁' : '← → 換頁');
   },
   row(y, icon, title, desc) {
     if (typeof icon === 'string') UI.text(icon, 100, y + 40, 46, { stroke: null });
@@ -774,8 +974,33 @@ function drawStars(cx, cy, n, size, max = 5) {
 }
 // ---------- CREDIT ----------
 Screens.credits = {
-  sel: 0, n: 0, t: 0,
-  enter() { this.t = 0; chef.idlePose = 'wave'; Sound.startBgm(); },
+  sel: 0, n: 0, t: 0, wisps: [], spawn: 0,
+  enter() { this.t = 0; this.wisps = []; this.spawn = 0; chef.idlePose = 'wave'; Sound.startBgm(); },
+  // 熱騰騰的蒸氣：從廣島燒表面冒出、左右搖曳著往上飄、慢慢變大變淡
+  // 每一縷 = 沿著同一條 S 形軌跡的幾顆柔光（尾巴較細較淡），看起來像一絲絲捲起的熱氣
+  steam(dt, cx, cy) {
+    this.spawn -= dt;
+    if (this.spawn <= 0) {
+      this.spawn = ECO() ? 0.22 : 0.11;
+      this.wisps.push({ x: cx + rand(-80, 80), y: cy + rand(-14, 8), age: 0, life: rand(1.5, 2.2), ph: rand(0, 6.3), amp: rand(10, 18), r: rand(14, 22), vy: rand(40, 56) });
+    }
+    const glow = Scene.glowSprite('#ffffff'), TAIL = ECO() ? 2 : 4;
+    ctx.save();
+    for (const p of this.wisps) {
+      p.age += dt;
+      for (let j = 0; j < TAIL; j++) {
+        const age = p.age - j * 0.09; if (age < 0) continue;
+        const k = age / p.life; if (k >= 1) continue;
+        const x = p.x + Math.sin(p.ph + age * 2.6) * p.amp * Math.min(1, k * 2) + (p.x - cx) * k * 0.3;
+        const y = p.y - p.vy * age;
+        const r = p.r * (1 + k * 1.6) * (1 - j * 0.15);
+        ctx.globalAlpha = Math.min(1, k * 5) * (1 - k) * (1 - k) * 0.75 * (1 - j * 0.2);   // 淡入 → 淡出
+        ctx.drawImage(glow, x - r, y - r * 1.3, r * 2, r * 2.6);
+      }
+    }
+    ctx.restore();
+    this.wisps = this.wisps.filter(p => p.age < p.life);
+  },
   frame(dt) {
     this.t += dt;
     menuBackdrop(0.6);
@@ -789,7 +1014,9 @@ Screens.credits = {
       for (const n of names) { line(idx++, y, yy => UI.text(n, W / 2, yy, 42, { fill: '#fff', raw: true })); y += 60; }
       y += 30;
     }
+    const okoK = clamp((this.t - idx * 0.15) * 4, 0, 1);
     line(idx++, 800, yy => drawImgW(IMG.okonomiyaki, W / 2, yy, 240));
+    if (okoK >= 1) this.steam(dt, W / 2, 790);
     line(idx++, 900, yy => UI.text('大王焼き  リズム屋台', W / 2, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
     line(idx++, 950, yy => UI.text("©Arc's Concept Game", W / 2, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
     UI.begin(this);
