@@ -3,7 +3,7 @@
 // ===== 本機存檔：設定與本機排行榜（localStorage） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, name: '', board: null },
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, lang: null, name: '', board: null },
 
   load() {
     try {
@@ -11,6 +11,10 @@ const Save = {
       if (raw) Object.assign(this.data, JSON.parse(raw));
     } catch (e) { /* ignore */ }
     if (!Array.isArray(this.data.board) || !this.data.board.length) this.seed();
+    if (!this.data.lang) {   // 第一次：依瀏覽器語言
+      const l = (navigator.language || 'zh').toLowerCase();
+      this.data.lang = l.startsWith('ja') ? 'ja' : l.startsWith('zh') ? 'zh' : 'en';
+    }
     this.sort();
   },
 

@@ -32,8 +32,9 @@ function drawButtonImg(cx, cy, w, sy = 1) {
   ctx.save(); ctx.translate(cx, cy); ctx.scale(1, sy);
   ctx.drawImage(img, -BTN_RED[0] * f, -BTN_RED[1] * f, w, img.height * f); ctx.restore();
 }
-// 遊戲畫面用文字（基線在字底）
+// 遊戲畫面用文字（基線在字底；自動翻譯）
 function txt(s, x, y, size, fill, opt = {}) {
+  s = tr(s);
   ctx.font = `${size}px ${FONT}`; ctx.textAlign = opt.align || 'center'; ctx.textBaseline = 'alphabetic'; ctx.lineJoin = 'round';
   if (opt.stroke) { ctx.strokeStyle = opt.stroke; ctx.lineWidth = opt.lw || size * 0.22; ctx.strokeText(s, x, y); }
   ctx.fillStyle = fill; ctx.fillText(s, x, y);

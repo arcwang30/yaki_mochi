@@ -29,6 +29,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `js/ui.js` | 即時模式 UI（按鈕、面板、標題帶） |
 | `js/assets.js` | 圖片載入與繪圖小工具 |
 | `js/save.js` | 設定與本機排行榜（localStorage） |
+| `js/i18n.js` | 中文／日本語／English 翻譯表（以中文原文為鍵，新增文字時在此補翻譯） |
 | `js/online.js`, `js/firebase-config.js` | 線上排行榜（選用） |
 | `assets/images/` | 遊戲用圖（已去背、裁切、壓縮） |
 | `assets/source/` | 原始圖片（企畫附圖、Excel 內的圖） |

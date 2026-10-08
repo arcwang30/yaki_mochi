@@ -69,6 +69,11 @@ const POSE_ADJ = {
   cheer: { s: 1.45, a: [316, 182], t: [291, 170], lift: 34 },
 };
 
+// 處理動作時主角往上探身的高度（px）：讓刀、鍋鏟、醬汁瓶露出鐵板
+const POSE_LIFT = { knife: 95, spatula: 110, sauce: 45 };
+const ACTION_HOLD = 0.36;   // 處理動作維持秒數（下一次打擊會直接接上）
+const COMBO_STEP = 10;      // 每幾連擊主角跳起歡呼一次
+
 // ---- 背景燈籠位置（背景原圖座標 848x1264） ----
 const LANTERNS = [
   [72, 395, '#ff7a30'], [145, 395, '#ff7a30'], [220, 395, '#ff7a30'], [300, 395, '#ff70d0'], [385, 395, '#60ff70'],
@@ -80,15 +85,16 @@ const LANTERNS = [
 ];
 
 // ---- 製作名單 ----
-const CREDITS = {
-  roles: [['企劃', 'Arc Wang'], ['程式', 'AI'], ['美術', 'AI'], ['音樂', 'AI']],
-  thanks: ['Kelvin Lo', 'Bubu Lin', '大王KUNI', 'KT Lee', 'Gmoto', '國見比呂', 'Greed'],
-};
+// 每個職稱可列多位
+const CREDITS = [
+  ['企劃', ['Arc Wang', '大王KUNI']],
+];
 
 // ---- 小工具 ----
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const rand = (a, b) => a + Math.random() * (b - a);
+const pick = arr => arr[(Math.random() * arr.length) | 0];
 const ease = t => 1 - Math.pow(1 - t, 3);
 const pad = (n, len) => String(Math.max(0, Math.floor(n))).padStart(len, '0');
 // 固定種子的亂數（木紋等每幀都要畫成一樣的花紋）

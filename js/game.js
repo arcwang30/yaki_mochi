@@ -3,15 +3,20 @@
 // ===== 節奏遊戲核心：場景、主角、特效、譜面、時鐘、判定、HUD =====
 
 // ---------- 主角姿勢 ----------
-const chef = { queue: [], pose: 'wave', poseT: 0, idlePose: 'wave' };
+const chef = { queue: [], pose: 'wave', poseT: 0, idlePose: 'wave', lift: 0 };
 function setPoses(list) { chef.queue = list.map(p => ({ ...p })); chef.pose = chef.queue[0].pose; chef.poseT = 0; }
 function updateChef(dt) {
-  if (!chef.queue.length) { chef.pose = chef.idlePose; return; }
-  chef.poseT += dt;
-  if (chef.poseT >= chef.queue[0].dur) {
-    chef.queue.shift(); chef.poseT = 0;
-    chef.pose = chef.queue.length ? chef.queue[0].pose : chef.idlePose;
+  if (!chef.queue.length) chef.pose = chef.idlePose;
+  else {
+    chef.poseT += dt;
+    if (chef.poseT >= chef.queue[0].dur) {
+      chef.queue.shift(); chef.poseT = 0;
+      chef.pose = chef.queue.length ? chef.queue[0].pose : chef.idlePose;
+    }
   }
+  // 處理動作時快速往上探身，動作結束再落回
+  const target = POSE_LIFT[chef.pose] || 0;
+  chef.lift += (target - chef.lift) * Math.min(1, dt * (target > chef.lift ? 30 : 14));
 }
 
 // ---------- 特效 ----------
@@ -28,6 +33,12 @@ const Fx = {
   },
   steam(x, y, n = 3) { for (let i = 0; i < n; i++) this.particles.push({ x: x + rand(-50, 50), y, vx: rand(-20, 20), vy: rand(-90, -50), life: rand(0.7, 1.2), max: 1.2, size: rand(14, 24), g: -20, kind: 'steam' }); },
   smoke(x, y) { this.particles.push({ x, y, vx: 0, vy: -60, life: 0.8, max: 0.8, size: 18, g: -20, kind: 'smoke' }); },
+  sparks(x, y, n = 14) {   // 鐵板火花（鍋鏟翻炒）
+    for (let i = 0; i < n; i++) {
+      const a = rand(-Math.PI * 0.85, -Math.PI * 0.15), v = rand(250, 520);
+      this.particles.push({ x: x + rand(-60, 60), y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.25, 0.5), max: 0.5, color: pick(['#ffd040', '#ff9a2a', '#fff2a0']), size: rand(3, 6), g: 900, kind: 'bit' });
+    }
+  },
   clear() { this.particles = []; this.popups = []; },
   update(dt) {
     for (const p of this.particles) { p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; }
@@ -90,7 +101,7 @@ const Scene = {
     const idle = chef.pose === 'idle' || chef.pose === 'wave';
     const sy = idle ? 1 - pulse * 0.02 : 1;
     const bob = idle ? pulse * 6 : 0;
-    ctx.save(); ctx.translate(ZONE.x, 543 + h + bob); ctx.scale(1, sy);
+    ctx.save(); ctx.translate(ZONE.x, 543 + h + bob - chef.lift); ctx.scale(1, sy);
     ctx.translate(-w / 2, -h); // 之後以原圖座標 × f 繪製
     const adj = POSE_ADJ[chef.pose];
     if (adj) {
@@ -274,6 +285,9 @@ const Game = {
       return;
     }
     const st = this.songTime();
+    if (s.comboFx) s.comboFx.t += dt;
+    // SPEED UP 的休息小節：主角比讚
+    chef.idlePose = this.measureAt(st).kind === 'rest' ? 'nice' : 'idle';
     for (const n of s.chart.notes) {
       if (n.state === 'fly' && st > n.t + WIN.BAD) {
         n.state = 'miss'; n.endT = st; s.grades.BAD++; s.combo = 0; this.showGrade('BAD');
@@ -320,11 +334,20 @@ const Game = {
     s.score += pts;
     Fx.popups.push({ text: '+' + pts, x: ZONE.x + rand(-40, 40), y: ZONE.y - 70, life: 0.8 });
     SND.hit(n.type, grade); Sound.vibrate(12);
+    const act = ING[n.type].pose;
     Fx.burst(ZONE.x, ZONE.y, ING[n.type].color, grade === 'GREAT' ? 18 : 10);
+    if (act === 'spatula') Fx.sparks(ZONE.x, ZONE.y - 10, grade === 'GREAT' ? 18 : 10);
     if (grade === 'GREAT') Fx.stars(ZONE.x, ZONE.y - 20, 10);
     Fx.steam(ZONE.x, ZONE.y - 10, 2);
-    const react = grade === 'GREAT' ? 'great' : grade === 'NICE' ? 'nice' : 'idle';
-    setPoses([{ pose: ING[n.type].pose, dur: 0.11 }, { pose: react, dur: 0.42 }]);
+    // 主角做「處理動作」（切 / 炒 / 淋醬）；好壞交給大字判定顯示。
+    // 每 COMBO_STEP 連擊才接一個跳起握拳的歡呼姿勢。
+    const poses = [{ pose: act, dur: ACTION_HOLD }];
+    if (s.combo % COMBO_STEP === 0) {
+      poses.push({ pose: 'great', dur: 0.5 });
+      s.comboFx = { n: s.combo, t: 0 };
+      SND.kane(A.ctx.currentTime + 0.05, 1.6, A.sfx);
+    }
+    setPoses(poses);
   },
   showGrade(g) { this.s.gradeFx = { g, t: 0 }; },
   addStock(type) {
@@ -354,6 +377,7 @@ const Game = {
     this.drawNotes(st);
     Fx.draw();
     this.drawGrade();
+    this.drawComboFx();
     this.drawOkoAnims();
     this.drawHUD(pulse, st);
     this.drawBanner(st);
@@ -395,11 +419,17 @@ const Game = {
           drawImgW(IMG[ing.raw], ZONE.x, landY - 30 - Math.abs(Math.sin(k * 25)) * 6 * Math.exp(-k * 10), ing.rawW);
         }
       } else if (n.state === 'hit') {
-        const k = st - n.hitT;
-        if (k > 1.2) continue;
+        const k = st - n.hitT, SL = 0.28;   // SL 秒後才滑出畫面，先讓玩家看到處理過程
+        if (k > 1.3) continue;
         const pop = k < 0.15 ? 1.25 - k / 0.15 * 0.25 : 1;
-        const slide = k > 0.18 ? Math.pow((k - 0.18) * 2.2, 2) * 500 : 0;
-        drawImgW(IMG[ing.done], ZONE.x + n.dir * slide, landY - 25 - (k > 0.18 ? slide * 0.05 : 0), ing.doneW * pop);
+        const slide = k > SL ? Math.pow((k - SL) * 2.2, 2) * 500 : 0;
+        let x = ZONE.x + n.dir * slide, y = landY - 25 - (k > SL ? slide * 0.05 : 0), sy = 1;
+        if (ing.pose === 'spatula' && k < SL) {   // 鍋鏟：在鐵板上翻一圈
+          const p = k / SL; y -= Math.sin(p * Math.PI) * 85; sy = Math.cos(p * Math.PI * 2);
+          if (Math.abs(sy) < 0.06) sy = 0.06;
+        }
+        drawImgW(IMG[ing.done], x, y, ing.doneW * pop, 0, 1, sy);
+        if (k < SL + 0.12) this.drawAction(ing.pose, k, x, y);
       } else {
         const k = st - n.endT;
         if (k > 1) continue;
@@ -413,6 +443,45 @@ const Game = {
         }
       }
     }
+  },
+  // 判定框上的處理特效：刀光（切）、醬汁一筆畫上（淋醬）；鍋鏟的翻面在 drawNotes 裡
+  drawAction(act, k, x, y) {
+    ctx.save(); ctx.lineCap = 'round';
+    if (act === 'knife') {
+      for (let j = 0; j < 2; j++) {
+        const kk = k - j * 0.07; if (kk < 0 || kk > 0.2) continue;
+        const p = kk / 0.2, dir = j ? -1 : 1;
+        const ax = x - 140 * dir, ay = y - 70, bx = x + 140 * dir, by = y + 30;
+        const e = Math.min(1, p * 2.2), ex = ax + (bx - ax) * e, ey = ay + (by - ay) * e;
+        const sx = ax + (bx - ax) * Math.max(0, p * 2.2 - 0.9), sy = ay + (by - ay) * Math.max(0, p * 2.2 - 0.9);
+        ctx.globalAlpha = 1 - p;
+        ctx.shadowColor = '#bfe8ff'; ctx.shadowBlur = 16;
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 9 * (1 - p) + 2;
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+      }
+    } else if (act === 'sauce') {
+      const p = Math.min(1, k / 0.22), fade = k > 0.3 ? Math.max(0, 1 - (k - 0.3) / 0.1) : 1;
+      const pts = []; for (let i = 0; i <= 8; i++) pts.push([x - 92 + i * 23, y - 10 + (i % 2 ? -16 : 12)]);
+      const m = p * 8;
+      ctx.globalAlpha = fade;
+      ctx.strokeStyle = '#4a2010'; ctx.lineWidth = 8; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 4;
+      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+      for (let i = 1; i <= Math.ceil(m); i++) {
+        const f = Math.min(1, m - (i - 1)), [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+        ctx.lineTo(x0 + (x1 - x0) * f, y0 + (y1 - y0) * f);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.stroke();   // 醬汁光澤
+    }
+    ctx.restore();
+  },
+  drawComboFx() {
+    const fx = this.s.comboFx; if (!fx || fx.t > 0.9) return;
+    const sc = fx.t < 0.12 ? 0.5 + fx.t / 0.12 * 0.7 : 1.2 - Math.min(0.2, (fx.t - 0.12) * 0.6);
+    const a = fx.t > 0.7 ? 1 - (fx.t - 0.7) / 0.2 : 1;
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(ZONE.x, 500); ctx.rotate(-0.05); ctx.scale(sc, sc);
+    txt(tr('{0} COMBO!', fx.n), 0, 0, 62, '#ffe066', { stroke: '#c43a1a', lw: 14 });
+    ctx.restore();
   },
   drawGrade() {
     const fx = this.s.gradeFx; if (!fx || fx.t > 0.6) return;

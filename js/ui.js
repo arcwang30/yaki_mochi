@@ -2,8 +2,9 @@
 
 // ===== 即時模式（immediate-mode）UI 小工具：文字、面板、按鈕、標題 =====
 const UI = {
+  // 文字（自動翻譯；玩家姓名等不翻譯時傳 o.raw）
   text(str, x, y, size, o = {}) {
-    str = String(str);
+    str = o.raw ? String(str) : tr(str);
     ctx.save();
     if (o.alpha !== undefined) ctx.globalAlpha = o.alpha;
     ctx.font = `${size}px ${FONT}`;
@@ -18,20 +19,22 @@ const UI = {
     ctx.restore();
   },
 
+  // 換行：中日文逐字、英文逐字詞
   lines(str, maxW, size) {
     ctx.font = `${size}px ${FONT}`;
     const out = []; let cur = '';
-    for (const ch of str) {
+    const units = Save.data.lang === 'en' ? str.split(/(?<= )|(?=\n)|(?<=\n)/) : str;
+    for (const ch of units) {
       if (ch === '\n') { out.push(cur); cur = ''; continue; }
-      if (ctx.measureText(cur + ch).width > maxW && cur) { out.push(cur); cur = ch; } else cur += ch;
+      if (ctx.measureText(cur + ch).width > maxW && cur) { out.push(cur.trimEnd()); cur = ch.trimStart(); } else cur += ch;
     }
     if (cur) out.push(cur);
     return out;
   },
 
   wrap(str, x, y, maxW, lineH, size, o = {}) {
-    const ls = this.lines(str, maxW, size);
-    ls.forEach((ln, i) => this.text(ln, x, y + i * lineH, size, Object.assign({ align: 'left', stroke: null }, o)));
+    const ls = this.lines(tr(str), maxW, size);
+    ls.forEach((ln, i) => this.text(ln, x, y + i * lineH, size, Object.assign({ align: 'left', stroke: null, raw: true }, o)));
     return ls.length * lineH;
   },
 
@@ -133,6 +136,7 @@ const UI = {
   },
   // 和紙短冊（紅框、紅字）
   tanzaku(cx, cy, str, size = 22) {
+    str = tr(str);
     ctx.font = `${size}px ${FONT}`;
     const w = ctx.measureText(str).width + 56, h = size * 2;
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.02);
@@ -141,7 +145,7 @@ const UI = {
     ctx.shadowColor = 'transparent';
     ctx.strokeStyle = '#c8321e'; ctx.lineWidth = 2; ctx.strokeRect(-w / 2 + 5, -h / 2 + 5, w - 10, h - 10);
     ctx.restore();
-    this.text(str, cx, cy + 1, size, { fill: '#a3200f', stroke: null });
+    this.text(str, cx, cy + 1, size, { fill: '#a3200f', stroke: null, raw: true });
   },
   // 竹竿（掛木札用）
   pole(x, y, w) {

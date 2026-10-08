@@ -23,6 +23,8 @@
 
   Online.init();
   Input.init(cv);
+  rotate.textContent = tr('請將手機直立握持');
+  document.documentElement.lang = { zh: 'zh-Hant', ja: 'ja', en: 'en' }[Save.data.lang] || 'zh-Hant';
 
   // 瀏覽器在使用者操作後才允許播放聲音
   const unlock = () => { if (A.ctx) Sound.resume(); };
