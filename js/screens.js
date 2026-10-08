@@ -6,6 +6,14 @@ const App = {
 
   goto(name, arg) { if (this.pending) return; this.pending = { name, arg }; },
   start(name, arg) { this.name = name; this.cur = Screens[name]; if (this.cur.enter) this.cur.enter(arg); this.fade = 1; },
+  // 直接切換（不淡出淡入）：用在畫面構圖相同的接續，例如夜空 → 開場
+  cut(name, arg) {
+    if (this.cur && this.cur.leave) this.cur.leave();
+    this.pending = null; this.fade = 0;
+    this.name = name; this.cur = Screens[name];
+    Input.onHit = null; Input.lockUntil = performance.now() + 250; Input.pressed.clear(); Input.taps.length = 0;
+    if (this.cur.enter) this.cur.enter(arg);
+  },
 
   frame(dt) {
     if (this.pending) {
@@ -41,7 +49,7 @@ Screens.boot = {
   }
 };
 
-// ---------- 夜空（開場的背景）：漸層、星星、月亮、遠處的燈籠串 ----------
+// ---------- 夜空（開始畫面與開場共用）：漸層、星星、月亮、遠處的燈籠串 ----------
 function drawNightSky() {
   const t = Game.time;
   const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -53,7 +61,7 @@ function drawNightSky() {
     ctx.fillStyle = `rgba(255,255,240,${0.25 + tw * 0.6})`; ctx.beginPath(); ctx.arc(x, y, s, 0, 7); ctx.fill();
   }
   // 月亮
-  ctx.save(); ctx.shadowColor = 'rgba(255,240,190,.8)'; ctx.shadowBlur = 40;
+  ctx.save(); ctx.shadowColor = 'rgba(255,240,190,.8)'; ctx.shadowBlur = blur(40);
   ctx.fillStyle = '#fff4cf'; ctx.beginPath(); ctx.arc(586, 150, 52, 0, 7); ctx.fill(); ctx.restore();
   ctx.fillStyle = 'rgba(230,210,160,.45)'; ctx.beginPath(); ctx.arc(570, 140, 9, 0, 7); ctx.arc(600, 170, 6, 0, 7); ctx.fill();
   // 遠處燈籠串（垂墜曲線＋光點）
@@ -83,6 +91,17 @@ function speechBubble(x, y, str, a = 1) {
   UI.text(str, x, y + 2, 30, { fill: '#c8321e', stroke: null, raw: true, alpha: a });
 }
 
+// ---------- 開始畫面：開場一開始的夜空＋「點一下開始」（這一下同時解除瀏覽器的音效限制） ----------
+Screens.title = {
+  frame() {
+    drawNightSky();
+    const label = Input.touchMode ? 'TAP TO START' : Input.padConnected ? 'PRESS START' : 'PRESS ANY KEY';
+    UI.text(label, W / 2, 1000, 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: 0.55 + 0.45 * Math.sin(Game.time * 4), raw: true });
+    UI.copyright();
+    if (Input.was('anykey') || Input.taps.length) { Sound.unlock(); App.cut('intro'); }
+  }
+};
+
 // ---------- 開場：野台升起 → 燈籠點亮 → 主角走進來揮手 → 暖簾落下 → 主選單（點一下即可跳過） ----------
 Screens.intro = {
   t: 0, cues: null,
@@ -104,7 +123,7 @@ Screens.intro = {
   frame(dt) {
     this.t += dt;
     const t = this.t, T = this.T;
-    // 跳過（開場一開始的 0.35 秒不收，避免把載入時的誤觸當成跳過）
+    // 跳過（開場一開始的 0.35 秒不收，避免把開始畫面的那一下當成跳過）
     this.skipLock -= dt;
     if (this.skipLock <= 0 && (Input.was('anykey') || Input.taps.length)) { this.finish(); return; }
 
@@ -249,7 +268,7 @@ Screens.songs = {
     if (on) {
       const s = 1.02 + Math.sin(Game.time * 6) * 0.004;
       ctx.translate(x + w / 2, y + h / 2); ctx.scale(s, s); ctx.translate(-(x + w / 2), -(y + h / 2));
-      ctx.save(); ctx.shadowColor = 'rgba(255,170,60,.95)'; ctx.shadowBlur = 26; rrect(x, y, w, h, 16); ctx.fillStyle = 'rgba(255,170,60,.6)'; ctx.fill(); ctx.restore();
+      ctx.save(); ctx.shadowColor = 'rgba(255,170,60,.95)'; ctx.shadowBlur = blur(26); rrect(x, y, w, h, 16); ctx.fillStyle = 'rgba(255,170,60,.6)'; ctx.fill(); ctx.restore();
     }
     rrect(x + 4, y + 7, w, h, 16); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
     UI.wood(x, y, w, h, { r: 16, seed: 'song' + i, light: on });
@@ -423,7 +442,7 @@ Screens.howto = {
 // ---------- 設定 ----------
 Screens.settings = {
   sel: 0, n: 0, from: 'menu',
-  ROWS: 7,
+  ROWS: 8,
   enter(arg) {
     this.from = arg && arg.from === 'game' ? 'game' : 'menu';
     this.sel = arg && arg.sel !== undefined ? arg.sel : 0;
@@ -452,89 +471,93 @@ Screens.settings = {
     Save.data.lang = l; Save.store(); Sound.play('confirm');
     document.getElementById('rotate').textContent = tr('請將手機直立握持');
   },
+  // ON / OFF 開關列
+  toggle(i, y, h, label, sub, on, flip) {
+    this.panel(i, y, h);
+    UI.text(label, 84, y + 30, 30, { align: 'left', maxW: 380 });
+    UI.text(sub, 84, y + 66, 16, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
+    UI.panel(500, y + (h - 56) / 2, 140, 56, 28, on ? '#2fc46a' : 'rgba(255,255,255,.18)', '#fff');
+    UI.text(on ? 'ON' : 'OFF', 570, y + h / 2 + 1, 28);
+    if (UI.tapIn(50, y, 620, h)) { this.sel = i; flip(); }
+    if (this.sel === i && (Input.was('left') || Input.was('right') || Input.was('confirm'))) flip();
+  },
   frame() {
     if (this.from === 'game') { Game.draw(); UI.dim(0.75); } else menuBackdrop(0.7);
     UI.header('設定', 'SETTINGS');
 
-    // 音量（0 音樂、1 音效）
-    [['音樂', 'music', 186], ['音效', 'sfx', 334]].forEach(([label, key, y], i) => {
-      this.panel(i, y, 136);
+    // 0 音樂、1 音效
+    [['音樂', 'music', 182], ['音效', 'sfx', 308]].forEach(([label, key, y], i) => {
+      this.panel(i, y, 116);
       const v = Save.data[key];
-      UI.text(label, 84, y + 32, 30, { align: 'left' });
-      UI.text(v === 0 ? 'MUTE' : String(v), 636, y + 32, 30, { align: 'right', fill: '#ffd23f' });
+      UI.text(label, 84, y + 30, 30, { align: 'left' });
+      UI.text(v === 0 ? 'MUTE' : String(v), 636, y + 30, 30, { align: 'right', fill: '#ffd23f' });
       for (let k = 0; k < 5; k++) {
-        const bx = 140 + k * 92, bh = 26 + k * 8;
+        const bx = 140 + k * 92, bh = 22 + k * 7;
         ctx.fillStyle = k < v ? (key === 'music' ? '#7fe4ff' : '#ffb347') : 'rgba(255,255,255,.2)';
-        rrect(bx, y + 120 - bh, 70, bh, 8); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#1a1f3a'; ctx.stroke();
-        if (UI.tapIn(bx - 8, y + 52, 86, 80)) { this.sel = i; this.setVol(key, k + 1 === v ? k : k + 1); }
+        rrect(bx, y + 104 - bh, 70, bh, 8); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#1a1f3a'; ctx.stroke();
+        if (UI.tapIn(bx - 8, y + 46, 86, 70)) { this.sel = i; this.setVol(key, k + 1 === v ? k : k + 1); }
       }
-      UI.text('−', 92, y + 96, 44); UI.text('+', 628, y + 96, 44);
-      if (UI.tapIn(56, y + 56, 70, 76)) { this.sel = i; this.setVol(key, v - 1); }
-      if (UI.tapIn(594, y + 56, 70, 76)) { this.sel = i; this.setVol(key, v + 1); }
+      UI.text('−', 92, y + 84, 44); UI.text('+', 628, y + 84, 44);
+      if (UI.tapIn(56, y + 46, 70, 70)) { this.sel = i; this.setVol(key, v - 1); }
+      if (UI.tapIn(594, y + 46, 70, 70)) { this.sel = i; this.setVol(key, v + 1); }
       if (this.sel === i) { if (Input.was('left')) this.setVol(key, v - 1); if (Input.was('right')) this.setVol(key, v + 1); }
     });
 
     // 2 判定校正
-    const y2 = 482, off = Save.data.offset;
-    this.panel(2, y2, 168);
-    UI.text('判定校正', 84, y2 + 32, 30, { align: 'left' });
-    UI.text((off > 0 ? '+' : '') + off + ' ms', W / 2, y2 + 86, 38, { fill: '#ffd23f' });
-    UI.text('◀', 150, y2 + 86, 44, { fill: '#fff' }); UI.text('▶', 570, y2 + 86, 44, { fill: '#fff' });
-    if (UI.tapIn(90, y2 + 50, 120, 72)) { this.sel = 2; this.setOffset(off - 10); }
-    if (UI.tapIn(510, y2 + 50, 120, 72)) { this.sel = 2; this.setOffset(off + 10); }
+    const y2 = 434, off = Save.data.offset;
+    this.panel(2, y2, 146);
+    UI.text('判定校正', 84, y2 + 30, 30, { align: 'left' });
+    UI.text((off > 0 ? '+' : '') + off + ' ms', W / 2, y2 + 78, 36, { fill: '#ffd23f' });
+    UI.text('◀', 150, y2 + 78, 42, { fill: '#fff' }); UI.text('▶', 570, y2 + 78, 42, { fill: '#fff' });
+    if (UI.tapIn(90, y2 + 44, 120, 66)) { this.sel = 2; this.setOffset(off - 10); }
+    if (UI.tapIn(510, y2 + 44, 120, 66)) { this.sel = 2; this.setOffset(off + 10); }
     if (this.sel === 2) { if (Input.was('left')) this.setOffset(off - 10); if (Input.was('right')) this.setOffset(off + 10); }
-    UI.text('總是判定偏晚 → 往＋調　偏早 → 往－調', W / 2, y2 + 140, 18, { fill: '#cfd8ff', stroke: null, maxW: 580 });
+    UI.text('總是判定偏晚 → 往＋調　偏早 → 往－調', W / 2, y2 + 124, 17, { fill: '#cfd8ff', stroke: null, maxW: 580 });
     const r = Game.result;
-    if (r && r.hits >= 5) UI.text(tr('上一局平均：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), 636, y2 + 32, 17, { align: 'right', fill: '#8dff8a', stroke: null, maxW: 300, raw: true });
+    if (r && r.hits >= 5) UI.text(tr('上一局平均：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), 636, y2 + 30, 17, { align: 'right', fill: '#8dff8a', stroke: null, maxW: 300, raw: true });
 
-    // 3 震動
-    const y3 = 664, vib = Save.data.vibrate, can = !!navigator.vibrate;
-    this.panel(3, y3, 104);
-    UI.text('震動', 84, y3 + 34, 30, { align: 'left' });
-    UI.text(can ? '手機打擊時輕微震動' : '此裝置不支援震動', 84, y3 + 74, 17, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 380 });
-    UI.panel(500, y3 + 24, 140, 56, 28, vib ? '#2fc46a' : 'rgba(255,255,255,.18)', '#fff');
-    UI.text(vib ? 'ON' : 'OFF', 570, y3 + 53, 28);
-    const flip = () => { Save.data.vibrate = !Save.data.vibrate; Save.store(); Sound.play('confirm'); Sound.vibrate(30); };
-    if (UI.tapIn(50, y3, 620, 104)) { this.sel = 3; flip(); }
-    if (this.sel === 3 && (Input.was('left') || Input.was('right') || Input.was('confirm'))) flip();
+    // 3 震動、4 省電模式
+    this.toggle(3, 590, 90, '震動', navigator.vibrate ? '手機打擊時輕微震動' : '此裝置不支援震動', Save.data.vibrate,
+      () => { Save.data.vibrate = !Save.data.vibrate; Save.store(); Sound.play('confirm'); Sound.vibrate(30); });
+    this.toggle(4, 690, 90, '省電模式', '每秒 30 幀・較低解析度・減少特效（判定不受影響）', Save.data.eco,
+      () => { Save.data.eco = !Save.data.eco; Save.store(); Sound.play('confirm'); if (window.applyPowerMode) window.applyPowerMode(); });
 
-    // 4 語言
-    const y4 = 782;
-    this.panel(4, y4, 132);
-    UI.text('語言', 84, y4 + 32, 30, { align: 'left' });
+    // 5 語言
+    const y4 = 790;
+    this.panel(5, y4, 114);
+    UI.text('語言', 84, y4 + 28, 30, { align: 'left' });
     LANGS.forEach(([code, label], k) => {
       const x = 74 + k * 196, on = Save.data.lang === code;
-      UI.panel(x, y4 + 62, 180, 54, 27, on ? '#e8502a' : 'rgba(255,255,255,.16)', on ? '#fff' : 'rgba(255,255,255,.4)');
-      UI.text(label, x + 90, y4 + 89, 24, { fill: '#fff', stroke: on ? '#5a0f05' : null, raw: true });
-      if (UI.tapIn(x, y4 + 62, 180, 54)) { this.sel = 4; this.setLang(code); }
+      UI.panel(x, y4 + 52, 180, 50, 25, on ? '#e8502a' : 'rgba(255,255,255,.16)', on ? '#fff' : 'rgba(255,255,255,.4)');
+      UI.text(label, x + 90, y4 + 77, 24, { fill: '#fff', stroke: on ? '#5a0f05' : null, raw: true });
+      if (UI.tapIn(x, y4 + 52, 180, 50)) { this.sel = 5; this.setLang(code); }
     });
-    if (this.sel === 4) {
+    if (this.sel === 5) {
       const idx = LANGS.findIndex(l => l[0] === Save.data.lang);
       if (Input.was('left')) this.setLang(LANGS[(idx + LANGS.length - 1) % LANGS.length][0]);
       if (Input.was('right')) this.setLang(LANGS[(idx + 1) % LANGS.length][0]);
     }
 
-    // 5 安裝到主畫面（APP）
-    const y5 = 928, inst = PWA.installed();
-    this.panel(5, y5, 100);
-    UI.text('安裝到主畫面', 84, y5 + 34, 30, { align: 'left', maxW: 400 });
-    UI.text(inst ? '已經是 APP 模式' : '變成 APP，全螢幕、離線也能玩', 84, y5 + 72, 17, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
-    UI.panel(500, y5 + 22, 140, 56, 28, inst ? '#2fc46a' : '#e8502a', '#fff');
-    UI.text(inst ? '✓' : '教學 ▶', 570, y5 + 51, 24, { stroke: '#5a0f05', sw: 5 });
+    // 6 安裝到主畫面（APP）
+    const y5 = 914, inst = PWA.installed();
+    this.panel(6, y5, 90);
+    UI.text('安裝到主畫面', 84, y5 + 30, 30, { align: 'left', maxW: 400 });
+    UI.text(inst ? '已經是 APP 模式' : '變成 APP，全螢幕、離線也能玩', 84, y5 + 66, 16, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
+    UI.panel(500, y5 + 17, 140, 56, 28, inst ? '#2fc46a' : '#e8502a', '#fff');
+    UI.text(inst ? '✓' : '教學 ▶', 570, y5 + 46, 24, { stroke: '#5a0f05', sw: 5 });
     const openInstall = () => { Sound.play('confirm'); App.goto('install', { from: this.from }); };
-    if (UI.tapIn(50, y5, 620, 100)) { this.sel = 5; openInstall(); }
-    if (this.sel === 5 && Input.was('confirm')) openInstall();
+    if (UI.tapIn(50, y5, 620, 90)) { this.sel = 6; openInstall(); }
+    if (this.sel === 6 && Input.was('confirm')) openInstall();
 
-    // 6 返回
-    UI.begin(this); this.n = 6;
-    if (UI.button(this, this.from === 'game' ? '返回遊戲' : '返回', 230, 1062, 260, 68, { back: true }) || Input.was('back')) this.back();
+    // 7 返回
+    UI.begin(this); this.n = 7;
+    if (UI.button(this, this.from === 'game' ? '返回遊戲' : '返回', 230, 1030, 260, 66, { back: true }) || Input.was('back')) this.back();
     this.n = this.ROWS;
     if (Input.was('up')) { this.sel = (this.sel + this.ROWS - 1) % this.ROWS; Sound.play('select'); }
     if (Input.was('down')) { this.sel = (this.sel + 1) % this.ROWS; Sound.play('select'); }
     UI.hint('↑↓ 選擇　← → 調整');
   }
 };
-
 // ---------- 安裝到主畫面（APP 簡易教學） ----------
 Screens.install = {
   sel: 0, n: 0, from: 'menu', busy: false,
@@ -544,7 +567,7 @@ Screens.install = {
     desktop: ['電腦（Chrome／Edge）', ['點網址列右邊的「安裝」圖示 ⊕', '按「安裝」，桌面就會出現圖示'], ''],
   },
   enter(arg) { this.from = arg && arg.from || 'menu'; this.sel = 0; this.busy = false; },
-  back() { App.goto('settings', { from: this.from, sel: 5 }); },
+  back() { App.goto('settings', { from: this.from, sel: 6 }); },
   frame() {
     if (this.from === 'game') { Game.draw(); UI.dim(0.78); } else menuBackdrop(0.72);
     UI.header('安裝到主畫面', 'INSTALL APP');
@@ -667,14 +690,14 @@ Screens.credits = {
     UI.header('CREDIT', '製作名單');
     UI.panel(60, 200, 600, 820, 26);
     const line = (i, y, fn) => { const k = clamp((this.t - i * 0.15) * 4, 0, 1); ctx.save(); ctx.globalAlpha = k; ctx.translate(0, (1 - k) * 20); fn(y); ctx.restore(); };
-    let y = 300, idx = 0;
+    let y = 286, idx = 0;
     for (const [role, names] of CREDITS) {
       line(idx++, y, yy => UI.text(role, W / 2, yy, 30, { fill: '#7fe4ff', stroke: null }));
-      y += 74;
-      for (const n of names) { line(idx++, y, yy => UI.text(n, W / 2, yy, 44, { fill: '#fff', raw: true })); y += 70; }
-      y += 40;
+      y += 64;
+      for (const n of names) { line(idx++, y, yy => UI.text(n, W / 2, yy, 42, { fill: '#fff', raw: true })); y += 60; }
+      y += 30;
     }
-    line(idx++, 760, yy => drawImgW(IMG.okonomiyaki, W / 2, yy, 260));
+    line(idx++, 800, yy => drawImgW(IMG.okonomiyaki, W / 2, yy, 240));
     line(idx++, 900, yy => UI.text('大王焼き  リズム屋台', W / 2, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
     line(idx++, 950, yy => UI.text("©Arc's Concept Game", W / 2, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
     UI.begin(this);

@@ -8,6 +8,13 @@ const FAST = QS.has('fast');      // 網址加 ?fast：每段只有 3 小節，�
 
 const cv = document.getElementById('game');
 const ctx = cv.getContext('2d');
+let RES = 1;   // 畫布實際解析度倍率（main.js 依螢幕設定；快取圖用）
+
+// ---- 省電模式（設定可開關）：每秒 30 幀、1 倍解析度、關閉模糊陰影 / 火星 / 濾鏡、特效粒子減半 ----
+const ECO = () => !!Save.data.eco;
+const blur = v => (ECO() ? 0 : v);              // 模糊陰影在手機上很耗電：省電模式直接關掉
+const FPS_MAX = () => (ECO() ? 30 : 60);         // 120Hz 螢幕也限制在 60（省電模式 30）
+const RES_MAX = () => (ECO() ? 1 : 2);
 
 // ---- 版面 ----
 const ZONE = { x: 360, y: 920, w: 240, h: 92 };   // 判定框（鐵板中央）
@@ -70,7 +77,7 @@ const LANTERNS = [
 // 每個職稱可列多位
 const CREDITS = [
   ['企劃', ['Arc Wang', '大王KUNI']],
-  ['特別感謝', ['Kelvin Lo']],
+  ['特別感謝', ['Kelvin Lo', 'Bubu Lin']],
 ];
 
 // ---- 小工具 ----

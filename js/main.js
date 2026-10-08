@@ -5,18 +5,18 @@
   const stage = document.getElementById('stage');
   const nameInput = document.getElementById('nameInput');
   const rotate = document.getElementById('rotate');
-  let res = 1;
 
   function resize() {
     const scale = Math.min(window.innerWidth / W, window.innerHeight / H);
     cv.style.width = Math.floor(W * scale) + 'px';
     cv.style.height = Math.floor(H * scale) + 'px';
     stage.style.width = cv.style.width; stage.style.height = cv.style.height;
-    res = clamp(scale * (window.devicePixelRatio || 1), 0.5, 2);
-    cv.width = Math.round(W * res);
-    cv.height = Math.round(H * res);
+    RES = clamp(scale * (window.devicePixelRatio || 1), 0.5, RES_MAX());   // 省電模式最高 1 倍
+    cv.width = Math.round(W * RES);
+    cv.height = Math.round(H * RES);
     nameInput.style.fontSize = Math.round(34 * scale) + 'px';
   }
+  window.applyPowerMode = resize;   // 設定切換省電模式時重新套用解析度
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', () => setTimeout(resize, 200));
   resize();
@@ -45,10 +45,12 @@
 
   App.start('boot');
   const fonts = Promise.race([document.fonts.load('40px "Mochiy Pop One"'), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
-  Promise.all([Assets.load(), fonts]).then(() => App.goto('intro'));
+  Promise.all([Assets.load(), fonts]).then(() => App.goto('title'));
 
   let last = performance.now();
   function loop(now) {
+    // 幀率上限：60（120Hz 螢幕不會跑到 120）；省電模式 30。判定用事件時間戳記與音訊時鐘，不受幀率影響
+    if (now - last < 1000 / FPS_MAX() - 1.5) { requestAnimationFrame(loop); return; }
     const landscape = coarse && window.innerWidth > window.innerHeight * 1.1;
     if (landscape) { rotate.style.display = 'flex'; pauseGame(); }
     else if (rotate.style.display !== 'none') rotate.style.display = 'none';
@@ -60,7 +62,7 @@
     updateChef(dt);
     if (App.name === 'game') Game.schedule();
     Sound.tick();
-    ctx.setTransform(res, 0, 0, res, 0, 0);
+    ctx.setTransform(RES, 0, 0, RES, 0, 0);
     App.frame(dt);
     Input.endFrame();
     requestAnimationFrame(loop);

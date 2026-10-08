@@ -3,7 +3,7 @@
 // ===== 本機存檔：設定與本機排行榜（localStorage；每首歌一個排行榜） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, lang: null, name: '', lastSong: null, boards: null },
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, eco: false, lang: null, name: '', lastSong: null, boards: null },
 
   // 各曲預設排行榜的分數倍率（曲子越難、音符越多，分數越高）
   SEED_SCALE: { tsukimi: 0.75, yatai: 1, swing: 1.05, funk: 1.12, hyper: 1.2 },

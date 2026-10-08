@@ -65,43 +65,59 @@ const UI = {
 
   // ---- 野台風素材 ----
   // 木板（木紋、節眼、上亮下暗）；lacquer = 朱漆木牌
+  // 畫一次就快取成圖（依尺寸 / 樣式 / 解析度），之後每幀只要貼圖，省下大量漸層與曲線運算
+  woodCache: new Map(),
   wood(x, y, w, h, o = {}) {
-    const r = o.r === undefined ? 10 : o.r, R = mulberry(hashStr(o.seed || 'wood'));
-    ctx.save();
-    rrect(x, y, w, h, r);
-    const g = ctx.createLinearGradient(0, y, 0, y + h);
+    const r = o.r === undefined ? 10 : o.r, P = 3;
+    const key = [Math.round(w), Math.round(h), r, o.seed || 'wood', o.light ? 1 : 0, o.lacquer ? 1 : 0, RES].join('|');
+    let c = this.woodCache.get(key);
+    if (!c) {
+      if (this.woodCache.size > 120) this.woodCache.clear();
+      c = document.createElement('canvas');
+      c.width = Math.ceil((w + P * 2) * RES); c.height = Math.ceil((h + P * 2) * RES);
+      const g = c.getContext('2d'); g.scale(RES, RES);
+      this.woodPaint(g, P, P, w, h, r, o);
+      this.woodCache.set(key, c);
+    }
+    ctx.drawImage(c, x - P, y - P, w + P * 2, h + P * 2);
+  },
+  woodPaint(g, x, y, w, h, r, o) {
+    const R = mulberry(hashStr(o.seed || 'wood'));
+    const path = () => { const q = Math.min(r, w / 2, h / 2); g.beginPath(); g.moveTo(x + q, y); g.arcTo(x + w, y, x + w, y + h, q); g.arcTo(x + w, y + h, x, y + h, q); g.arcTo(x, y + h, x, y, q); g.arcTo(x, y, x + w, y, q); g.closePath(); };
+    g.save();
+    path();
+    const gr = g.createLinearGradient(0, y, 0, y + h);
     const cols = o.lacquer ? (o.light ? ['#ff6b4a', '#c42a14'] : ['#e04a30', '#9e1f0e'])
       : (o.light ? ['#f3cf98', '#c88d50'] : ['#d6a268', '#9a6332']);
-    g.addColorStop(0, cols[0]); g.addColorStop(1, cols[1]);
-    ctx.fillStyle = g; ctx.fill();
-    ctx.clip();
+    gr.addColorStop(0, cols[0]); gr.addColorStop(1, cols[1]);
+    g.fillStyle = gr; g.fill();
+    g.clip();
     if (!o.lacquer) {
-      ctx.strokeStyle = 'rgba(90,45,15,.24)'; ctx.lineWidth = 1.6;
+      g.strokeStyle = 'rgba(90,45,15,.24)'; g.lineWidth = 1.6;
       for (let k = 0; k < 7; k++) {
         const yy = y + 4 + R() * (h - 8);
-        ctx.beginPath(); ctx.moveTo(x, yy);
-        ctx.bezierCurveTo(x + w * 0.3, yy + (R() - 0.5) * 9, x + w * 0.65, yy + (R() - 0.5) * 9, x + w, yy + (R() - 0.5) * 6);
-        ctx.stroke();
+        g.beginPath(); g.moveTo(x, yy);
+        g.bezierCurveTo(x + w * 0.3, yy + (R() - 0.5) * 9, x + w * 0.65, yy + (R() - 0.5) * 9, x + w, yy + (R() - 0.5) * 6);
+        g.stroke();
       }
-      ctx.fillStyle = 'rgba(90,45,15,.22)';
-      ctx.beginPath(); ctx.ellipse(x + w * (0.2 + R() * 0.6), y + h * (0.3 + R() * 0.4), 7, 3, 0, 0, 7); ctx.fill();
+      g.fillStyle = 'rgba(90,45,15,.22)';
+      g.beginPath(); g.ellipse(x + w * (0.2 + R() * 0.6), y + h * (0.3 + R() * 0.4), 7, 3, 0, 0, 7); g.fill();
     } else {
-      ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fillRect(x, y + 4, w, h * 0.22);   // 漆的光澤
+      g.fillStyle = 'rgba(255,255,255,.22)'; g.fillRect(x, y + 4, w, h * 0.22);   // 漆的光澤
     }
-    ctx.fillStyle = 'rgba(255,240,210,.35)'; ctx.fillRect(x, y + 2, w, 3);
-    ctx.fillStyle = 'rgba(50,20,5,.28)'; ctx.fillRect(x, y + h - 7, w, 7);
-    ctx.restore();
-    rrect(x, y, w, h, r);
-    ctx.lineWidth = 4; ctx.strokeStyle = o.lacquer ? '#f2c25a' : (o.light ? '#fff0c8' : '#3e2210'); ctx.stroke();
-  },
-  nail(x, y) {
+    g.fillStyle = 'rgba(255,240,210,.35)'; g.fillRect(x, y + 2, w, 3);
+    g.fillStyle = 'rgba(50,20,5,.28)'; g.fillRect(x, y + h - 7, w, 7);
+    g.restore();
+    path();
+    g.lineWidth = 4; g.strokeStyle = o.lacquer ? '#f2c25a' : (o.light ? '#fff0c8' : '#3e2210'); g.stroke();
+  },  nail(x, y) {
     ctx.fillStyle = '#3a3a3a'; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, 7); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(x - 1.3, y - 1.3, 1.6, 0, 7); ctx.fill();
   },
   // 小紅燈籠（焦點標記）
   lantern(x, y, s = 1) {
     ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
-    ctx.shadowColor = 'rgba(255,120,40,.9)'; ctx.shadowBlur = 12;
+    ctx.shadowColor = 'rgba(255,120,40,.9)'; ctx.shadowBlur = blur(12);
     ctx.fillStyle = '#e8402a'; ctx.beginPath(); ctx.ellipse(0, 0, 11, 14, 0, 0, 7); ctx.fill();
     ctx.shadowBlur = 0;
     ctx.strokeStyle = 'rgba(80,10,0,.55)'; ctx.lineWidth = 1.2;
@@ -119,7 +135,7 @@ const UI = {
       ctx.lineTo(px + pw + sway, top + h); ctx.quadraticCurveTo(px + pw / 2 + sway, top + h + 6, px + sway, top + h);
       ctx.closePath();
       const g = ctx.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, '#2a4a86'); g.addColorStop(1, '#16295a');
-      ctx.fillStyle = g; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5; ctx.fill();
+      ctx.fillStyle = g; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = blur(10); ctx.shadowOffsetY = 5; ctx.fill();
       ctx.shadowColor = 'transparent';
       ctx.clip();
       ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 2;   // 布的皺褶
@@ -140,7 +156,7 @@ const UI = {
     ctx.font = `${size}px ${FONT}`;
     const w = ctx.measureText(str).width + 56, h = size * 2;
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.02);
-    ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+    ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = blur(8); ctx.shadowOffsetY = 4;
     ctx.fillStyle = '#f7eed8'; ctx.fillRect(-w / 2, -h / 2, w, h);
     ctx.shadowColor = 'transparent';
     ctx.strokeStyle = '#c8321e'; ctx.lineWidth = 2; ctx.strokeRect(-w / 2 + 5, -h / 2 + 5, w - 10, h - 10);
@@ -176,7 +192,7 @@ const UI = {
     const s = focus ? 1.05 + Math.sin(t * 8) * 0.01 : 1;
     ctx.translate(cx, y + h / 2); ctx.scale(s, s); ctx.translate(-cx, -(y + h / 2));
     if (focus) {   // 燈火般的光暈
-      ctx.save(); ctx.shadowColor = 'rgba(255,170,60,.95)'; ctx.shadowBlur = 24 + Math.sin(t * 6) * 6;
+      ctx.save(); ctx.shadowColor = 'rgba(255,170,60,.95)'; ctx.shadowBlur = blur(24 + Math.sin(t * 6) * 6);
       rrect(x, y, w, h, r); ctx.fillStyle = 'rgba(255,170,60,.6)'; ctx.fill(); ctx.restore();
     }
     rrect(x + 4, y + 7, w, h, r); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();

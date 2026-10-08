@@ -39,7 +39,7 @@ const I18N = {
     '炒麵': '焼きそば', '高麗菜': 'キャベツ', '煎餅': '生地', '培根': 'ベーコン', '鍋鏟翻炒': 'ヘラで炒める', '切絲': '千切り', '淋醬': 'ソースをかける', '切塊': 'ひと口に切る',
     // 設定
     '音樂': 'BGM', '音效': '効果音', '總是判定偏晚 → 往＋調　偏早 → 往－調': '判定が遅れがち → ＋へ　早すぎ → －へ', '上一局平均：{0} {1}ms': '前回の平均：{0} {1}ms',
-    '晚': '遅れ', '早': '早め', '震動': 'バイブ', '手機打擊時輕微震動': 'スマホで打つと軽く振動', '此裝置不支援震動': 'この端末は振動非対応', '返回遊戲': 'ゲームに戻る',
+    '晚': '遅れ', '早': '早め', '震動': 'バイブ', '省電模式': '省電力モード', '每秒 30 幀・較低解析度・減少特效（判定不受影響）': '30fps・低解像度・エフェクト控えめ（判定に影響なし）', '手機打擊時輕微震動': 'スマホで打つと軽く振動', '此裝置不支援震動': 'この端末は振動非対応', '返回遊戲': 'ゲームに戻る',
     '↑↓ 選擇　← → 調整': '↑↓ 選択　← → 調整', '語言': '言語',
     // 排行榜
     'LEADERBOARD（線上）': 'LEADERBOARD（オンライン）', 'LEADERBOARD（本機）': 'LEADERBOARD（この端末）', '名次': '順位', '姓名': '名前', '分數': 'スコア',
@@ -90,7 +90,7 @@ const I18N = {
     '主角動作：{0}': 'Action: {0}', '提示音：{0}音「啵」': 'Cue: {0} "pop"', '低': 'low', '中': 'mid', '高': 'high', '中高': 'mid-high',
     '炒麵': 'Noodles', '高麗菜': 'Cabbage', '煎餅': 'Crepe', '培根': 'Bacon', '鍋鏟翻炒': 'Stir-fry', '切絲': 'Shred', '淋醬': 'Sauce', '切塊': 'Chop',
     '音樂': 'Music', '音效': 'Sound', '總是判定偏晚 → 往＋調　偏早 → 往－調': 'Hits judged late → ＋   early → －', '上一局平均：{0} {1}ms': 'Last game avg: {0} {1}ms',
-    '晚': 'late', '早': 'early', '震動': 'Vibration', '手機打擊時輕微震動': 'Light vibration on hits (phone)', '此裝置不支援震動': 'Not supported on this device', '返回遊戲': 'BACK TO GAME',
+    '晚': 'late', '早': 'early', '震動': 'Vibration', '省電模式': 'Battery Saver', '每秒 30 幀・較低解析度・減少特效（判定不受影響）': '30 fps, lower resolution, fewer effects (timing unaffected)', '手機打擊時輕微震動': 'Light vibration on hits (phone)', '此裝置不支援震動': 'Not supported on this device', '返回遊戲': 'BACK TO GAME',
     '↑↓ 選擇　← → 調整': '↑↓ select   ← → adjust', '語言': 'Language',
     'LEADERBOARD（線上）': 'LEADERBOARD (online)', 'LEADERBOARD（本機）': 'LEADERBOARD (this device)', '名次': 'Rank', '姓名': 'Name', '分數': 'Score',
     '讀取中…': 'Loading…', '無法連線，暫時無法顯示線上排行': 'Offline — online ranking unavailable', '返回主選單': 'MAIN MENU',

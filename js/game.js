@@ -23,6 +23,7 @@ function updateChef(dt) {
 const Fx = {
   particles: [], embers: [], popups: [],
   burst(x, y, color, n = 14, spd = 380) {
+    if (ECO()) n = Math.ceil(n / 2);
     for (let i = 0; i < n; i++) {
       const a = rand(-Math.PI * 0.95, -Math.PI * 0.05), v = rand(spd * 0.35, spd);
       this.particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.4, 0.8), max: 0.8, color, size: rand(4, 9), g: 1100, kind: 'bit' });
@@ -34,6 +35,7 @@ const Fx = {
   steam(x, y, n = 3) { for (let i = 0; i < n; i++) this.particles.push({ x: x + rand(-50, 50), y, vx: rand(-20, 20), vy: rand(-90, -50), life: rand(0.7, 1.2), max: 1.2, size: rand(14, 24), g: -20, kind: 'steam' }); },
   smoke(x, y) { this.particles.push({ x, y, vx: 0, vy: -60, life: 0.8, max: 0.8, size: 18, g: -20, kind: 'smoke' }); },
   sparks(x, y, n = 14) {   // 鐵板火花（鍋鏟翻炒）
+    if (ECO()) n = Math.ceil(n / 2);
     for (let i = 0; i < n; i++) {
       const a = rand(-Math.PI * 0.85, -Math.PI * 0.15), v = rand(250, 520);
       this.particles.push({ x: x + rand(-60, 60), y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.25, 0.5), max: 0.5, color: pick(['#ffd040', '#ff9a2a', '#fff2a0']), size: rand(3, 6), g: 900, kind: 'bit' });
@@ -45,7 +47,7 @@ const Fx = {
     this.particles = this.particles.filter(p => p.life > 0);
     for (const p of this.popups) { p.y -= 60 * dt; p.life -= dt; }
     this.popups = this.popups.filter(p => p.life > 0);
-    if (Math.random() < dt * 14) this.embers.push({ x: rand(0, W), y: rand(H * 0.35, H * 0.7), vy: rand(-40, -15), vx: rand(-8, 8), life: rand(2, 4), max: 4, size: rand(1.5, 3.5), hue: rand(25, 50) });
+    if (!ECO() && Math.random() < dt * 14) this.embers.push({ x: rand(0, W), y: rand(H * 0.35, H * 0.7), vy: rand(-40, -15), vx: rand(-8, 8), life: rand(2, 4), max: 4, size: rand(1.5, 3.5), hue: rand(25, 50) });
     for (const e of this.embers) { e.x += e.vx * dt + Math.sin(Game.time * 2 + e.y * 0.02) * 0.3; e.y += e.vy * dt; e.life -= dt; }
     this.embers = this.embers.filter(e => e.life > 0);
   },
@@ -81,20 +83,32 @@ const Scene = {
     // 燈籠光暈：隨節拍一起閃
     const B = this.bg;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    // 光暈用預先畫好的圖（每種顏色一張）貼上，不再每幀建立 28 個漸層（最耗電的部分）
     LANTERNS.forEach(([lx, ly, c], i) => {
       const on = lit ? lit(i) : 1; if (on <= 0) return;
       const x = B.x + lx * B.s, y = B.y + ly * B.s;
       const flick = 0.75 + 0.25 * Math.sin(Game.time * 7 + i * 1.7) * Math.sin(Game.time * 3.1 + i);
       const r = (i < 10 ? 70 : 42) * (1 + pulse * 0.25);
-      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-      g.addColorStop(0, hexA(c, 0.42 * on * flick * (0.7 + pulse * 0.5))); g.addColorStop(1, hexA(c, 0));
-      ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+      ctx.globalAlpha = clamp(0.42 * on * flick * (0.7 + pulse * 0.5), 0, 1);
+      ctx.drawImage(this.glowSprite(c), x - r, y - r, r * 2, r * 2);
     });
-    for (const e of Fx.embers) {
+    ctx.globalAlpha = 1;
+    if (!ECO()) for (const e of Fx.embers) {
       const a = clamp(e.life / e.max, 0, 1) * (0.6 + 0.4 * Math.sin(Game.time * 9 + e.x));
       ctx.fillStyle = `hsla(${e.hue},100%,65%,${a})`; ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, 7); ctx.fill();
     }
     ctx.restore();
+  },
+  glowCache: {},
+  glowSprite(color) {
+    if (!this.glowCache[color]) {
+      const c = document.createElement('canvas'); c.width = c.height = 128;
+      const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+      gr.addColorStop(0, hexA(color, 1)); gr.addColorStop(1, hexA(color, 0));
+      g.fillStyle = gr; g.fillRect(0, 0, 128, 128);
+      this.glowCache[color] = c;
+    }
+    return this.glowCache[color];
   },
   // dx / dy / rot：開場走進來時的位移與搖晃
   chef(pulse, dx = 0, dy = 0, rot = 0) {
@@ -382,7 +396,7 @@ const Game = {
       ctx.fillStyle = `rgba(0,0,0,${0.12 + p * 0.25})`;
       ctx.beginPath(); ctx.ellipse(ZONE.x, ZONE.y + 22, 40 + p * 60, 8 + p * 10, 0, 0, 7); ctx.fill();
     }
-    ctx.shadowColor = '#ffcf4a'; ctx.shadowBlur = 14 + pulse * 18;
+    ctx.shadowColor = '#ffcf4a'; ctx.shadowBlur = blur(14 + pulse * 18);
     ctx.strokeStyle = `rgba(255,214,90,${0.65 + pulse * 0.35})`; ctx.lineWidth = 5; ctx.setLineDash([16, 10]);
     ctx.lineDashOffset = -this.time * 30;
     rrect(ZONE.x - w / 2, ZONE.y - h / 2, w, h, 20); ctx.stroke();
@@ -423,7 +437,7 @@ const Game = {
         if (n.state === 'bad') {
           drawImgW(IMG[ing.raw], ZONE.x + n.dir * k * 700, landY - 30 - k * 500 + k * k * 1400, ing.rawW, n.dir * k * 12, 1 - k);
         } else { // 沒按：烤焦變黑後消失
-          ctx.save(); ctx.filter = `brightness(${1 - k * 0.8})`;
+          ctx.save(); if (!ECO()) ctx.filter = `brightness(${1 - k * 0.8})`;
           drawImgW(IMG[ing.raw], ZONE.x, landY - 30 + k * 20, ing.rawW, 0, 1 - k);
           ctx.restore();
           if (!this.s.paused && Math.random() < 0.3) Fx.smoke(ZONE.x + rand(-60, 60), ZONE.y);
@@ -442,7 +456,7 @@ const Game = {
         const e = Math.min(1, p * 2.2), ex = ax + (bx - ax) * e, ey = ay + (by - ay) * e;
         const sx = ax + (bx - ax) * Math.max(0, p * 2.2 - 0.9), sy = ay + (by - ay) * Math.max(0, p * 2.2 - 0.9);
         ctx.globalAlpha = 1 - p;
-        ctx.shadowColor = '#bfe8ff'; ctx.shadowBlur = 16;
+        ctx.shadowColor = '#bfe8ff'; ctx.shadowBlur = blur(16);
         ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 9 * (1 - p) + 2;
         ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
       }
@@ -451,7 +465,7 @@ const Game = {
       const pts = []; for (let i = 0; i <= 8; i++) pts.push([x - 92 + i * 23, y - 10 + (i % 2 ? -16 : 12)]);
       const m = p * 8;
       ctx.globalAlpha = fade;
-      ctx.strokeStyle = '#4a2010'; ctx.lineWidth = 8; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 4;
+      ctx.strokeStyle = '#4a2010'; ctx.lineWidth = 8; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = blur(4);
       ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
       for (let i = 1; i <= Math.ceil(m); i++) {
         const f = Math.min(1, m - (i - 1)), [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
