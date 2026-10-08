@@ -1,15 +1,31 @@
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-html, body {
-  position: fixed;
-  inset: 0;
+/* iPhone 主畫面 APP（狀態列 black-translucent）會把可視高度少算一截（約狀態列高），
+   以前用 position: fixed 的 html/body 會在最下方露出白條。
+   改成：根元素實心深色底＋高度用整個螢幕（100vh / 100lvh），另加一層超出上下邊界的背景（#bg）。 */
+html {
+  height: 100%;
+  background-color: #0d1024;
+}
+body {
+  height: 100vh;
+  height: 100lvh;
   overflow: hidden;
-  background: radial-gradient(circle at 50% 30%, #2a2050 0%, #0d1024 70%);
+  background-color: #0d1024;
   font-family: "Mochiy Pop One", "Microsoft JhengHei", sans-serif;
   overscroll-behavior: none;
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+}
+#bg {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: -120px;
+  bottom: -240px;
+  z-index: -1;
+  background: radial-gradient(circle at 50% 30%, #2a2050 0%, #0d1024 70%) #0d1024;
 }
 
 #stage {

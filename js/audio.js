@@ -212,6 +212,17 @@ const Sound = {
     }
   },
 
+  // 使用者第一次點擊 / 按鍵時呼叫：開啟音訊（iPhone 需要在點擊當下播一段無聲音訊才算解鎖）
+  unlock() {
+    this.init();
+    if (!A.ctx) return;
+    if (A.ctx.state !== 'running') A.ctx.resume();
+    if (!this.unlocked) {
+      const s = A.ctx.createBufferSource(); s.buffer = A.ctx.createBuffer(1, 1, 22050);
+      s.connect(A.ctx.destination); s.start(0);
+      this.unlocked = true;
+    }
+  },
   suspend() { if (A.ctx && A.ctx.state === 'running') A.ctx.suspend(); },
   resume() { if (A.ctx && A.ctx.state === 'suspended') A.ctx.resume(); },
 };

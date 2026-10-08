@@ -26,9 +26,10 @@
   rotate.textContent = tr('請將手機直立握持');
   document.documentElement.lang = { zh: 'zh-Hant', ja: 'ja', en: 'en' }[Save.data.lang] || 'zh-Hant';
 
-  // 瀏覽器在使用者操作後才允許播放聲音
-  const unlock = () => { if (A.ctx) Sound.resume(); };
+  // 瀏覽器在使用者操作後才允許播放聲音：第一次點擊 / 按鍵時解鎖（開場會先無聲播放）
+  const unlock = () => Sound.unlock();
   window.addEventListener('pointerdown', unlock);
+  window.addEventListener('touchend', unlock);
   window.addEventListener('keydown', unlock);
 
   // 切到背景 / 失去焦點 / 手機轉橫：遊戲自動暫停
@@ -44,7 +45,7 @@
 
   App.start('boot');
   const fonts = Promise.race([document.fonts.load('40px "Mochiy Pop One"'), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
-  Promise.all([Assets.load(), fonts]).then(() => App.goto('title'));
+  Promise.all([Assets.load(), fonts]).then(() => App.goto('intro'));
 
   let last = performance.now();
   function loop(now) {

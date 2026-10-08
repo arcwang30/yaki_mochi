@@ -41,7 +41,7 @@ Screens.boot = {
   }
 };
 
-// ---------- 夜空（開始畫面與開場共用）：漸層、星星、月亮、遠處的燈籠串 ----------
+// ---------- 夜空（開場的背景）：漸層、星星、月亮、遠處的燈籠串 ----------
 function drawNightSky() {
   const t = Game.time;
   const g = ctx.createLinearGradient(0, 0, 0, H);
@@ -83,32 +83,6 @@ function speechBubble(x, y, str, a = 1) {
   UI.text(str, x, y + 2, 30, { fill: '#c8321e', stroke: null, raw: true, alpha: a });
 }
 
-// ---------- 開始畫面（點擊 / 按任意鍵，以解除瀏覽器音效限制）：夜空 ----------
-Screens.title = {
-  enter() { chef.idlePose = 'wave'; chef.queue = []; },
-  frame() {
-    drawNightSky();
-    const t = Game.time, pulse = 0.5 + 0.5 * Math.sin(t * 3);
-    UI.wood(150, 70, 420, 130, { r: 14, seed: 'title-sign' });
-    UI.text('大王焼き', W / 2, 138, 76, { fill: '#2a1408', stroke: 'rgba(255,236,200,.5)', sw: 3, raw: true });
-    UI.noren(W / 2, 252, 460, 118, 'リズム屋台');
-    // 廣島燒徽章（與 APP 圖示同設計）
-    const cy = 640, R = 170 + pulse * 4;
-    ctx.save(); ctx.shadowColor = 'rgba(255,150,60,.8)'; ctx.shadowBlur = 50;
-    ctx.fillStyle = '#f2c25a'; ctx.beginPath(); ctx.arc(W / 2, cy, R + 10, 0, 7); ctx.fill(); ctx.restore();
-    const rg = ctx.createLinearGradient(0, cy - R, 0, cy + R); rg.addColorStop(0, '#e8502e'); rg.addColorStop(1, '#a3200f');
-    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(W / 2, cy, R, 0, 7); ctx.fill();
-    ctx.fillStyle = 'rgba(255,255,255,.16)'; ctx.beginPath(); ctx.ellipse(W / 2, cy - R * 0.55, R * 0.75, R * 0.28, 0, 0, 7); ctx.fill();
-    drawImgW(IMG.okonomiyaki, W / 2, cy + 6, R * 1.7, Math.sin(t * 1.5) * 0.04);
-    UI.tanzaku(W / 2, 880, '節奏熱炒遊戲');
-    const label = Input.touchMode ? 'TAP TO START' : Input.padConnected ? 'PRESS START' : 'PRESS ANY KEY';
-    UI.text(label, W / 2, 1080, 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: 0.6 + 0.4 * Math.sin(t * 4) });
-    drawButtonImg(W / 2, 1220, 130 + pulse * 6);
-    UI.copyright();
-    if (Input.was('anykey')) { Sound.init(); Sound.play('confirm'); App.goto('intro'); }
-  }
-};
-
 // ---------- 開場：野台升起 → 燈籠點亮 → 主角走進來揮手 → 暖簾落下 → 主選單（點一下即可跳過） ----------
 Screens.intro = {
   t: 0, cues: null,
@@ -116,6 +90,7 @@ Screens.intro = {
   enter() {
     this.t = 0; this.cues = {}; this.skipLock = 0.35;
     chef.queue = []; chef.idlePose = 'idle'; chef.pose = 'idle'; chef.lift = 0;
+    Sound.init();   // 使用者還沒點過畫面時是暫停狀態（無聲），第一次點擊時由 main.js 解鎖
     Sound.stopBgm();
     this.bus = null;
     if (A.ctx) { this.bus = A.ctx.createGain(); this.bus.connect(A.ui); noiseRumble(this.T.rise, this.bus); }
@@ -129,7 +104,7 @@ Screens.intro = {
   frame(dt) {
     this.t += dt;
     const t = this.t, T = this.T;
-    // 跳過（開場一開始的 0.35 秒不收，避免把開始畫面的那一下當成跳過）
+    // 跳過（開場一開始的 0.35 秒不收，避免把載入時的誤觸當成跳過）
     this.skipLock -= dt;
     if (this.skipLock <= 0 && (Input.was('anykey') || Input.taps.length)) { this.finish(); return; }
 
