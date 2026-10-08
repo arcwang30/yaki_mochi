@@ -74,6 +74,8 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 1. 把新圖用同樣的檔名放進 `assets/source/`
 2. 執行 `powershell -ExecutionPolicy Bypass -File tools\prep_server.ps1`
 3. 用瀏覽器打開 http://localhost:5174/tools/prep.html，會自動去白底、裁切、縮圖並寫入 `assets/images/`
+4. 背景招牌的 LOGO 也在這一步合成：以 `logo_flag.jpg` 的布紋為底，把 `logo_daio.jpg` 的骷髏（左）與「大王焼」字（右）去背橫排，加上光影後逐列貼進招牌內框（內框是上寬下窄的梯形，四角座標見 `tools/prep.html` 的 `SIGN`）
+5. **換了圖片要發佈時，記得把 `sw.js` 的 `VERSION` 加 1**（圖片走快取優先，不改版本號玩家會一直看到舊圖）
 
 主角跳躍姿勢（`chef_great`、`chef_cheer`）原圖人物較小，遊戲內以 `js/config.js` 的 `POSE_ADJ` 放大對齊；換成大小一致的圖時把對應設定刪掉。
 

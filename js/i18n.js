@@ -17,7 +17,7 @@ const I18N = {
     // 暫停
     '繼續遊戲': 'つづける', '重新開始': 'やりなおす', '回主選單': 'メニューへ', '繼續後會先倒數 3 拍，再接回原本的節拍': '再開時は 3 拍カウントしてから元のリズムに戻ります', '跟著拍子準備！': 'リズムに合わせて準備！',
     // 遊戲中
-    '廣島燒完成！': '広島焼き完成！', 'おしまい！': 'おしまい！', '{0} COMBO!': '{0} COMBO!',
+    '廣島燒完成！': '広島焼き完成！', '打烊囉！': 'おしまい！', '{0} COMBO!': '{0} COMBO!',
     // 操作說明
     '遊戲規則': 'ルール', '操作方式': '操作方法', '判定與計分': '判定とスコア', '食材圖鑑': '食材図鑑', '返回': '戻る', '← → 換頁': '← → ページ切替',
     '跟著節拍按按鈕': 'リズムに合わせてボタン', '食材會從左右兩邊丟到鐵板中央的金色框裡，落下的瞬間按下按鈕！': '食材が左右から鉄板中央の金色の枠に飛んできます。落ちた瞬間にボタンを押そう！',
@@ -70,7 +70,7 @@ const I18N = {
     '十字鍵 選擇　A 決定　B 返回': 'D-pad: select   A: OK   B: back', '點選按鈕': 'Tap a button', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ select   ENTER: OK   ESC: back',
     '繼續遊戲': 'RESUME', '重新開始': 'RESTART', '回主選單': 'MAIN MENU', '繼續後會先倒數 3 拍，再接回原本的節拍': 'Resuming counts in 3 beats, then picks up the beat',
     '跟著拍子準備！': 'Get ready on the beat!',
-    '廣島燒完成！': 'Okonomiyaki done!', 'おしまい！': 'FINISH!', '{0} COMBO!': '{0} COMBO!',
+    '廣島燒完成！': 'Okonomiyaki done!', '打烊囉！': "That's all!", '{0} COMBO!': '{0} COMBO!',
     '遊戲規則': 'Rules', '操作方式': 'Controls', '判定與計分': 'Timing & Score', '食材圖鑑': 'Ingredients', '返回': 'BACK', '← → 換頁': '← → change page',
     '跟著節拍按按鈕': 'Press on the beat', '食材會從左右兩邊丟到鐵板中央的金色框裡，落下的瞬間按下按鈕！': 'Ingredients are tossed from the sides onto the golden frame on the griddle. Press the button the moment they land!',
     '先聽，再按': 'Listen, then press', '食材丟出時會發出「咻～啵」提示音，2 拍之後落下。跟著音樂的節拍就對了。': 'A "whoosh-pop" plays when an ingredient is tossed; it lands 2 beats later. Just follow the music!',

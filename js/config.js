@@ -59,7 +59,8 @@ const POSE_ADJ = {
 };
 
 // 處理動作時主角往上探身的高度（px）：讓刀、鍋鏟、醬汁瓶露出鐵板
-const POSE_LIFT = { knife: 95, spatula: 110, sauce: 45 };
+// 三個處理動作的頭部高度拉齊（連打時輪替不會上下跳）；比讚抬一點讓雙手露出鐵板
+const POSE_LIFT = { knife: 95, spatula: 105, sauce: 90, nice: 60 };
 const ACTION_HOLD = 0.36;   // 處理動作維持秒數（下一次打擊會直接接上）
 const COMBO_STEP = 10;      // 每幾連擊主角跳起歡呼一次
 

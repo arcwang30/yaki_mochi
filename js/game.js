@@ -535,10 +535,12 @@ const Game = {
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
         const g = ctx.createRadialGradient(x, y, 0, x, y, 240); g.addColorStop(0, 'rgba(255,220,120,.55)'); g.addColorStop(1, 'rgba(255,220,120,0)');
         ctx.fillStyle = g; ctx.fillRect(x - 240, y - 240, 480, 480); ctx.restore();
-        txt('廣島燒完成！', x, y - 108, 40, '#fff', { stroke: '#c43a1a', lw: 10 });
-        txt('+' + OKO_BONUS, x, y - 72, 28, '#ffe066', { stroke: '#7a2a00', lw: 7 });
       }
       drawImgW(IMG.okonomiyaki, x, y, w);
+      if (a.t < 0.55) {   // 文字畫在圖上面，不被廣島燒蓋住
+        txt('廣島燒完成！', x, y - 112, 40, '#fff', { stroke: '#c43a1a', lw: 10 });
+        txt('+' + OKO_BONUS, x, y - 74, 28, '#ffe066', { stroke: '#7a2a00', lw: 7 });
+      }
     }
   },
   drawBanner(st) {
@@ -552,7 +554,7 @@ const Game = {
       ctx.save(); ctx.translate(ZONE.x, 540); ctx.rotate(-0.06); ctx.scale(sc, sc);
       txt('SPEED UP!', 0, 0, 64, '#ffe066', { stroke: '#c43a1a', lw: 14 }); ctx.restore();
     } else if (m.kind === 'outro') {
-      txt('おしまい！', ZONE.x, 540, 64, '#fff', { stroke: '#1f3a8a', lw: 14 });
+      txt('打烊囉！', ZONE.x, 540, 64, '#fff', { stroke: '#1f3a8a', lw: 14 });
     }
   },
   drawButton(pulse) {
