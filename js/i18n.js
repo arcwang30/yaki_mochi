@@ -15,7 +15,7 @@ const I18N = {
     '節奏熱炒遊戲': 'リズム鉄板ゲーム', '開始遊戲': 'ゲーム開始', '操作說明': 'あそびかた', '排行榜': 'ランキング', '設定': 'せってい', 'CREDIT': 'クレジット',
     '十字鍵 選擇　A 決定　B 返回': '十字キー 選択　A 決定　B 戻る', '點選按鈕': 'ボタンをタップ', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ 選択　ENTER 決定　ESC 戻る',
     // 暫停
-    '繼續遊戲': 'つづける', '重新開始': 'やりなおす', '回主選單': 'メニューへ', '繼續後會先倒數 3 拍，再接回原本的節拍': '再開時は 3 拍カウントしてから元のリズムに戻ります', '跟著拍子準備！': 'リズムに合わせて準備！',
+    '繼續遊戲': 'つづける', '重新開始': 'やりなおす', '回主選單': 'メニューへ', '返回選擇樂曲': '曲選択へ戻る', '繼續後會先倒數 3 拍，再接回原本的節拍': '再開時は 3 拍カウントしてから元のリズムに戻ります', '跟著拍子準備！': 'リズムに合わせて準備！',
     // 遊戲中
     '廣島燒完成！': '広島焼き完成！', '打烊囉！': 'おしまい！', '{0} COMBO!': '{0} COMBO!',
     // 操作說明
@@ -51,8 +51,8 @@ const I18N = {
     '進榜！請輸入你的姓名': 'ランクイン！名前を入力してね', '登錄': '登録', '略過': 'スキップ', '再玩一次': 'もう一回',
     '歡迎光臨！': 'いらっしゃいませ！',
     // 選曲
-    '選擇樂曲': '曲をえらぶ', '試聽中': '試聴中', '點兩下卡片也可以開始': 'カードを2回タップでもスタート', '↑↓ 選曲　ENTER 開始　ESC 返回': '↑↓ 選曲　ENTER スタート　ESC 戻る',
-    '← → 切換樂曲': '← → 曲を切替', '每 8 小節節奏加快一次。共 5 首樂曲，越後面的歌越快、越難（★ 越多）。': '8 小節ごとにテンポアップ。全 5 曲、後の曲ほど速くて難しい（★が多い）。',
+    '選擇樂曲': '曲をえらぶ', '試聽中': '試聴中', '點兩下卡片也可以開始': 'カードを2回タップでもスタート', '↑↓ 選曲　← → 換頁　ENTER 開始': '↑↓ 選曲　← → ページ　ENTER スタート',
+    '← → 切換樂曲': '← → 曲を切替', '每 8 小節節奏加快一次。共 10 首樂曲（2 集），每集 1～5 星，星越多越快、越難。': '8 小節ごとにテンポアップ。全 10 曲（2 集）、各集 ★1～5、★が多いほど速くて難しい。',
     // 安裝到主畫面
     '安裝到主畫面': 'ホーム画面に追加', '已經是 APP 模式': 'アプリとして起動中', '變成 APP，全螢幕、離線也能玩': 'アプリ化：全画面・オフラインでも遊べる', '教學 ▶': '手順 ▶',
     '安裝後可以從主畫面直接開啟：全螢幕、開啟更快，沒有網路也能玩。': 'ホーム画面から直接起動できます。全画面で、起動も速く、オフラインでも遊べます。',
@@ -68,7 +68,7 @@ const I18N = {
     'sub.start': 'はじめる', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット',
     '節奏熱炒遊戲': 'Rhythm Teppan Game', '開始遊戲': 'PLAY', '操作說明': 'HOW TO', '排行榜': 'RANKING', '設定': 'SETTINGS', 'CREDIT': 'CREDITS',
     '十字鍵 選擇　A 決定　B 返回': 'D-pad: select   A: OK   B: back', '點選按鈕': 'Tap a button', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ select   ENTER: OK   ESC: back',
-    '繼續遊戲': 'RESUME', '重新開始': 'RESTART', '回主選單': 'MAIN MENU', '繼續後會先倒數 3 拍，再接回原本的節拍': 'Resuming counts in 3 beats, then picks up the beat',
+    '繼續遊戲': 'RESUME', '重新開始': 'RESTART', '回主選單': 'MAIN MENU', '返回選擇樂曲': 'SONG SELECT', '繼續後會先倒數 3 拍，再接回原本的節拍': 'Resuming counts in 3 beats, then picks up the beat',
     '跟著拍子準備！': 'Get ready on the beat!',
     '廣島燒完成！': 'Okonomiyaki done!', '打烊囉！': "That's all!", '{0} COMBO!': '{0} COMBO!',
     '遊戲規則': 'Rules', '操作方式': 'Controls', '判定與計分': 'Timing & Score', '食材圖鑑': 'Ingredients', '返回': 'BACK', '← → 換頁': '← → change page',
@@ -98,8 +98,8 @@ const I18N = {
     '本日營業結束！': "That's a wrap for today!", '完成的廣島燒': 'Okonomiyaki made', '平均時間差：{0} {1}ms': 'Avg. timing: {0} {1}ms',
     '進榜！請輸入你的姓名': 'Top 20! Enter your name', '登錄': 'ENTER', '略過': 'SKIP', '再玩一次': 'PLAY AGAIN',
     '歡迎光臨！': 'Welcome!',
-    '選擇樂曲': 'SONGS', '試聽中': 'preview', '點兩下卡片也可以開始': 'Tap a card twice to start', '↑↓ 選曲　ENTER 開始　ESC 返回': '↑↓ song   ENTER: start   ESC: back',
-    '← → 切換樂曲': '← → change song', '每 8 小節節奏加快一次。共 5 首樂曲，越後面的歌越快、越難（★ 越多）。': 'The tempo rises every 8 bars. 5 songs — later ones are faster and harder (more ★).',
+    '選擇樂曲': 'SONGS', '試聽中': 'preview', '點兩下卡片也可以開始': 'Tap a card twice to start', '↑↓ 選曲　← → 換頁　ENTER 開始': '↑↓ song   ← → page   ENTER: start',
+    '← → 切換樂曲': '← → change song', '每 8 小節節奏加快一次。共 10 首樂曲（2 集），每集 1～5 星，星越多越快、越難。': 'The tempo rises every 8 bars. 10 songs in 2 volumes, 1-5 ★ each; more ★ = faster and harder.',
     '安裝到主畫面': 'Add to Home Screen', '已經是 APP 模式': 'Running as an app', '變成 APP，全螢幕、離線也能玩': 'Full screen app, works offline', '教學 ▶': 'HOW ▶',
     '安裝後可以從主畫面直接開啟：全螢幕、開啟更快，沒有網路也能玩。': 'Launch it straight from your home screen: full screen, faster to open, and playable offline.',
     '✓ 目前已經是 APP 模式': '✓ Already running as an app', '立即安裝': 'INSTALL NOW', '你的裝置': 'Your device',

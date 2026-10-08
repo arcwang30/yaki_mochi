@@ -85,6 +85,22 @@ const SND = {
   },
   pluck(t, n, v = 1, dest = A.music) { voice('square', m2f(n), t, 0.1, 0.045 * v, dest, { att: 0.002, lp: 3200, lpTo: 600, lpT: 0.09 }); },
   sub(t, n, dur, v = 1, dest = A.music) { voice('sawtooth', m2f(n), t, 0.06, 0.16 * v, dest, { att: 0.004, hold: Math.max(0, dur - 0.05), lp: 700, q: 2 }); },
+  // ---- 第二集新增 ----
+  nylon(t, notes, v = 1, dest = A.music) {   // 尼龍吉他（和弦由低到高輕刷）
+    notes.forEach((n, i) => { const x = t + i * 0.014; voice('triangle', m2f(n), x, 0.7, 0.09 * v, dest, { att: 0.003, lp: 2400, lpTo: 900, lpT: 0.3 }); voice('sine', m2f(n) * 2, x, 0.25, 0.02 * v, dest, { att: 0.002 }); });
+  },
+  flute(t, n, dur, v = 1, dest = A.music) { voice('sine', m2f(n), t, 0.15, 0.13 * v, dest, { att: 0.05, hold: Math.max(0, dur - 0.12), vib: 0.006, vibDelay: 0.15 }); },
+  clarinet(t, n, dur, v = 1, dest = A.music) { voice('square', m2f(n), t, 0.08, 0.06 * v, dest, { att: 0.03, hold: Math.max(0, dur - 0.08), lp: 1500, q: 1, vib: 0.007, vibDelay: 0.1 }); },
+  organ(t, notes, dur, v = 1, dest = A.music) { notes.forEach(n => voice('square', m2f(n), t, 0.05, 0.035 * v, dest, { att: 0.003, hold: dur, lp: 2200 })); },
+  tuba(t, n, dur, v = 1, dest = A.music) { voice('sawtooth', m2f(n), t, 0.08, 0.2 * v, dest, { att: 0.02, hold: Math.max(0, dur - 0.08), lp: 600, q: 1 }); },
+  // 8 位元音源：方波 / 三角波 / 雜訊鼓
+  chip(t, n, dur, v = 1, dest = A.music) { voice('square', m2f(n), t, 0.04, 0.055 * v, dest, { att: 0.002, hold: Math.max(0, dur - 0.04) }); },
+  chipTri(t, n, dur, v = 1, dest = A.music) { voice('triangle', m2f(n), t, 0.03, 0.24 * v, dest, { att: 0.002, hold: Math.max(0, dur - 0.03) }); },
+  chipKick(t, v = 1, dest = A.music) { osc('square', 110, t, 0.09, 0.3 * v, dest, { to: 40 }); nz(t, 0.05, 0.3 * v, dest, { type: 'lowpass', f: 400 }); },
+  chipSnare(t, v = 1, dest = A.music) { nz(t, 0.11, 0.35 * v, dest, { f: 2200, q: 0.5 }); },
+  chipHat(t, v = 1, dest = A.music) { nz(t, 0.025, 0.18 * v, dest, { type: 'highpass', f: 9000 }); },
+  // 鼓打貝斯的 Reese 低音（兩把略為走音的鋸齒波）
+  reese(t, n, dur, v = 1, dest = A.music) { [-18, 18].forEach(d => voice('sawtooth', m2f(n), t, 0.08, 0.13 * v, dest, { att: 0.01, hold: Math.max(0, dur - 0.08), detune: d, lp: 520, q: 3 })); },
   don(t, v = 1, dest = A.music) { osc('sine', 150, t, 0.34, 0.9 * v, dest, { to: 58, bend: 0.2 }); osc('sine', 88, t, 0.5, 0.3 * v, dest); nz(t, 0.05, 0.5 * v, dest, { type: 'lowpass', f: 500 }); },
   ka(t, v = 1, dest = A.music) { nz(t, 0.045, 0.45 * v, dest, { f: 3300, q: 4 }); osc('square', 1150, t, 0.02, 0.06 * v, dest); },
   kane(t, v = 1, dest = A.music) { [1, 2.41, 3.93].forEach((r, i) => osc('sine', 1750 * r, t, 0.13, 0.06 * v / (i + 1), dest)); },
@@ -143,7 +159,29 @@ const Sound = {
       for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
       A.noise = buf;
       this.applyVol();
+      this.loadVoices();
     } catch (e) { A.ctx = null; }
+  },
+
+  // ---- 語音（錄音檔）：走音效音量（設定的「音效」可調、可靜音）；offset 跳過錄音開頭的靜音 ----
+  VOICES: {
+    irasshaimase: { url: 'assets/audio/voice_irasshaimase.mp3', gain: 0.75, offset: 0.2 },   // 錄音本身很大聲（峰值 0.94）：調到比當下音樂清楚約 10dB、峰值與打擊音效相近
+  },
+  voices: {},
+  loadVoices() {
+    for (const [k, v] of Object.entries(this.VOICES)) {
+      if (this.voices[k]) continue;
+      this.voices[k] = 'loading';
+      fetch(v.url).then(r => r.arrayBuffer()).then(b => A.ctx.decodeAudioData(b))
+        .then(buf => { this.voices[k] = buf; }).catch(() => { this.voices[k] = null; });   // 直接開 index.html（file://）時讀不到，就安靜略過
+    }
+  },
+  playVoice(k, dest = A.ui, t) {
+    const buf = this.voices[k];
+    if (!A.ctx || !(buf instanceof AudioBuffer)) return;
+    const v = this.VOICES[k], s = A.ctx.createBufferSource(), g = A.ctx.createGain();
+    s.buffer = buf; g.gain.value = v.gain;
+    s.connect(g); g.connect(dest); s.start(t || A.ctx.currentTime, v.offset);
   },
 
   // 輸出延遲（秒）：畫面與判定都扣掉，讓「聽到的拍子」和判定一致

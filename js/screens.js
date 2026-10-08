@@ -102,12 +102,79 @@ Screens.title = {
   }
 };
 
+// ---------- 開場煙火（夜空）：火箭升空 → 爆開成火花（含閃光、閃爍火花）＋升空哨音、爆炸聲、劈啪聲 ----------
+const Fireworks = {
+  // 施放時間（開場秒數）、位置（x、爆開高度）、顏色；最後一發在野台蓋住天空前爆開
+  PLAN: [[0.0, 230, 330, ['#ffb84a', '#fff1a0']], [0.25, 510, 260, ['#ff5a7a', '#ffd0e0']], [0.5, 360, 190, ['#7affb0', '#e8fff0']],
+         [0.8, 150, 240, ['#7ad8ff', '#ffffff']], [1.05, 580, 200, ['#ffd23f', '#ff7a30']], [1.3, 300, 150, ['#c890ff', '#ffe0ff']],
+         [1.55, 470, 230, ['#ff7a30', '#ffe066']], [1.8, 360, 170, ['#ff5a7a', '#ffd23f']]],
+  rockets: [], sparks: [], flashes: [], next: 0,
+  reset() { this.rockets = []; this.sparks = []; this.flashes = []; this.next = 0; },
+  update(dt, t, bus) {
+    while (this.next < this.PLAN.length && t >= this.PLAN[this.next][0]) {
+      const [, x, peak, cols] = this.PLAN[this.next++], dur = rand(0.55, 0.72);
+      this.rockets.push({ x0: x + rand(-40, 40), x, y0: H + 20, peak, t: 0, dur, cols, trail: [] });
+      if (bus) this.whistle(bus, dur);
+    }
+    for (const r of this.rockets) {
+      r.t += dt;
+      const p = Math.min(1, r.t / r.dur), e = 1 - (1 - p) * (1 - p);
+      r.cx = r.x0 + (r.x - r.x0) * e; r.cy = r.y0 + (r.peak - r.y0) * e;
+      r.trail.push([r.cx, r.cy]); if (r.trail.length > 10) r.trail.shift();
+      if (p >= 1 && !r.done) { r.done = true; this.burst(r.cx, r.cy, r.cols); if (bus) this.boom(bus); }
+    }
+    this.rockets = this.rockets.filter(r => !r.done);
+    for (const s of this.sparks) {
+      const drag = Math.pow(0.12, dt);   // 空氣阻力：速度很快衰減
+      s.vx *= drag; s.vy = s.vy * drag + 140 * dt;
+      s.px = s.x; s.py = s.y; s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt;
+    }
+    this.sparks = this.sparks.filter(s => s.life > 0);
+    for (const f of this.flashes) f.life -= dt;
+    this.flashes = this.flashes.filter(f => f.life > 0);
+  },
+  burst(x, y, cols) {
+    const n = ECO() ? 45 : 90, big = rand(330, 420), glitter = Math.random() < 0.5;
+    for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + rand(-0.06, 0.06), v = big * rand(0.75, 1.05);
+      this.sparks.push({ x, y, px: x, py: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(1.0, 1.5), max: 1.5, col: cols[i % 2 ? 1 : 0], glitter: glitter && i % 3 === 0 });
+    }
+    this.flashes.push({ x, y, life: 0.25 });
+  },
+  draw() {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    for (const f of this.flashes) {
+      const a = f.life / 0.25, g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, 220);
+      g.addColorStop(0, `rgba(255,240,200,${0.7 * a})`); g.addColorStop(0.25, `rgba(255,220,160,${0.35 * a})`); g.addColorStop(1, 'rgba(255,240,200,0)');
+      ctx.fillStyle = g; ctx.fillRect(f.x - 220, f.y - 220, 440, 440);
+    }
+    for (const r of this.rockets) {   // 升空的火光尾巴
+      r.trail.forEach(([x, y], i) => { ctx.fillStyle = `rgba(255,210,140,${(i + 1) / r.trail.length * 0.8})`; ctx.beginPath(); ctx.arc(x, y, 1.5 + i * 0.25, 0, 7); ctx.fill(); });
+    }
+    for (const s of this.sparks) {
+      let a = Math.min(1, s.life / s.max * 1.4);
+      if (s.glitter) a *= 0.4 + 0.6 * Math.abs(Math.sin(s.life * 40));   // 閃爍火花
+      ctx.strokeStyle = hexA(s.col, a); ctx.lineWidth = 3.4;
+      ctx.beginPath(); ctx.moveTo(s.px - (s.x - s.px) * 2, s.py - (s.y - s.py) * 2); ctx.lineTo(s.x, s.y); ctx.stroke();
+    }
+    ctx.restore();
+  },
+  // ---- 音效 ----
+  whistle(bus, dur) { const t = A.ctx.currentTime; osc('sine', 520, t, dur, 0.035, bus, { to: 1500, att: 0.05 }); nz(t, dur, 0.05, bus, { f: 2600, to: 4200, q: 3 }); },
+  boom(bus) {
+    const t = A.ctx.currentTime;
+    osc('sine', 95, t, 0.55, 0.45, bus, { to: 34, bend: 0.4 });
+    nz(t, 0.7, 0.32, bus, { type: 'lowpass', f: 900, to: 180 });
+    for (let i = 0; i < 7; i++) nz(t + 0.22 + Math.random() * 0.6, 0.02, 0.07, bus, { type: 'highpass', f: 5000 });   // 劈啪聲
+  },
+};
 // ---------- 開場：野台升起 → 燈籠點亮 → 主角走進來揮手 → 暖簾落下 → 主選單（點一下即可跳過） ----------
 Screens.intro = {
   t: 0, cues: null,
-  T: { rise: 2.2, lights: 0.8, walk0: 3.0, walk1: 4.8, noren: 5.5, end: 7.0 },
+  T: { rise: 2.8, lights: 0.8, walk0: 3.6, walk1: 5.4, noren: 6.1, end: 7.6 },   // 野台升起 2.8 秒（同時施放煙火）
   enter() {
     this.t = 0; this.cues = {}; this.skipLock = 0.35;
+    Fireworks.reset();
     chef.queue = []; chef.idlePose = 'idle'; chef.pose = 'idle'; chef.lift = 0;
     Sound.init();   // 使用者還沒點過畫面時是暫停狀態（無聲），第一次點擊時由 main.js 解鎖
     Sound.stopBgm();
@@ -128,6 +195,9 @@ Screens.intro = {
     if (this.skipLock <= 0 && (Input.was('anykey') || Input.taps.length)) { this.finish(); return; }
 
     drawNightSky();
+    // 0. 野台升起的同時，夜空施放煙火（畫在野台後面，野台升上來就自然被擋住）
+    Fireworks.update(dt, t, this.bus);
+    Fireworks.draw();
     // 1. 野台由下往上緩緩升起
     const p = clamp(t / T.rise, 0, 1), rise = (1 - (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)) * H;
     let shake = 0;
@@ -155,7 +225,11 @@ Screens.intro = {
       if (!walking) {
         this.once('wave', () => {
           chef.idlePose = 'wave';
-          if (this.bus) { SND.don(A.ctx.currentTime, 0.9, this.bus); SND.kane(A.ctx.currentTime + 0.12, 1.2, this.bus); }
+          if (this.bus) {
+            const now = A.ctx.currentTime;
+            Sound.playVoice('irasshaimase', this.bus, now);   // 「いらっしゃいませ！」語音，和對話框同時出現
+            SND.don(now, 0.55, this.bus); SND.kane(now + 1.05, 0.9, this.bus);   // 太鼓放輕、鉦挪到語音之後，不蓋住人聲
+          }
           Sound.startBgm();   // 主選單音樂從這裡開始，接到主選單不中斷
         });
       }
@@ -232,7 +306,14 @@ Screens.menu = {
 // 卡片：編號、歌名、副標・風格、BPM、星級、HISCORE；選中的卡片會試聽（停留 0.3 秒才開始，快速捲動不會一直重播）
 Screens.songs = {
   sel: 0, previewIdx: -1, previewT: 0, bs: { sel: -1, n: 0 },
-  CARD: { x: 40, y0: 188, w: 640, h: 150, gap: 12 },
+  CARD: { x: 40, y0: 192, w: 640, h: 140, gap: 10 },
+  PER: 5,   // 每頁 5 首（VOL.1、VOL.2 各一套 1～5 星）
+  pages() { return Math.ceil(SONGS.length / this.PER); },
+  setPage(p) {
+    const P = this.pages(), row = this.sel % this.PER;
+    p = (p + P) % P;
+    this.select(Math.min(SONGS.length - 1, p * this.PER + row));
+  },
   enter() {
     const i = SONGS.findIndex(s => s.id === Save.data.lastSong);
     this.sel = i >= 0 ? i : 0; this.previewIdx = -1; this.previewT = 0.15; this.bs.sel = -1;
@@ -247,20 +328,30 @@ Screens.songs = {
       this.previewT -= dt;
       if (this.previewT <= 0) { this.previewIdx = this.sel; const s = SONGS[this.sel]; Sound.startBgm(s, Math.min(2, s.sections.length - 1)); }
     }
-    const C = this.CARD;
-    SONGS.forEach((song, i) => {
-      const y = C.y0 + i * (C.h + C.gap), on = i === this.sel;
+    const C = this.CARD, page = Math.floor(this.sel / this.PER), P = this.pages();
+    SONGS.slice(page * this.PER, page * this.PER + this.PER).forEach((song, k) => {
+      const i = page * this.PER + k, y = C.y0 + k * (C.h + C.gap), on = i === this.sel;
       if (Input.ptr.moved && UI.inside(Input.ptr.x, Input.ptr.y, C.x, y, C.w, C.h) && !on) this.select(i);
       for (const t of Input.taps) if (UI.inside(t.x, t.y, C.x, y, C.w, C.h)) { if (on) this.start(); else this.select(i); }
       this.card(song, i, C.x, y, C.w, C.h, on);
     });
+    // 換頁列：◀ VOL.1 ●○ ▶
+    if (P > 1) {
+      const py = 978;
+      UI.wood(200, py - 26, 320, 52, { r: 26, seed: 'page-bar' });
+      UI.text('VOL.' + (page + 1), W / 2 - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
+      for (let p = 0; p < P; p++) { ctx.fillStyle = p === page ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(W / 2 + 40 + p * 24, py, 8, 0, 7); ctx.fill(); }
+      UI.text('◀', 160, py, 40, { fill: '#ffd23f' }); UI.text('▶', 560, py, 40, { fill: '#ffd23f' });
+      if (Input.was('left') || UI.tapIn(110, py - 40, 110, 80)) this.setPage(page - 1);
+      if (Input.was('right') || UI.tapIn(500, py - 40, 110, 80)) this.setPage(page + 1);
+    }
     if (Input.was('up')) { this.bs.sel = -1; this.select((this.sel + SONGS.length - 1) % SONGS.length); }
     if (Input.was('down')) { this.bs.sel = -1; this.select((this.sel + 1) % SONGS.length); }
     if (Input.was('confirm') && this.bs.sel !== 0) this.start();   // 滑鼠停在「返回」上時不開始
     UI.begin(this.bs);
     if (UI.button(this.bs, '返回', 50, 1040, 210, 76, { back: true }) || Input.was('back')) App.goto('menu');
     if (UI.button(this.bs, '開始遊戲', 280, 1034, 390, 86, { lacquer: true, sub: 'sub.start', size: 36 })) this.start();
-    UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : '↑↓ 選曲　ENTER 開始　ESC 返回');
+    UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : '↑↓ 選曲　← → 換頁　ENTER 開始');
   },
   card(song, i, x, y, w, h, on) {
     const loc = o => o[Save.data.lang] || o.zh;
@@ -330,12 +421,13 @@ Screens.game = {
     UI.dim(0.62);
     UI.text('PAUSE', W / 2, 400, 96, { fill: '#fff27a', stroke: '#c43a1a', sw: 16 });
     UI.begin(this);
-    if (UI.button(this, '繼續遊戲', 160, 500, 400, 72, { c1: '#8dff8a', c2: '#2fc46a' })) Game.resume();
-    if (UI.button(this, '重新開始', 160, 592, 400, 72, { c1: '#ffe680', c2: '#ffb02e' })) { Game.newRun(); this.sel = 0; }
-    if (UI.button(this, '設定', 160, 684, 400, 72, { c1: '#d6b3ff', c2: '#9a6bff' })) App.goto('settings', { from: 'game' });
-    if (UI.button(this, '回主選單', 160, 776, 400, 72, { c1: '#ffb3d1', c2: '#ff6b9a', back: true })) { s.ended = true; App.goto('menu'); }
+    if (UI.button(this, '繼續遊戲', 160, 492, 400, 70, { c1: '#8dff8a', c2: '#2fc46a' })) Game.resume();
+    if (UI.button(this, '重新開始', 160, 578, 400, 70, { c1: '#ffe680', c2: '#ffb02e' })) { Game.newRun(); this.sel = 0; }
+    if (UI.button(this, '返回選擇樂曲', 160, 664, 400, 70)) { s.ended = true; App.goto('songs'); }   // 選曲畫面會停在這首歌上
+    if (UI.button(this, '設定', 160, 750, 400, 70, { c1: '#d6b3ff', c2: '#9a6bff' })) App.goto('settings', { from: 'game' });
+    if (UI.button(this, '回主選單', 160, 836, 400, 70, { c1: '#ffb3d1', c2: '#ff6b9a', back: true })) { s.ended = true; App.goto('menu'); }
     UI.nav(this);
-    UI.text('繼續後會先倒數 3 拍，再接回原本的節拍', W / 2, 900, 20, { fill: '#e6ecff', stroke: null });
+    UI.text('繼續後會先倒數 3 拍，再接回原本的節拍', W / 2, 950, 20, { fill: '#e6ecff', stroke: null });
     UI.navHint();
   }
 };
@@ -372,7 +464,7 @@ Screens.howto = {
       [(x, y) => drawButtonImg(x - 14, y + 20, 92), '跟著節拍按按鈕', '食材會從左右兩邊丟到鐵板中央的金色框裡，落下的瞬間按下按鈕！'],
       [(x, y) => drawImgW(IMG.cabbage_raw, x, y, 96), '先聽，再按', '食材丟出時會發出「咻～啵」提示音，2 拍之後落下。跟著音樂的節拍就對了。'],
       [(x, y) => drawImgW(IMG.okonomiyaki, x, y, 110), '湊齊四種食材', '炒麵、高麗菜、煎餅、培根各處理好 1 個，就會自動合成一份廣島燒，加 1000 分！'],
-      ['⏩', '越來越快', '每 8 小節節奏加快一次。共 5 首樂曲，越後面的歌越快、越難（★ 越多）。'],
+      ['⏩', '越來越快', '每 8 小節節奏加快一次。共 10 首樂曲（2 集），每集 1～5 星，星越多越快、越難。'],
       ['🏆', '排行榜', '遊戲結束時，分數進入前 20 名就能登錄姓名。'],
     ];
     rows.forEach(([ic, t, d], i) => this.row(222 + i * 164, ic, t, d));
