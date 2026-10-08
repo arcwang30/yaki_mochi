@@ -60,6 +60,98 @@ const UI = {
 
   begin(scr) { scr.n = 0; },
 
+  // ---- 野台風素材 ----
+  // 木板（木紋、節眼、上亮下暗）；lacquer = 朱漆木牌
+  wood(x, y, w, h, o = {}) {
+    const r = o.r === undefined ? 10 : o.r, R = mulberry(hashStr(o.seed || 'wood'));
+    ctx.save();
+    rrect(x, y, w, h, r);
+    const g = ctx.createLinearGradient(0, y, 0, y + h);
+    const cols = o.lacquer ? (o.light ? ['#ff6b4a', '#c42a14'] : ['#e04a30', '#9e1f0e'])
+      : (o.light ? ['#f3cf98', '#c88d50'] : ['#d6a268', '#9a6332']);
+    g.addColorStop(0, cols[0]); g.addColorStop(1, cols[1]);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.clip();
+    if (!o.lacquer) {
+      ctx.strokeStyle = 'rgba(90,45,15,.24)'; ctx.lineWidth = 1.6;
+      for (let k = 0; k < 7; k++) {
+        const yy = y + 4 + R() * (h - 8);
+        ctx.beginPath(); ctx.moveTo(x, yy);
+        ctx.bezierCurveTo(x + w * 0.3, yy + (R() - 0.5) * 9, x + w * 0.65, yy + (R() - 0.5) * 9, x + w, yy + (R() - 0.5) * 6);
+        ctx.stroke();
+      }
+      ctx.fillStyle = 'rgba(90,45,15,.22)';
+      ctx.beginPath(); ctx.ellipse(x + w * (0.2 + R() * 0.6), y + h * (0.3 + R() * 0.4), 7, 3, 0, 0, 7); ctx.fill();
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fillRect(x, y + 4, w, h * 0.22);   // 漆的光澤
+    }
+    ctx.fillStyle = 'rgba(255,240,210,.35)'; ctx.fillRect(x, y + 2, w, 3);
+    ctx.fillStyle = 'rgba(50,20,5,.28)'; ctx.fillRect(x, y + h - 7, w, 7);
+    ctx.restore();
+    rrect(x, y, w, h, r);
+    ctx.lineWidth = 4; ctx.strokeStyle = o.lacquer ? '#f2c25a' : (o.light ? '#fff0c8' : '#3e2210'); ctx.stroke();
+  },
+  nail(x, y) {
+    ctx.fillStyle = '#3a3a3a'; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(x - 1.3, y - 1.3, 1.6, 0, 7); ctx.fill();
+  },
+  // 小紅燈籠（焦點標記）
+  lantern(x, y, s = 1) {
+    ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
+    ctx.shadowColor = 'rgba(255,120,40,.9)'; ctx.shadowBlur = 12;
+    ctx.fillStyle = '#e8402a'; ctx.beginPath(); ctx.ellipse(0, 0, 11, 14, 0, 0, 7); ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = 'rgba(80,10,0,.55)'; ctx.lineWidth = 1.2;
+    for (const yy of [-7, 0, 7]) { ctx.beginPath(); ctx.ellipse(0, yy, 11 * Math.sqrt(1 - (yy / 14) ** 2), 2, 0, 0, 7); ctx.stroke(); }
+    ctx.fillStyle = '#2a1608'; ctx.fillRect(-6, -17, 12, 4); ctx.fillRect(-6, 13, 12, 4);
+    ctx.restore();
+  },
+  // 暖簾：木竿＋藍染布，一格一個字，隨風擺動
+  noren(cx, top, w, h, chars) {
+    const n = chars.length, gap = 6, pw = (w - gap * (n - 1)) / n, x0 = cx - w / 2, t = Game.time;
+    [...chars].forEach((ch, i) => {
+      const px = x0 + i * (pw + gap), sway = Math.sin(t * 1.7 + i * 0.9) * 4;
+      ctx.save();
+      ctx.beginPath(); ctx.moveTo(px, top); ctx.lineTo(px + pw, top);
+      ctx.lineTo(px + pw + sway, top + h); ctx.quadraticCurveTo(px + pw / 2 + sway, top + h + 6, px + sway, top + h);
+      ctx.closePath();
+      const g = ctx.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, '#2a4a86'); g.addColorStop(1, '#16295a');
+      ctx.fillStyle = g; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5; ctx.fill();
+      ctx.shadowColor = 'transparent';
+      ctx.clip();
+      ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 2;   // 布的皺褶
+      for (let k = 1; k < 3; k++) { ctx.beginPath(); ctx.moveTo(px + pw * k / 3, top); ctx.lineTo(px + pw * k / 3 + sway, top + h); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(240,235,220,.85)'; ctx.fillRect(px - 10, top + h - 13, pw + 20, 4);   // 下緣白線（染め抜き）
+      ctx.restore();
+      this.text(ch, px + pw / 2 + sway * 0.55, top + h * 0.47, pw * 0.64, { fill: '#f6f1e4', stroke: 'rgba(10,20,50,.6)', sw: 4 });
+    });
+    // 木竿
+    const rx = x0 - 26, rw = w + 52, ry = top - 9;
+    const g = ctx.createLinearGradient(0, ry, 0, ry + 14); g.addColorStop(0, '#a87442'); g.addColorStop(1, '#5e3a1a');
+    ctx.fillStyle = g; rrect(rx, ry, rw, 14, 7); ctx.fill();
+    ctx.fillStyle = '#3a220e'; ctx.beginPath(); ctx.arc(rx + 7, ry + 7, 9, 0, 7); ctx.arc(rx + rw - 7, ry + 7, 9, 0, 7); ctx.fill();
+  },
+  // 和紙短冊（紅框、紅字）
+  tanzaku(cx, cy, str, size = 22) {
+    ctx.font = `${size}px ${FONT}`;
+    const w = ctx.measureText(str).width + 56, h = size * 2;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.02);
+    ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 4;
+    ctx.fillStyle = '#f7eed8'; ctx.fillRect(-w / 2, -h / 2, w, h);
+    ctx.shadowColor = 'transparent';
+    ctx.strokeStyle = '#c8321e'; ctx.lineWidth = 2; ctx.strokeRect(-w / 2 + 5, -h / 2 + 5, w - 10, h - 10);
+    ctx.restore();
+    this.text(str, cx, cy + 1, size, { fill: '#a3200f', stroke: null });
+  },
+  // 竹竿（掛木札用）
+  pole(x, y, w) {
+    const g = ctx.createLinearGradient(0, y - 7, 0, y + 7); g.addColorStop(0, '#e2cf86'); g.addColorStop(1, '#8c7a36');
+    ctx.fillStyle = g; rrect(x, y - 7, w, 14, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(70,55,15,.7)'; ctx.lineWidth = 2;
+    for (let k = x + 70; k < x + w - 20; k += 110) { ctx.beginPath(); ctx.moveTo(k, y - 7); ctx.lineTo(k, y + 7); ctx.stroke(); }
+  },
+
+  // 木牌按鈕。o.lacquer 朱漆；o.tag 掛在竿上的木札（會擺動）；o.sub 小字副標
   button(scr, label, x, y, w, h, o = {}) {
     const i = scr.n++;
     const inside = (px, py) => px >= x && px <= x + w && py >= y && py <= y + h;
@@ -69,19 +161,33 @@ const UI = {
     const focus = scr.sel === i;
     if (focus && Input.was('confirm')) hit = true;
 
-    const s = focus ? 1.04 + Math.sin(Game.time * 8) * 0.012 : 1;
-    const c1 = o.c1 || '#ffb347', c2 = o.c2 || '#e8502a';
+    const t = Game.time, cx = x + w / 2, r = o.tag ? 8 : Math.min(14, h * 0.2);
     ctx.save();
-    ctx.translate(x + w / 2, y + h / 2); ctx.scale(s, s);
-    rrect(-w / 2, -h / 2 + 6, w, h, h / 2); ctx.fillStyle = 'rgba(10,10,30,.5)'; ctx.fill();
-    const gr = ctx.createLinearGradient(0, -h / 2, 0, h / 2);
-    gr.addColorStop(0, focus ? '#fff27a' : c1); gr.addColorStop(1, focus ? '#ffa41f' : c2);
-    rrect(-w / 2, -h / 2, w, h, h / 2); ctx.fillStyle = gr; ctx.fill();
-    ctx.lineWidth = focus ? 5 : 3.5; ctx.strokeStyle = focus ? '#ffffff' : '#1a1f3a'; ctx.stroke();
-    ctx.globalAlpha = 0.35; ctx.fillStyle = '#fff'; rrect(-w / 2 + 12, -h / 2 + 5, w - 24, h * 0.3, h * 0.15); ctx.fill();
+    if (o.tag) {   // 繩子＋擺動（以掛點為軸）
+      const top = y - (o.ropeH || 24), sw = Math.sin(t * 2.2 + i * 1.3) * (focus ? 0.06 : 0.02);
+      ctx.translate(cx, top); ctx.rotate(sw); ctx.translate(-cx, -top);
+      ctx.strokeStyle = '#2a1608'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x + w * 0.26, y + 10); ctx.lineTo(cx, top); ctx.lineTo(x + w * 0.74, y + 10); ctx.stroke();
+    }
+    const s = focus ? 1.05 + Math.sin(t * 8) * 0.01 : 1;
+    ctx.translate(cx, y + h / 2); ctx.scale(s, s); ctx.translate(-cx, -(y + h / 2));
+    if (focus) {   // 燈火般的光暈
+      ctx.save(); ctx.shadowColor = 'rgba(255,170,60,.95)'; ctx.shadowBlur = 24 + Math.sin(t * 6) * 6;
+      rrect(x, y, w, h, r); ctx.fillStyle = 'rgba(255,170,60,.6)'; ctx.fill(); ctx.restore();
+    }
+    rrect(x + 4, y + 7, w, h, r); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
+    this.wood(x, y, w, h, { r, seed: label, light: focus, lacquer: o.lacquer });
+    if (o.tag) { this.nail(x + w * 0.26, y + 10); this.nail(x + w * 0.74, y + 10); }
+    else if (w > 160) { this.nail(x + 14, y + h / 2); this.nail(x + w - 14, y + h / 2); }
+    // 烙印字（淺色下緣 = 刻痕感）
+    const size = o.size || Math.min(32, h * 0.46), my = o.sub ? y + h * 0.43 : y + h / 2 + 2;
+    const ink = o.lacquer ? '#fff6e0' : focus ? '#9a1a08' : '#3a1d0a';
+    const maxW = w - (o.tag ? 20 : 70);
+    if (!o.lacquer) this.text(label, cx, my + 1.5, size, { fill: 'rgba(255,236,200,.5)', stroke: null, maxW });
+    this.text(label, cx, my, size, { fill: ink, stroke: o.lacquer ? '#5a0f05' : null, sw: 6, maxW });
+    if (o.sub) this.text(o.sub, cx, y + h * 0.8, Math.max(12, size * 0.42), { fill: o.lacquer ? '#ffd9a0' : (focus ? '#9a1a08' : '#6a3c18'), stroke: null, maxW });
+    if (focus && !o.tag && w > 200) { this.lantern(x + 36, y + h / 2, 0.9); this.lantern(x + w - 36, y + h / 2, 0.9); }
     ctx.restore();
-    this.text(label, x + w / 2, y + h / 2 + 2, o.size || Math.min(32, h * 0.48), { fill: focus ? '#7a2a10' : '#fff', stroke: focus ? '#ffffff' : '#1a1f3a', sw: 6, maxW: w - 60 });
-    if (focus) this.text('▶', x + 30, y + h / 2 + 2, 22, { fill: '#e8502a', stroke: '#fff', sw: 4 });
     if (hit) Sound.play(o.back ? 'back' : 'confirm');
     return hit;
   },

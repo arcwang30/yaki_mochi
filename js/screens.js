@@ -47,8 +47,8 @@ Screens.title = {
   frame() {
     const pulse = Scene.idlePulse();
     Scene.draw(pulse);
-    UI.ribbon(W / 2, 292, 'リズム屋台', 50, 520);
-    UI.text('節奏熱炒遊戲', W / 2, 362, 26, { fill: '#ffe8b0', sw: 8 });
+    UI.noren(W / 2, 252, 460, 118, 'リズム屋台');
+    UI.tanzaku(W / 2, 404, '節奏熱炒遊戲');
     const label = Input.touchMode ? 'TAP TO START' : Input.padConnected ? 'PRESS START' : 'PRESS ANY KEY';
     UI.text(label, W / 2, 1080, 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: 0.6 + 0.4 * Math.sin(Game.time * 4) });
     drawButtonImg(W / 2, 1220, 130 + pulse * 6);
@@ -58,27 +58,38 @@ Screens.title = {
 };
 
 // ---------- 主選單 ----------
+// 按鈕放在畫面最下方（攤位前的吧台與板凳上），不擋主角：
+// 第 1 排 = 朱漆「開始遊戲」大木牌；第 2 排 = 掛在竹竿上的四塊木札
 Screens.menu = {
-  sel: 0, n: 0,
+  sel: 0, n: 0, lastTag: 1,
+  TAGS: [['操作說明', 'HOW TO PLAY', 'howto'], ['排行榜', 'RANKING', 'ranking'], ['設定', 'SETTINGS', 'settings'], ['CREDIT', '製作名單', 'credits']],
   enter() { this.sel = 0; chef.idlePose = 'wave'; chef.queue = []; Sound.init(); Sound.duck(false); Sound.startBgm(); },
   frame() {
     menuBackdrop(0);
-    UI.ribbon(W / 2, 292, 'リズム屋台', 50, 520);
-    UI.text('HISCORE  ' + pad(Save.best(), 7), W / 2, 368, 24, { fill: '#ffe8b0', sw: 7 });
-    // 按鈕底板
-    ctx.fillStyle = 'rgba(8,10,30,.55)'; rrect(120, 722, 480, 462, 30); ctx.fill();
+    const gr = ctx.createLinearGradient(0, 930, 0, H);   // 下方壓暗，讓木牌清楚
+    gr.addColorStop(0, 'rgba(8,10,30,0)'); gr.addColorStop(1, 'rgba(8,10,30,.82)');
+    ctx.fillStyle = gr; ctx.fillRect(0, 930, W, H - 930);
+    UI.noren(W / 2, 252, 460, 118, 'リズム屋台');
+    UI.tanzaku(W / 2, 404, 'HISCORE  ' + pad(Save.best(), 7));
+
     UI.begin(this);
-    const items = [
-      ['開始遊戲', '#8dff8a', '#2fc46a', 'game'], ['操作說明', '#8ee8ff', '#3ea8ff', 'howto'],
-      ['排行榜', '#ffe680', '#ffb02e', 'ranking'], ['設定', '#d6b3ff', '#9a6bff', 'settings'],
-      ['CREDIT', '#ffb3d1', '#ff6b9a', 'credits']
-    ];
-    items.forEach(([label, c1, c2, dest], i) => {
-      if (UI.button(this, label, 160, 744 + i * 86, 400, 68, { c1, c2 })) App.goto(dest);
+    if (UI.button(this, '開始遊戲', 170, 980, 380, 92, { lacquer: true, sub: 'START', size: 40 })) App.goto('game');
+    UI.pole(16, 1098, W - 32);
+    this.TAGS.forEach(([label, sub, dest], k) => {
+      if (UI.button(this, label, 33 + k * 166, 1122, 154, 94, { tag: true, sub, size: 27, ropeH: 24 })) App.goto(dest);
     });
-    UI.nav(this);
+    this.nav();
     UI.navHint();
     UI.copyright();
+  },
+  // 兩排的方向鍵移動：0 = 開始遊戲；1~4 = 下排木札
+  nav() {
+    const s = this.sel, go = v => { if (v !== this.sel) { this.sel = v; Sound.play('select'); } };
+    if (Input.was('down') && s === 0) go(this.lastTag);
+    if (Input.was('up') && s > 0) { this.lastTag = s; go(0); }
+    if (Input.was('left') && s > 1) go(s - 1);
+    if (Input.was('right') && s >= 1 && s < 4) go(s + 1);
+    if (Input.was('right') && s === 0) go(this.lastTag);
   }
 };
 

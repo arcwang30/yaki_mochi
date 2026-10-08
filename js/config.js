@@ -91,5 +91,8 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const rand = (a, b) => a + Math.random() * (b - a);
 const ease = t => 1 - Math.pow(1 - t, 3);
 const pad = (n, len) => String(Math.max(0, Math.floor(n))).padStart(len, '0');
+// 固定種子的亂數（木紋等每幀都要畫成一樣的花紋）
+function mulberry(a) { return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+const hashStr = s => { let h = 7; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) | 0; return h; };
 const mel = n => 293.66 * Math.pow(2, n / 12);
 const bassF = n => 73.42 * Math.pow(2, n / 12);
