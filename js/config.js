@@ -28,6 +28,17 @@ const WIN = { GREAT: 0.05, NICE: 0.09, GOOD: 0.13, BAD: 0.18 };  // 判定時間
 const POINTS = { GREAT: 300, NICE: 200, GOOD: 100, BAD: 0 };
 const COMBO_BONUS = 4, COMBO_CAP = 50;                           // 每次命中加 min(連擊, 50) × 4
 const OKO_BONUS = 1000;                                          // 合成一份廣島燒的獎勵
+// 節奏評價：依「得分 ÷ 該曲滿分」分 5 級（各曲音符數不同，用比例才公平）
+// 滿分 = 每個音符都 GREAT＋連擊不斷＋所有可合成的廣島燒
+const maxScoreFor = n => { let s = 0; for (let i = 1; i <= n; i++) s += POINTS.GREAT + Math.min(i, COMBO_CAP) * COMBO_BONUS; return s + Math.floor(n / TYPES.length) * OKO_BONUS; };
+const RATINGS = [
+  { min: 0.90, stamp: '特上', color: '#c8321e', title: '傳說的鐵板之神', desc: '鍋鏟一揮，整條夜市都在排隊！大王KUNI 也要叫你一聲師父。' },
+  { min: 0.75, stamp: '上',   color: '#e07a10', title: '人氣排隊名攤',   desc: '節奏又穩又帥，客人邊吃邊跟著打拍子，今晚又是完售！' },
+  { min: 0.55, stamp: '並',   color: '#2e9a3e', title: '認真的見習生',   desc: '有模有樣！只是偶爾把高麗菜切成高麗「塊」……' },
+  { min: 0.35, stamp: '見習', color: '#2a6fd6', title: '手忙腳亂的新人', desc: '鍋鏟揮得比拍子還快，培根飛到隔壁章魚燒攤了！' },
+  { min: 0,    stamp: '修行', color: '#7a6aa8', title: '鐵板上的災難',   desc: '客人默默轉身去吃章魚燒了……明天再來練練吧！' },
+];
+const ratingFor = ratio => RATINGS.findIndex(r => ratio >= r.min);
 const OKO_FX_Y = 430;                                            // 「廣島燒完成！」演出的中心高度（在主角頭頂上方，不擋臉）
 
 // ---- 食材 ----

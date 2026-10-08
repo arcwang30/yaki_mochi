@@ -801,9 +801,36 @@ Screens.credits = {
 
 // ---------- 結算 ----------
 Screens.result = {
+  // 節奏評價：紅色印章（分數數完後「咚」地蓋下）＋稱號＋評語
+  drawRating(r, x, y, w, t) {
+    const R = RATINGS[r.rating], k = clamp((t - 1.45) / 0.22, 0, 1);
+    if (k <= 0) return;
+    if (!this.stamped) { this.stamped = true; if (A.ctx) { SND.don(A.ctx.currentTime, 0.9, A.ui); nz(A.ctx.currentTime, 0.06, 0.3, A.ui, { type: 'lowpass', f: 600 }); } }
+    // 底框（和紙色帶）
+    ctx.fillStyle = 'rgba(200,50,30,.07)'; rrect(x + 20, y, w - 40, 90, 14); ctx.fill();
+    ctx.strokeStyle = 'rgba(200,50,30,.35)'; ctx.lineWidth = 2; rrect(x + 20, y, w - 40, 90, 14); ctx.stroke();
+    // 印章：從 2 倍大蓋下來，略微傾斜
+    const cx = x + 74, cy = y + 45, s = 1 + (1 - ease(k)) * 1.2;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.12); ctx.scale(s, s); ctx.globalAlpha *= Math.min(1, k * 1.5);
+    ctx.strokeStyle = R.color; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(0, 0, 33, 0, 7); ctx.stroke();
+    ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(0, 0, 27, 0, 7); ctx.stroke();
+    const st = tr(R.stamp);
+    UI.text(st, 0, 1, st.length > 1 ? 20 : 30, { fill: R.color, stroke: null, raw: true, maxW: 48 });
+    ctx.restore();
+    // 稱號＋評語
+    const a = clamp((t - 1.6) / 0.3, 0, 1);
+    UI.text(tr('節奏評價'), x + 126, y + 18, 13, { align: 'left', fill: '#8a6a4a', stroke: null, raw: true, alpha: a });
+    UI.text(tr(R.title), x + 126, y + 40, 24, { align: 'left', fill: R.color, stroke: null, raw: true, maxW: w - 160, alpha: a });
+    UI.text(Math.round(r.ratio * 100) + '%', x + w - 36, y + 18, 13, { align: 'right', fill: '#8a6a4a', stroke: null, raw: true, alpha: a });
+    ctx.save(); ctx.globalAlpha *= a;
+    // 評語一行放不下（英文較長）時縮小字級排兩行，不超出底框
+    const two = UI.lines(tr(R.desc), w - 166, 15).length > 1;
+    UI.wrap(R.desc, x + 126, two ? y + 62 : y + 68, w - 166, 17, two ? 13 : 15, { fill: '#5a3a1a' });
+    ctx.restore();
+  },
   sel: 0, n: 0, t: 0, r: null, qualifies: false, checked: false, submitted: false, newRecord: false, input: null,
   enter() {
-    this.r = Game.result; this.t = 0; this.sel = 0; this.checked = false; this.submitted = false; this.shownInput = false;
+    this.r = Game.result; this.t = 0; this.sel = 0; this.checked = false; this.submitted = false; this.shownInput = false; this.stamped = false;
     this.song = songById(this.r.song);
     this.newRecord = this.r.score > Save.best(this.song.id);
     Sound.duck(false);
@@ -850,8 +877,9 @@ Screens.result = {
       drawGradeText(g, gx, y + 466, 1, 1, 26);
       UI.text(String(r.grades[g]), gx, y + 514, 34, { fill: '#1f2a5a', stroke: null });
     });
-    UI.text('MAX COMBO  ' + r.maxCombo, W / 2, y + 580, 26, { fill: '#1f2a5a', stroke: null });
-    if (r.hits >= 5) UI.text(tr('平均時間差：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), W / 2, y + 630, 18, { fill: '#8a6a4a', stroke: null, raw: true });
+    UI.text('MAX COMBO  ' + r.maxCombo, W / 2, y + 556, 24, { fill: '#1f2a5a', stroke: null });
+    if (r.hits >= 5) UI.text(tr('平均時間差：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), W / 2, y + 586, 16, { fill: '#8a6a4a', stroke: null, raw: true });
+    this.drawRating(r, x, y + 604, w, t);
     ctx.restore();
 
     if (t < 1.6) { if (t > 0.4 && (Input.taps.length || Input.was('confirm'))) { this.t = 1.6; Input.taps.length = 0; Input.pressed.delete('confirm'); } return; }

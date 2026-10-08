@@ -366,7 +366,9 @@ const Game = {
     const s = this.s;
     s.ended = true;
     const e = s.errs, avg = e.length ? e.reduce((a, b) => a + b, 0) / e.length : 0;
-    this.result = { song: this.song.id, score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length };
+    const ratio = s.score / maxScoreFor(s.chart.notes.length);
+    this.result = { song: this.song.id, score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length,
+      ratio, rating: ratingFor(ratio) };
     App.goto('result');
   },
 
