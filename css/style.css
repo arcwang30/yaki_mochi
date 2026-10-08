@@ -1,0 +1,61 @@
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 30%, #2a2050 0%, #0d1024 70%);
+  font-family: "Mochiy Pop One", "Microsoft JhengHei", sans-serif;
+  overscroll-behavior: none;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#stage {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#game {
+  display: block;
+  background: #000;
+  touch-action: none;
+  outline: none;
+  box-shadow: 0 0 60px rgba(255, 140, 40, .25);
+}
+
+/* 結算畫面輸入姓名（位置以畫布百分比計算） */
+#nameInput {
+  position: absolute;
+  display: none;
+  left: 20%;
+  width: 60%;
+  top: 72.5%;
+  height: 5.6%;
+  text-align: center;
+  font-family: inherit;
+  color: #1f2a5a;
+  background: #fff;
+  border: 4px solid #e8502a;
+  border-radius: 999px;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+#nameInput:focus { border-color: #ffd23f; box-shadow: 0 0 16px #ffd23f; }
+
+/* 手機橫放時提示轉回直式 */
+#rotate {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  background: #0d1024;
+  color: #fff27a;
+  font-size: 5vmin;
+  align-items: center;
+  justify-content: center;
+}

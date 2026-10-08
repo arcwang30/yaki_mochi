@@ -1,0 +1,57 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>素材前處理</title>
+<style>body{background:#5a8c5a;font:13px sans-serif;color:#fff}.c{display:inline-block;margin:6px;text-align:center}img,canvas{max-width:180px;max-height:180px;display:block;background:repeating-conic-gradient(#888 0 25%,#aaa 0 50%) 0 0/16px 16px}</style>
+</head><body><div id="out"></div>
+<script>
+// mode: 'chef' = 去白底但保留原尺寸比例（所有姿勢對齊）；'item' = 去白底並裁切；'copy' = 只縮放
+const JOBS = [
+  ['chef_idle.webp','chef'],['chef_wave.webp','chef'],['chef_knife.webp','chef'],['chef_spatula.webp','chef'],
+  ['chef_sauce.webp','chef'],['chef_great.png','chef'],['chef_nice.webp','chef'],['chef_bad.webp','chef'],['chef_cheer.webp','chef'],
+  ['cabbage_raw.webp','item'],['cabbage_shred.webp','item'],['bacon_raw.webp','item'],['bacon_bits.webp','item'],
+  ['noodles_raw.webp','item'],['yakisoba.webp','item'],['crepe_raw.webp','item'],['crepe_sauce.webp','item'],
+  ['okonomiyaki.webp','item'],['button.png','item'],['great_text.png','item'],['griddle.png','wide'],
+];
+// wide = 已是透明底的寬圖（鐵板吧台），只裁切縮放
+const MAXW = { chef: 560, item: 420, wide: 760 };
+function load(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src;});}
+function removeBg(c){
+  const x=c.getContext('2d'),w=c.width,h=c.height,d=x.getImageData(0,0,w,h),p=d.data;
+  const seen=new Uint8Array(w*h),clr=new Uint8Array(w*h),st=[];
+  const bg=i=>{const k=i*4;return p[k+3]<24||(p[k]>226&&p[k+1]>226&&p[k+2]>226);};
+  for(let i=0;i<w;i++)st.push(i,(h-1)*w+i); for(let j=0;j<h;j++)st.push(j*w,j*w+w-1);
+  while(st.length){const i=st.pop();if(seen[i])continue;seen[i]=1;if(!bg(i))continue;p[i*4+3]=0;clr[i]=1;
+    const xx=i%w;if(xx>0)st.push(i-1);if(xx<w-1)st.push(i+1);if(i>=w)st.push(i-w);if(i<w*(h-1))st.push(i+w);}
+  // 兩輪柔化白邊
+  for(let pass=0;pass<2;pass++){const mark=[];
+    for(let i=w;i<w*(h-1);i++){if(clr[i])continue;if(clr[i-1]||clr[i+1]||clr[i-w]||clr[i+w]){const k=i*4,m=Math.min(p[k],p[k+1],p[k+2]);
+      if(m>200){p[k+3]=pass?Math.round(p[k+3]*0.5):0;mark.push(i);}}}
+    if(!pass)mark.forEach(i=>clr[i]=1);}
+  x.putImageData(d,0,0);
+}
+function bbox(c){const w=c.width,h=c.height,p=c.getContext('2d').getImageData(0,0,w,h).data;let x0=w,y0=h,x1=0,y1=0;
+  for(let j=0;j<h;j++)for(let i=0;i<w;i++)if(p[(j*w+i)*4+3]>16){if(i<x0)x0=i;if(i>x1)x1=i;if(j<y0)y0=j;if(j>y1)y1=j;}
+  return [x0,y0,x1-x0+1,y1-y0+1];}
+async function run(){
+  const report=[];
+  for(const [file,mode] of JOBS){
+    const img=await load('../assets/source/'+file);
+    let c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;c.getContext('2d').drawImage(img,0,0);
+    if(mode!=='wide')removeBg(c);
+    let [bx,by,bw,bh]=mode!=='chef'?bbox(c):[0,0,c.width,c.height];
+    const pad=mode==='item'?4:0, s=Math.min(1,MAXW[mode]/bw);
+    const o=document.createElement('canvas');o.width=Math.round((bw+pad*2)*s);o.height=Math.round((bh+pad*2)*s);
+    const ox=o.getContext('2d');ox.imageSmoothingQuality='high';ox.drawImage(c,bx-pad,by-pad,bw+pad*2,bh+pad*2,0,0,o.width,o.height);
+    const name=file.replace(/\.\w+$/,'.png');
+    const blob=await new Promise(r=>o.toBlob(r,'image/png'));
+    const r=await fetch('/__save?name='+name,{method:'POST',body:blob});
+    report.push({name,w:o.width,h:o.height,src:img.naturalWidth+'x'+img.naturalHeight,ok:r.ok});
+    const div=document.createElement('div');div.className='c';div.append(o);div.append(name+' '+o.width+'x'+o.height);document.getElementById('out').append(div);
+  }
+  // 背景：縮放後存 jpg
+  const bg=await load('../assets/source/bg_stall.jpg');const bc=document.createElement('canvas');bc.width=bg.naturalWidth;bc.height=bg.naturalHeight;bc.getContext('2d').drawImage(bg,0,0);
+  const bb=await new Promise(r=>bc.toBlob(r,'image/jpeg',0.88));const rr=await fetch('/__save?name=bg_stall.jpg',{method:'POST',body:bb});
+  report.push({name:'bg_stall.jpg',w:bc.width,h:bc.height,ok:rr.ok});
+  window.REPORT=report;return report;
+}
+window.DONE=run();
+</script></body></html>

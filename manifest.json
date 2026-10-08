@@ -1,0 +1,9 @@
+{
+  "name": "大王焼き リズム屋台",
+  "short_name": "大王焼き",
+  "start_url": ".",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#0d1024",
+  "theme_color": "#0d1024"
+}

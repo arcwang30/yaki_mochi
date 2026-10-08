@@ -1,0 +1,514 @@
+'use strict';
+
+// ===== 節奏遊戲核心：場景、主角、特效、譜面、時鐘、判定、HUD =====
+
+// ---------- 主角姿勢 ----------
+const chef = { queue: [], pose: 'wave', poseT: 0, idlePose: 'wave' };
+function setPoses(list) { chef.queue = list.map(p => ({ ...p })); chef.pose = chef.queue[0].pose; chef.poseT = 0; }
+function updateChef(dt) {
+  if (!chef.queue.length) { chef.pose = chef.idlePose; return; }
+  chef.poseT += dt;
+  if (chef.poseT >= chef.queue[0].dur) {
+    chef.queue.shift(); chef.poseT = 0;
+    chef.pose = chef.queue.length ? chef.queue[0].pose : chef.idlePose;
+  }
+}
+
+// ---------- 特效 ----------
+const Fx = {
+  particles: [], embers: [], popups: [],
+  burst(x, y, color, n = 14, spd = 380) {
+    for (let i = 0; i < n; i++) {
+      const a = rand(-Math.PI * 0.95, -Math.PI * 0.05), v = rand(spd * 0.35, spd);
+      this.particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rand(0.4, 0.8), max: 0.8, color, size: rand(4, 9), g: 1100, kind: 'bit' });
+    }
+  },
+  stars(x, y, n = 8) {
+    for (let i = 0; i < n; i++) { const a = rand(0, Math.PI * 2), v = rand(150, 420); this.particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.5, max: 0.5, color: '#fff6b0', size: rand(6, 11), g: 0, kind: 'star' }); }
+  },
+  steam(x, y, n = 3) { for (let i = 0; i < n; i++) this.particles.push({ x: x + rand(-50, 50), y, vx: rand(-20, 20), vy: rand(-90, -50), life: rand(0.7, 1.2), max: 1.2, size: rand(14, 24), g: -20, kind: 'steam' }); },
+  smoke(x, y) { this.particles.push({ x, y, vx: 0, vy: -60, life: 0.8, max: 0.8, size: 18, g: -20, kind: 'smoke' }); },
+  clear() { this.particles = []; this.popups = []; },
+  update(dt) {
+    for (const p of this.particles) { p.vy += p.g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.life -= dt; }
+    this.particles = this.particles.filter(p => p.life > 0);
+    for (const p of this.popups) { p.y -= 60 * dt; p.life -= dt; }
+    this.popups = this.popups.filter(p => p.life > 0);
+    if (Math.random() < dt * 14) this.embers.push({ x: rand(0, W), y: rand(H * 0.35, H * 0.7), vy: rand(-40, -15), vx: rand(-8, 8), life: rand(2, 4), max: 4, size: rand(1.5, 3.5), hue: rand(25, 50) });
+    for (const e of this.embers) { e.x += e.vx * dt + Math.sin(Game.time * 2 + e.y * 0.02) * 0.3; e.y += e.vy * dt; e.life -= dt; }
+    this.embers = this.embers.filter(e => e.life > 0);
+  },
+  draw() {
+    for (const p of this.particles) {
+      const a = clamp(p.life / p.max, 0, 1);
+      if (p.kind === 'steam' || p.kind === 'smoke') {
+        ctx.fillStyle = p.kind === 'steam' ? `rgba(255,255,255,${a * 0.3})` : `rgba(40,40,40,${a * 0.45})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size * (1.7 - a * 0.7), 0, 7); ctx.fill();
+      } else if (p.kind === 'star') {
+        ctx.save(); ctx.globalAlpha = a; ctx.fillStyle = p.color; ctx.translate(p.x, p.y); ctx.rotate(Game.time * 8);
+        ctx.beginPath(); for (let i = 0; i < 10; i++) { const r = i % 2 ? p.size * 0.45 : p.size; ctx.lineTo(Math.cos(i * Math.PI / 5) * r, Math.sin(i * Math.PI / 5) * r); } ctx.fill(); ctx.restore();
+      } else { ctx.globalAlpha = a; ctx.fillStyle = p.color; ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size); ctx.globalAlpha = 1; }
+    }
+  },
+};
+
+// ---------- 場景（背景、燈籠光暈、主角、鐵板）：選單與遊戲共用 ----------
+const Scene = {
+  bg: { s: 1, x: 0, y: 0 },
+  draw(pulse) {
+    this.background(pulse);
+    this.chef(pulse);
+    this.griddle();
+  },
+  background(pulse) {
+    const img = IMG.bg_stall;
+    if (img) {
+      const s = Math.max(W / img.width, H / img.height); this.bg = { s, x: (W - img.width * s) / 2, y: (H - img.height * s) / 2 };
+      ctx.drawImage(img, this.bg.x, this.bg.y, img.width * s, img.height * s);
+    } else { ctx.fillStyle = '#1a1f3a'; ctx.fillRect(0, 0, W, H); }
+    // 燈籠光暈：隨節拍一起閃
+    const B = this.bg;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    LANTERNS.forEach(([lx, ly, c], i) => {
+      const x = B.x + lx * B.s, y = B.y + ly * B.s;
+      const flick = 0.75 + 0.25 * Math.sin(Game.time * 7 + i * 1.7) * Math.sin(Game.time * 3.1 + i);
+      const r = (i < 10 ? 70 : 42) * (1 + pulse * 0.25);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, hexA(c, 0.42 * flick * (0.7 + pulse * 0.5))); g.addColorStop(1, hexA(c, 0));
+      ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    });
+    for (const e of Fx.embers) {
+      const a = clamp(e.life / e.max, 0, 1) * (0.6 + 0.4 * Math.sin(Game.time * 9 + e.x));
+      ctx.fillStyle = `hsla(${e.hue},100%,65%,${a})`; ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  },
+  chef(pulse) {
+    const img = IMG['chef_' + chef.pose] || IMG.chef_idle;
+    if (!img) return;
+    const w = 620, h = w * img.height / img.width, f = w / img.width;
+    const idle = chef.pose === 'idle' || chef.pose === 'wave';
+    const sy = idle ? 1 - pulse * 0.02 : 1;
+    const bob = idle ? pulse * 6 : 0;
+    ctx.save(); ctx.translate(ZONE.x, 543 + h + bob); ctx.scale(1, sy);
+    ctx.translate(-w / 2, -h); // 之後以原圖座標 × f 繪製
+    const adj = POSE_ADJ[chef.pose];
+    if (adj) {
+      ctx.translate(adj.t[0] * f, (adj.t[1] - adj.lift) * f); ctx.scale(adj.s, adj.s);
+      ctx.drawImage(img, -adj.a[0] * f, -adj.a[1] * f, w, h);
+    } else ctx.drawImage(img, 0, 0, w, h);
+    ctx.restore();
+  },
+  griddle() {
+    const img = IMG.griddle; if (!img) return;
+    ctx.drawImage(img, 0, GRIDDLE_Y, W, W * img.height / img.width);
+  },
+  // 選單用的節拍脈動（跟著選單音樂的速度）
+  idlePulse() { const ph = Game.time * MENU_BPM / 60; return Math.exp(-(ph % 1) * 5); },
+};
+
+// ---------- 譜面產生 ----------
+let bag = [];
+function nextType() { if (!bag.length) bag = TYPES.slice().sort(() => Math.random() - 0.5); return bag.pop(); }
+
+function buildChart(t0) {
+  const measures = [], notes = [], events = [];
+  let t = t0;
+  measures.push({ kind: 'count', bpm: SECTIONS[0].bpm, start: t, sec: 0, idx: -1 });
+  t += 4 * 60 / SECTIONS[0].bpm;
+  SECTIONS.forEach((s, si) => {
+    let pat = null;
+    for (let m = 0; m < MEASURES; m++) {
+      const bd = 60 / s.bpm, ms = { kind: m === MEASURES - 1 ? 'rest' : 'play', bpm: s.bpm, start: t, sec: si, idx: m };
+      measures.push(ms);
+      if (ms.kind === 'play') {
+        if (m % 2 === 0) { const lv = s.lv[(Math.random() * s.lv.length) | 0]; pat = PATTERNS[lv][(Math.random() * PATTERNS[lv].length) | 0]; }
+        for (const b of pat) notes.push({ t: t + b * bd, throwT: t + (b - LEAD_BEATS) * bd, type: nextType(), side: Math.random() < 0.5 ? -1 : 1, state: 'fly' });
+      }
+      t += 4 * bd;
+    }
+  });
+  const lastBpm = SECTIONS[SECTIONS.length - 1].bpm;
+  measures.push({ kind: 'outro', bpm: lastBpm, start: t, sec: SECTIONS.length - 1, idx: 8 });
+  const end = t + 4 * 60 / lastBpm;
+  // 樂曲事件（隨段落加入拍手、鉦、笛，越後面越熱鬧）
+  for (const ms of measures) {
+    const bd = 60 / ms.bpm, sd = bd / 2, st = ms.start;
+    if (ms.kind === 'count') {
+      for (let b = 0; b < 4; b++) events.push({ t: st + b * bd, f: x => SND.wood(x, b === 0) });
+      events.push({ t: st, f: x => SND.don(x, 0.7) });
+      continue;
+    }
+    if (ms.kind === 'outro') {
+      [0, 1, 2].forEach(b => events.push({ t: st + b * bd, f: x => SND.don(x, 1) }));
+      events.push({ t: st + 2 * bd, f: x => { [0, 4, 7, 12].forEach((n, i) => SND.shamisen(x + i * 0.03, mel(n))); SND.kane(x, 1.5); SND.bass(x, bassF(0), 1.2); } });
+      continue;
+    }
+    const mi = ms.idx % 8, tk = ms.kind === 'rest' ? TAIKO.fill : (mi === 3 ? TAIKO.vary : TAIKO.normal);
+    for (let s = 0; s < 8; s++) {
+      const tt = st + s * sd;
+      if (tk[s] === 'don') events.push({ t: tt, f: x => SND.don(x, 0.8) });
+      else if (tk[s] === 'ka') events.push({ t: tt, f: x => SND.ka(x) });
+      const n = MELODY[mi][s];
+      if (n !== null) {
+        events.push({ t: tt, f: x => SND.shamisen(x, mel(n)) });
+        if (ms.sec >= 4) events.push({ t: tt, f: x => SND.fue(x, mel(n) * 2, sd * 1.6) });
+      }
+      const r = BASS_ROOT[mi];
+      if (s === 0 || s === 3 || s === 6) events.push({ t: tt, f: x => SND.bass(x, bassF(r), sd * 1.2) });
+      if (s === 4) events.push({ t: tt, f: x => SND.bass(x, bassF(r + 7), sd * 1.2) });
+      if (ms.sec >= 2 && s % 2 === 1) events.push({ t: tt, f: x => SND.kane(x, 0.8) });
+      if (ms.sec >= 1 && (s === 2 || s === 6)) events.push({ t: tt, f: x => SND.clap(x) });
+    }
+    if (ms.kind === 'rest' && ms.sec < SECTIONS.length - 1) events.push({ t: st + 2 * bd, f: x => SND.speedUp(x, bd) });
+  }
+  for (const n of notes) events.push({ t: n.throwT, f: x => SND.cue(x, n.type) });
+  events.sort((a, b) => a.t - b.t);
+  return { measures, notes, events, end, evIdx: 0 };
+}
+
+// ---------- 遊戲 ----------
+const GRADE_STYLE = { NICE: ['#fff2a8', '#ff9a1a', '#6e2a00'], GOOD: ['#d8f2ff', '#3d8fe0', '#0c2c63'], BAD: ['#eee6ff', '#8e7cc0', '#2b2050'] };
+const RESUME_BEATS = 3;   // 暫停後繼續時的倒數拍數
+
+const Game = {
+  time: 0,     // 真實時間（動畫用）
+  s: null,     // 本局狀態
+  result: null,
+
+  newRun() {
+    Sound.init(); Sound.stopBgm(); Sound.duck(false);
+    bag = [];
+    const t0 = A.ctx.currentTime + 0.6;
+    this.s = {
+      chart: buildChart(t0), off: 0, paused: false, pauseAt: 0, resumeT: 0, ended: false,
+      score: 0, combo: 0, maxCombo: 0, grades: { GREAT: 0, NICE: 0, GOOD: 0, BAD: 0 },
+      stock: { noodles: 0, cabbage: 0, crepe: 0, bacon: 0 }, oko: 0, errs: [],
+      bump: {}, okoAnims: [], gradeFx: null, pressT: -9,
+    };
+    Fx.clear();
+    chef.queue = []; chef.idlePose = 'idle'; chef.pose = 'idle';
+  },
+
+  // 樂曲時鐘（秒）：暫停時停住；繼續時把暫停的時間扣掉
+  clock() { const s = this.s; return (s.paused ? s.pauseAt : A.ctx.currentTime) - s.off; },
+  songTime() { return this.clock() - Sound.latency(); },
+  measureAt(t) {
+    const ms = this.s.chart.measures; let m = ms[0];
+    for (const x of ms) { if (x.start <= t) m = x; else break; }
+    return m;
+  },
+  pulse() {
+    const st = this.songTime(), m = this.measureAt(st), ph = (st - m.start) / (60 / m.bpm);
+    return ph < 0 ? 0 : Math.exp(-(ph % 1) * 5);
+  },
+
+  // 把即將播放的樂曲事件排進 AudioContext（提前 0.2 秒）
+  schedule() {
+    const s = this.s;
+    if (!s || s.paused || s.ended || !A.ctx || A.ctx.state !== 'running') return;
+    const ch = s.chart, now = A.ctx.currentTime;
+    while (ch.evIdx < ch.events.length && ch.events[ch.evIdx].t + s.off < now + 0.2) {
+      const e = ch.events[ch.evIdx++], at = e.t + s.off;
+      if (at >= now - 0.02) e.f(Math.max(at, now));
+    }
+  },
+
+  // ---- 暫停 / 繼續 ----
+  pause() {
+    const s = this.s;
+    if (!s || s.ended) return;
+    if (s.paused) { this.cancelCount(); return; }   // 倒數中再按一次：取消倒數
+    s.paused = true; s.resumeT = 0; s.pauseAt = A.ctx.currentTime;
+    Sound.duck(true);
+    // 已提前排入、但還沒播放的事件：倒回去，繼續時重新排
+    const c = s.pauseAt - s.off, ev = s.chart.events;
+    let i = s.chart.evIdx; while (i > 0 && ev[i - 1].t > c) i--;
+    s.chart.evIdx = i;
+  },
+  cancelCount() {
+    const s = this.s;
+    s.resumeT = 0;
+    if (s.countBus) { try { s.countBus.disconnect(); } catch (e) { /* ignore */ } s.countBus = null; }
+  },
+  // 目前倒數到第幾拍（3 → 2 → 1）；沒在倒數時回傳 0
+  countdown() {
+    const s = this.s;
+    if (!s || !s.paused || s.resumeT <= 0) return 0;
+    let k = 0;
+    for (const t of s.resumeTicks) if (A.ctx.currentTime >= t.at) k = t.k;
+    return k;
+  },
+  resume() {
+    const s = this.s;
+    if (!s || !s.paused || s.resumeT > 0) return;
+    // 倒數對齊原本的拍子格線：3、2、1 落在拍點上，接下來的拍點正好接回樂曲
+    const c = this.clock(), m = this.measureAt(c), bd = 60 / m.bpm;
+    const ph = (c - m.start) / bd, frac = ph > 0 ? ph - Math.floor(ph) : 0;
+    const now = A.ctx.currentTime;
+    s.resumeAt = now + 0.05 + (RESUME_BEATS - 1 + frac) * bd;   // 樂曲在這個時間點接回
+    s.resumeTicks = [];
+    s.countBus = A.ctx.createGain(); s.countBus.connect(A.ui);   // 取消倒數時整條斷開
+    for (let k = RESUME_BEATS; k >= 1; k--) {
+      const at = s.resumeAt - (k - 1 + frac) * bd;
+      s.resumeTicks.push({ k, at });
+      SND.wood(at, k === 1, s.countBus);
+    }
+    s.resumeT = s.resumeAt - now;
+  },
+
+  update(dt) {
+    const s = this.s;
+    if (!s) return;
+    if (s.gradeFx) s.gradeFx.t += s.paused ? 0 : dt;
+    if (s.paused) {
+      if (s.resumeT > 0) {
+        // 依目前速度倒數 3 拍（木魚聲已預先排好），時間到就接回原本的節拍
+        const now = A.ctx.currentTime;
+        s.resumeT = s.resumeAt - now;
+        if (s.resumeT <= 0) {
+          s.resumeT = 0; s.off += s.resumeAt - s.pauseAt; s.paused = false;
+          Sound.duck(false); this.schedule();
+        }
+      }
+      return;
+    }
+    const st = this.songTime();
+    for (const n of s.chart.notes) {
+      if (n.state === 'fly' && st > n.t + WIN.BAD) {
+        n.state = 'miss'; n.endT = st; s.grades.BAD++; s.combo = 0; this.showGrade('BAD');
+        setPoses([{ pose: 'bad', dur: 0.6 }]); SND.bad();
+      } else if (n.state === 'hit' && !n.stocked && st - n.hitT > 0.55) { n.stocked = true; this.addStock(n.type); }
+    }
+    for (const a of s.okoAnims) a.t += dt;
+    s.okoAnims = s.okoAnims.filter(a => a.t < 1.2);
+    if (st > s.chart.end + 0.4) this.finish();
+  },
+
+  // ---- 打擊（tMs = 按下的時間，performance.now 時間軸）----
+  hit(tMs) {
+    const s = this.s;
+    if (!s || s.paused || s.ended || !A.ctx) return;
+    s.pressT = this.time;
+    const delay = Math.max(0, (performance.now() - tMs) / 1000);
+    const jt = this.clock() - delay - Sound.latency() - Save.data.offset / 1000;
+    let best = null, bd = 1e9;
+    for (const n of s.chart.notes) {
+      if (n.state !== 'fly') continue;
+      const d = Math.abs(jt - n.t);
+      if (d <= WIN.BAD && d < bd) { best = n; bd = d; }
+      if (n.t > jt + 1) break;
+    }
+    if (!best) { SND.whiff(); setPoses([{ pose: 'spatula', dur: 0.12 }]); return; }
+    const grade = bd <= WIN.GREAT ? 'GREAT' : bd <= WIN.NICE ? 'NICE' : bd <= WIN.GOOD ? 'GOOD' : 'BAD';
+    s.errs.push(jt - best.t);
+    this.judge(best, grade);
+  },
+  judge(n, grade) {
+    const s = this.s;
+    s.grades[grade]++;
+    this.showGrade(grade);
+    if (grade === 'BAD') {
+      n.state = 'bad'; n.endT = this.songTime(); n.dir = n.side * -1;
+      s.combo = 0; SND.bad(); Sound.vibrate(40);
+      setPoses([{ pose: 'bad', dur: 0.6 }]);
+      return;
+    }
+    n.state = 'hit'; n.hitT = this.songTime(); n.dir = Math.random() < 0.5 ? -1 : 1;
+    s.combo++; s.maxCombo = Math.max(s.maxCombo, s.combo);
+    const pts = POINTS[grade] + Math.min(s.combo, COMBO_CAP) * COMBO_BONUS;
+    s.score += pts;
+    Fx.popups.push({ text: '+' + pts, x: ZONE.x + rand(-40, 40), y: ZONE.y - 70, life: 0.8 });
+    SND.hit(n.type, grade); Sound.vibrate(12);
+    Fx.burst(ZONE.x, ZONE.y, ING[n.type].color, grade === 'GREAT' ? 18 : 10);
+    if (grade === 'GREAT') Fx.stars(ZONE.x, ZONE.y - 20, 10);
+    Fx.steam(ZONE.x, ZONE.y - 10, 2);
+    const react = grade === 'GREAT' ? 'great' : grade === 'NICE' ? 'nice' : 'idle';
+    setPoses([{ pose: ING[n.type].pose, dur: 0.11 }, { pose: react, dur: 0.42 }]);
+  },
+  showGrade(g) { this.s.gradeFx = { g, t: 0 }; },
+  addStock(type) {
+    const s = this.s;
+    s.stock[type]++; s.bump[type] = this.time;
+    if (TYPES.every(k => s.stock[k] > 0)) {
+      TYPES.forEach(k => s.stock[k]--);
+      s.oko++; s.score += OKO_BONUS; s.bump.oko = this.time + 0.9;
+      s.okoAnims.push({ t: 0 });
+      SND.fanfare(A.ctx.currentTime);
+      setPoses([{ pose: 'cheer', dur: 0.8 }]);
+    }
+  },
+  finish() {
+    const s = this.s;
+    s.ended = true;
+    const e = s.errs, avg = e.length ? e.reduce((a, b) => a + b, 0) / e.length : 0;
+    this.result = { score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length };
+    App.goto('result');
+  },
+
+  // ---------- 繪製 ----------
+  draw() {
+    const s = this.s, st = this.songTime(), pulse = s.paused ? 0 : this.pulse();
+    Scene.draw(pulse);
+    this.drawZone(pulse, st);
+    this.drawNotes(st);
+    Fx.draw();
+    this.drawGrade();
+    this.drawOkoAnims();
+    this.drawHUD(pulse, st);
+    this.drawBanner(st);
+    this.drawButton(pulse);
+    this.drawPauseBtn();
+  },
+  drawZone(pulse, st) {
+    const w = ZONE.w * (1 + pulse * 0.06), h = ZONE.h * (1 + pulse * 0.06);
+    // 下一個食材越靠近，落點陰影越大
+    let near = null;
+    for (const n of this.s.chart.notes) if (n.state === 'fly' && st >= n.throwT) { near = n; break; }
+    ctx.save();
+    if (near) {
+      const p = clamp((st - near.throwT) / (near.t - near.throwT), 0, 1);
+      ctx.fillStyle = `rgba(0,0,0,${0.12 + p * 0.25})`;
+      ctx.beginPath(); ctx.ellipse(ZONE.x, ZONE.y + 22, 40 + p * 60, 8 + p * 10, 0, 0, 7); ctx.fill();
+    }
+    ctx.shadowColor = '#ffcf4a'; ctx.shadowBlur = 14 + pulse * 18;
+    ctx.strokeStyle = `rgba(255,214,90,${0.65 + pulse * 0.35})`; ctx.lineWidth = 5; ctx.setLineDash([16, 10]);
+    ctx.lineDashOffset = -this.time * 30;
+    rrect(ZONE.x - w / 2, ZONE.y - h / 2, w, h, 20); ctx.stroke();
+    ctx.restore();
+  },
+  drawNotes(st) {
+    const landY = ZONE.y + 8;
+    for (const n of this.s.chart.notes) {
+      if (st < n.throwT - 0.05) break;
+      const ing = ING[n.type];
+      if (n.state === 'fly') {
+        const p = (st - n.throwT) / (n.t - n.throwT);
+        if (p < 0) continue;
+        if (p <= 1) {
+          const x0 = n.side < 0 ? -140 : W + 140, y0 = 700;
+          const x = x0 + (ZONE.x - x0) * p, y = y0 + (landY - y0) * p - Math.sin(Math.PI * p) * 300;
+          drawImgW(IMG[ing.raw], x, y - 30, ing.rawW * (0.75 + 0.25 * p), (1 - p) * n.side * -5.5);
+        } else {
+          // 落在鐵板上、等待按下（輕輕彈跳）
+          const k = st - n.t;
+          drawImgW(IMG[ing.raw], ZONE.x, landY - 30 - Math.abs(Math.sin(k * 25)) * 6 * Math.exp(-k * 10), ing.rawW);
+        }
+      } else if (n.state === 'hit') {
+        const k = st - n.hitT;
+        if (k > 1.2) continue;
+        const pop = k < 0.15 ? 1.25 - k / 0.15 * 0.25 : 1;
+        const slide = k > 0.18 ? Math.pow((k - 0.18) * 2.2, 2) * 500 : 0;
+        drawImgW(IMG[ing.done], ZONE.x + n.dir * slide, landY - 25 - (k > 0.18 ? slide * 0.05 : 0), ing.doneW * pop);
+      } else {
+        const k = st - n.endT;
+        if (k > 1) continue;
+        if (n.state === 'bad') {
+          drawImgW(IMG[ing.raw], ZONE.x + n.dir * k * 700, landY - 30 - k * 500 + k * k * 1400, ing.rawW, n.dir * k * 12, 1 - k);
+        } else { // 沒按：烤焦變黑後消失
+          ctx.save(); ctx.filter = `brightness(${1 - k * 0.8})`;
+          drawImgW(IMG[ing.raw], ZONE.x, landY - 30 + k * 20, ing.rawW, 0, 1 - k);
+          ctx.restore();
+          if (!this.s.paused && Math.random() < 0.3) Fx.smoke(ZONE.x + rand(-60, 60), ZONE.y);
+        }
+      }
+    }
+  },
+  drawGrade() {
+    const fx = this.s.gradeFx; if (!fx || fx.t > 0.6) return;
+    const s = fx.t < 0.1 ? 0.6 + fx.t / 0.1 * 0.5 : 1.1 - Math.min(0.1, (fx.t - 0.1));
+    const a = fx.t > 0.45 ? 1 - (fx.t - 0.45) / 0.15 : 1, y = 770 - fx.t * 30;
+    if (fx.g === 'GREAT') { drawImgW(IMG.great_text, ZONE.x, y, 330 * s, 0, a); return; }
+    drawGradeText(fx.g, ZONE.x, y, s, a);
+  },
+  drawHUD(pulse, st) {
+    const s = this.s;
+    // 左上：SCORE / HISCORE（窄版，避開招牌）
+    pill(8, 8, 162, 50); txt('SCORE', 26, 27, 12, '#ffd25a', { align: 'left' }); txt(pad(s.score, 7), 156, 50, 22, '#fff', { align: 'right' });
+    pill(8, 62, 162, 40); txt('HISCORE', 26, 78, 10, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(), s.score), 7), 156, 96, 16, '#fff', { align: 'right' });
+    // 右上：廣島燒成品（較顯眼）＋四種食材
+    const ob = s.bump.oko ? Math.max(0, 1 - Math.abs(this.time - s.bump.oko) * 4) : 0;
+    ctx.fillStyle = 'rgba(16,22,52,.82)'; rrect(568, 8, 144, 70, 20); ctx.fill(); ctx.strokeStyle = '#ff9a3c'; ctx.lineWidth = 4; ctx.stroke();
+    drawImgW(IMG.okonomiyaki, 612, 43, 84 * (1 + ob * 0.3), 0);
+    txt('×' + s.oko, 704, 60, 32 + ob * 10, '#fff', { align: 'right', stroke: '#c43a1a', lw: 7 });
+    TYPES.forEach((k, i) => {
+      const x = 600 + (i % 2) * 72, y = 106 + Math.floor(i / 2) * 46;
+      const b = s.bump[k] ? Math.max(0, 1 - (this.time - s.bump[k]) * 4) : 0;
+      ctx.fillStyle = 'rgba(16,22,52,.72)'; rrect(x - 30, y - 20, 68, 40, 12); ctx.fill();
+      drawImgW(IMG[ING[k].done], x - 4, y, 48 * (1 + b * 0.35));
+      txt(String(s.stock[k]), x + 34, y + 15, 18, s.stock[k] ? '#fff' : '#8a8fae', { align: 'right', stroke: '#101634', lw: 5 });
+    });
+    // 左側：TEMPO、進度、COMBO
+    const m = this.measureAt(st), ch = s.chart;
+    txt('TEMPO ' + m.bpm, 14, 126, 16, '#fff', { align: 'left', stroke: '#101634', lw: 6 });
+    const prog = clamp((st - ch.measures[0].start) / (ch.end - ch.measures[0].start), 0, 1);
+    ctx.fillStyle = 'rgba(16,22,52,.7)'; rrect(14, 136, 156, 9, 4.5); ctx.fill();
+    ctx.fillStyle = '#ffb84a'; rrect(14, 136, Math.max(9, 156 * prog), 9, 4.5); ctx.fill();
+    if (s.combo >= 3) {
+      const k = 1 + pulse * 0.08;
+      ctx.save(); ctx.translate(100, 300); ctx.scale(k, k);
+      txt(String(s.combo), 0, 0, 48, '#ffe066', { stroke: '#7a2a00', lw: 10 }); txt('COMBO', 0, 28, 18, '#fff', { stroke: '#7a2a00', lw: 6 });
+      ctx.restore();
+    }
+    for (const p of Fx.popups) txt(p.text, p.x, p.y, 26, `rgba(255,240,140,${clamp(p.life * 2, 0, 1)})`, { stroke: 'rgba(80,30,0,.8)', lw: 7 });
+  },
+  drawOkoAnims() {
+    for (const a of this.s.okoAnims) {
+      let x, y, w;
+      if (a.t < 0.55) { const k = ease(Math.min(1, a.t / 0.25)); x = ZONE.x; y = 600; w = 330 * k * (1 + 0.08 * Math.sin(a.t * 30) * (1 - a.t / 0.55)); }
+      else { const k = ease((a.t - 0.55) / 0.4); x = ZONE.x + (612 - ZONE.x) * k; y = 600 + (43 - 600) * k; w = 330 + (84 - 330) * k; }
+      if (a.t >= 0.95) continue;
+      if (a.t < 0.55) {
+        ctx.save(); ctx.globalCompositeOperation = 'lighter';
+        const g = ctx.createRadialGradient(x, y, 0, x, y, 240); g.addColorStop(0, 'rgba(255,220,120,.55)'); g.addColorStop(1, 'rgba(255,220,120,0)');
+        ctx.fillStyle = g; ctx.fillRect(x - 240, y - 240, 480, 480); ctx.restore();
+        txt('廣島燒完成！', x, y - 108, 40, '#fff', { stroke: '#c43a1a', lw: 10 });
+        txt('+' + OKO_BONUS, x, y - 72, 28, '#ffe066', { stroke: '#7a2a00', lw: 7 });
+      }
+      drawImgW(IMG.okonomiyaki, x, y, w);
+    }
+  },
+  drawBanner(st) {
+    const s = this.s, m = this.measureAt(st), ph = (st - m.start) / (60 / m.bpm);
+    if (s.paused || st < s.chart.measures[0].start) return;
+    if (m.kind === 'count') {
+      const b = Math.floor(ph), k = ph - b, label = ['3', '2', '1', 'GO!'][b];
+      if (label) { const sc = 1.4 - k * 0.4; ctx.save(); ctx.translate(ZONE.x, 540); ctx.scale(sc, sc); txt(label, 0, 0, 96, '#fff', { stroke: '#c43a1a', lw: 16 }); ctx.restore(); }
+    } else if (m.kind === 'rest' && m.sec < SECTIONS.length - 1) {
+      const sc = 1 + Math.abs(Math.sin(ph * Math.PI)) * 0.12;
+      ctx.save(); ctx.translate(ZONE.x, 540); ctx.rotate(-0.06); ctx.scale(sc, sc);
+      txt('SPEED UP!', 0, 0, 64, '#ffe066', { stroke: '#c43a1a', lw: 14 }); ctx.restore();
+    } else if (m.kind === 'outro') {
+      txt('おしまい！', ZONE.x, 540, 64, '#fff', { stroke: '#1f3a8a', lw: 14 });
+    }
+  },
+  drawButton(pulse) {
+    const pressed = this.time - this.s.pressT < 0.1;
+    ctx.save(); ctx.translate(ZONE.x, BTN_Y);
+    ctx.globalCompositeOperation = 'lighter';
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 120); g.addColorStop(0, `rgba(255,120,60,${pressed ? 0.6 : 0.15 + pulse * 0.2})`); g.addColorStop(1, 'rgba(255,120,60,0)');
+    ctx.fillStyle = g; ctx.fillRect(-130, -120, 260, 240);
+    ctx.restore();
+    drawButtonImg(ZONE.x, BTN_Y, 230 * (pressed ? 0.95 : 1 + pulse * 0.03), pressed ? 0.88 : 1);
+  },
+  drawPauseBtn() {
+    const { x, y, r } = PAUSE_BTN;
+    ctx.save();
+    ctx.fillStyle = 'rgba(16,22,52,.8)'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#e8b64a'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.fillStyle = '#fff'; rrect(x - 10, y - 11, 7, 22, 2); ctx.fill(); rrect(x + 3, y - 11, 7, 22, 2); ctx.fill();
+    ctx.restore();
+  },
+};
+
+// GOOD / NICE / BAD 文字（與 GREAT 圖同風格）
+function drawGradeText(g, x, y, s = 1, a = 1, size = 86) {
+  if (g === 'GREAT' && IMG.great_text) { drawImgW(IMG.great_text, x, y, size * 3.85 * s, 0, a); return; }
+  const [c1, c2, c3] = GRADE_STYLE[g], text = g === 'NICE' ? 'NICE!' : g;
+  ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.scale(s, s);
+  ctx.font = `${size}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = size * 0.3; ctx.strokeText(text, 0, 0);
+  ctx.strokeStyle = c3; ctx.lineWidth = size * 0.15; ctx.strokeText(text, 0, 0);
+  const gr = ctx.createLinearGradient(0, -size * 0.47, 0, size * 0.47); gr.addColorStop(0, c1); gr.addColorStop(0.55, c2); gr.addColorStop(1, c3);
+  ctx.fillStyle = gr; ctx.fillText(text, 0, 0); ctx.restore();
+}
