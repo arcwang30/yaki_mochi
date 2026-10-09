@@ -47,7 +47,7 @@ const Input = {
     canvas.addEventListener('pointerdown', e => {
       if (e.pointerType === 'touch') this.touchMode = true;
       const p = pos(e);
-      this.starts.set(e.pointerId, p);
+      this.starts.set(e.pointerId, Object.assign(p, { t: e.timeStamp }));
       this.ptr.x = p.x; this.ptr.y = p.y; this.ptr.moved = e.pointerType !== 'touch';
       this.pressed.add('anykey');
       this.hit(p.x, p.y, e.timeStamp);   // 打擊在「按下」瞬間成立
@@ -67,7 +67,10 @@ const Input = {
       if (!st || cancel) return;
       const dx = p.x - st.x, dy = p.y - st.y;
       if (Math.hypot(dx, dy) < 24) this.taps.push({ x: st.x, y: st.y });
-      else if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.4) this.swipe = dx < 0 ? 'left' : 'right';
+      else {
+        if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.4) this.swipe = dx < 0 ? 'left' : 'right';
+        if (Math.abs(dy) > Math.abs(dx)) this.dragEnd = { x: st.x, y: st.y, dy, ms: Math.max(16, e.timeStamp - st.t) };   // 直向拖曳放開（選曲轉盤用）
+      }
     };
     canvas.addEventListener('pointerup', e => up(e, false));
     canvas.addEventListener('pointercancel', e => up(e, true));
@@ -77,11 +80,18 @@ const Input = {
     document.addEventListener('gesturestart', stop);
     document.addEventListener('dblclick', stop);
     canvas.addEventListener('contextmenu', e => e.preventDefault());
+    // 滑鼠滾輪：當成上下鍵（選曲用；每格一次，連續滾動有間隔）
+    let wheelT = 0;
+    canvas.addEventListener('wheel', e => {
+      e.preventDefault();
+      if (e.timeStamp - wheelT < 70 || Math.abs(e.deltaY) < 4) return;
+      wheelT = e.timeStamp; this.pressed.add(e.deltaY > 0 ? 'down' : 'up'); this.wheel = true;
+    }, { passive: false });
   },
 
   // 每幀呼叫：讀取遊戲控制器
   update() {
-    if (this.locked()) { this.pressed.clear(); this.taps.length = 0; this.swipe = null; }
+    if (this.locked()) { this.pressed.clear(); this.taps.length = 0; this.swipe = null; this.dragEnd = null; }
     const pads = (navigator.getGamepads && navigator.getGamepads()) || [];
     let gp = null;
     for (const p of pads) if (p && p.connected) { gp = p; break; }
@@ -116,8 +126,17 @@ const Input = {
     return Math.abs(dx) > 12 && Math.abs(dx) > Math.abs(dy) ? dx : 0;
   },
 
+  // 目前手指直向拖曳的距離與起點（只有一根手指、而且偏直向時；選曲轉盤跟著手指轉）
+  dragY() {
+    if (this.starts.size !== 1) return null;
+    const st = this.starts.values().next().value;
+    if (st.cy === undefined) return null;
+    const dx = st.cx - st.x, dy = st.cy - st.y;
+    return Math.abs(dy) > 12 && Math.abs(dy) > Math.abs(dx) ? { x: st.x, y: st.y, dy } : null;
+  },
+
   endFrame() {
-    this.swipe = null;
+    this.swipe = null; this.dragEnd = null; this.wheel = false;
     this.pressed.clear();
     this.taps.length = 0;
     this.ptr.moved = false;

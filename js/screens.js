@@ -342,22 +342,28 @@ Screens.menu = {
 Screens.songs = {
   sel: 0, previewIdx: -1, previewT: 0, bs: { sel: -1, n: 0 },
   CARD: lay({ x: 40, y0: 192, w: 640, h: 140, gap: 10 }, { x: 100, y0: 176, w: 840, h: 136, gap: 10 }),
-  PER: 5,   // 每頁 5 首；每集（VOL）10 首 = 2 頁（← → 依序翻：VOL.1 前半、後半、VOL.2 前半、後半）
-  pages() { return Math.ceil(SONGS.length / this.PER); },
-  setPage(p) {
-    const P = this.pages(), row = this.sel % this.PER;
-    p = (p + P) % P;
-    this.select(Math.min(SONGS.length - 1, p * this.PER + row));
+  SLOTS: 5,   // 同時看得到 5 張卡；選中的那首固定在正中間（轉盤），清單上下捲動
+  pos: 0, dragFrom: null,
+  vol() { return SONGS[this.sel].vol; },
+  row() { return SONGS[this.sel].no - 1; },                       // 這一集裡的第幾首（0～9）
+  idxOf(vol, row) { return SONGS.findIndex(s => s.vol === vol && s.no === row + 1); },
+  setVol(v) {   // ← →：切換 VOL.1 / VOL.2（停在同樣的編號）
+    const nv = (v - 1 + VOL_ORDER.length) % VOL_ORDER.length + 1;
+    if (nv === this.vol()) return;
+    this.sel = this.idxOf(nv, this.row()); this.previewT = 0.3; this.bs.sel = -1;
+    this.volT = 0; this.volDir = v > this.vol() ? 1 : -1;
+    Sound.play('select');
   },
   enter() {
     const i = SONGS.findIndex(s => s.id === Save.data.lastSong);
-    this.sel = i >= 0 ? i : 0; this.previewIdx = -1; this.bs.sel = -1;
+    this.sel = i >= 0 ? i : 0; this.previewIdx = -1; this.bs.sel = -1; this.pos = this.row(); this.dragFrom = null; this.volT = 1;
     chef.idlePose = 'wave'; Sound.init(); Sound.duck(false);
     // 選曲語音；試聽等語音講完（約 1.1 秒）再開始，不會蓋過去
     Sound.stopBgm(); Sound.playVoice('selectSong', A.ui, A.ctx && A.ctx.currentTime + 0.25);
     this.previewT = 1.3;
   },
   select(i) { if (i !== this.sel) { this.sel = i; this.previewT = 0.3; Sound.play('select'); } },
+  selectRow(r) { this.select(this.idxOf(this.vol(), clamp(r, 0, VOL_SIZE - 1))); },
   start() { Sound.play('confirm'); App.goto('game', { song: SONGS[this.sel] }); },
   frame(dt) {
     menuBackdrop(0.66);
@@ -366,34 +372,62 @@ Screens.songs = {
       this.previewT -= dt;
       if (this.previewT <= 0) { this.previewIdx = this.sel; const s = SONGS[this.sel]; Sound.startBgm(s, Math.min(2, s.sections.length - 1)); }
     }
-    const C = this.CARD, page = Math.floor(this.sel / this.PER), P = this.pages();
-    SONGS.slice(page * this.PER, page * this.PER + this.PER).forEach((song, k) => {
-      const i = page * this.PER + k, y = C.y0 + k * (C.h + C.gap), on = i === this.sel && this.bs.sel !== 2;   // 焦點在「新手教學」時，曲目卡不亮
-      if (Input.ptr.moved && UI.inside(Input.ptr.x, Input.ptr.y, C.x, y, C.w, C.h) && !on) { if (this.bs.sel === 2) this.bs.sel = -1; this.select(i); }
-      for (const t of Input.taps) if (UI.inside(t.x, t.y, C.x, y, C.w, C.h)) { if (on) this.start(); else { this.bs.sel = -1; this.select(i); } }
-      this.card(song, i, C.x, y, C.w, C.h, on);
-    });
-    // 換頁列：◀ VOL.1 ●○ ▶
-    if (P > 1) {
-      const py = lay(978, 944), cx = C.x + C.w / 2;
-      UI.wood(cx - 160, py - 26, 320, 52, { r: 26, seed: 'page-bar' });
-      const vol = SONGS[page * this.PER].vol, half = page % (VOL_SIZE / this.PER), HP = VOL_SIZE / this.PER;   // 這一集的第幾頁
-      UI.text('VOL.' + vol, cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
-      for (let p = 0; p < HP; p++) { ctx.fillStyle = p === half ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 50 + p * 24, py, 8, 0, 7); ctx.fill(); }
-      UI.text('◀', cx - 200, py, 40, { fill: '#ffd23f' }); UI.text('▶', cx + 200, py, 40, { fill: '#ffd23f' });
-      if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 110, 80)) this.setPage(page - 1);
-      if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80)) this.setPage(page + 1);
+    const C = this.CARD, slot = C.h + C.gap, top = C.y0, bottom = C.y0 + this.SLOTS * slot - C.gap;
+    const inList = (x, y) => UI.inside(x, y, C.x, top, C.w, bottom - top);
+    // ---- 手指上下拖曳：清單跟著手指轉，放開時對齊最近的一首（甩得快會多轉幾首） ----
+    const drag = Input.dragY();
+    if (drag && inList(drag.x, drag.y)) {
+      if (this.dragFrom === null) this.dragFrom = this.pos;
+      this.pos = clamp(this.dragFrom - drag.dy / slot, -0.45, VOL_SIZE - 0.55);
+      this.bs.sel = -1;
     }
-    // 鍵盤 / 手把：在每頁第一首按 ↑ → 焦點移到右上角的「新手教學」（bs.sel = 2），↓ 回到曲目；T 鍵 / 手把 Y 直接開教學
+    const de = Input.dragEnd;
+    if (de && this.dragFrom !== null) {
+      const v = de.dy / de.ms;   // px / ms（往上甩為負）
+      this.selectRow(Math.round(this.dragFrom - de.dy / slot - v * 160 / slot));
+      this.dragFrom = null;
+    } else if (!drag) this.dragFrom = null;
+    if (this.dragFrom === null) this.pos += (this.row() - this.pos) * Math.min(1, dt * 14);   // 平滑轉到選中的那首
+    // ---- 卡片：選中的盡量在正中間；到頭尾時清單不留空白（選中的卡移到上下緣） ----
+    const view = clamp(this.pos - 2, 0, VOL_SIZE - this.SLOTS);
+    const vol = this.vol(), list = SONGS.filter(s => s.vol === vol);
+    this.volT = Math.min(1, (this.volT === undefined ? 1 : this.volT) + dt / 0.25);
+    const slide = (1 - ease(this.volT)) * (this.volDir || 1) * 120;   // 切換 VOL 時整排從側邊滑進來
+    ctx.save(); ctx.beginPath(); ctx.rect(C.x - 30, top - 14, C.w + 60, bottom - top + 28); ctx.clip();
+    list.forEach((song, r) => {
+      const d = r - this.pos, y = top + (r - view) * slot;
+      if (y < top - C.h || y > bottom) return;
+      const i = SONGS.indexOf(song), on = i === this.sel && this.bs.sel !== 2 && Math.abs(d) < 0.5;   // 焦點在「新手教學」時，曲目卡不亮
+      for (const t of Input.taps) if (UI.inside(t.x, t.y, C.x, y, C.w, C.h) && inList(t.x, t.y)) {
+        if (i === this.sel && this.bs.sel !== 2) this.start(); else { this.bs.sel = -1; this.select(i); }
+      }
+      ctx.save(); ctx.globalAlpha *= clamp(1.15 - Math.abs(d) * 0.14, 0.55, 1) * (0.4 + 0.6 * ease(this.volT)); ctx.translate(slide, 0);
+      this.card(song, i, C.x, y, C.w, C.h, on);
+      ctx.restore();
+    });
+    ctx.restore();
+    // 上下還有歌的提示箭頭
+    const bob = Math.sin(Game.time * 4) * 4;
+    if (view > 0.05) UI.text('▲', C.x + C.w / 2, top - 4 + bob, 22, { fill: '#ffd23f' });
+    if (view < VOL_SIZE - this.SLOTS - 0.05) UI.text('▼', C.x + C.w / 2, bottom + 6 - bob, 22, { fill: '#ffd23f' });
+    // ---- VOL 切換列：◀ VOL.1 ●○ ▶（左右鍵 / 點箭頭 / 點 VOL） ----
+    const py = lay(978, 944), cx = C.x + C.w / 2, NV = VOL_ORDER.length;
+    UI.wood(cx - 160, py - 26, 320, 52, { r: 26, seed: 'page-bar' });
+    UI.text('VOL.' + vol, cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
+    for (let v = 1; v <= NV; v++) { ctx.fillStyle = v === vol ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 50 + (v - 1) * 24, py, 8, 0, 7); ctx.fill(); }
+    UI.text('◀', cx - 200, py, 40, { fill: '#ffd23f' }); UI.text('▶', cx + 200, py, 40, { fill: '#ffd23f' });
+    if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 110, 80)) this.setVol(vol - 1);
+    if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80) || UI.tapIn(cx - 150, py - 26, 300, 52)) this.setVol(vol + 1);
+    // 鍵盤 / 手把 / 滑鼠滾輪：↑↓ 一首一首選（第 1 首再按 ↑ → 焦點移到右上角的「新手教學」，↓ 回到曲目）；T 鍵 / 手把 Y 直接開教學
     const TUT = 2;
     if (Input.was('up')) {
       if (this.bs.sel === TUT) { /* 已在最上面 */ }
-      else if (this.sel % this.PER === 0) { this.bs.sel = TUT; Sound.play('select'); }
-      else { this.bs.sel = -1; this.select(this.sel - 1); }
+      else if (this.row() === 0) { if (!Input.wheel) { this.bs.sel = TUT; Sound.play('select'); } }
+      else { this.bs.sel = -1; this.selectRow(this.row() - 1); }
     }
     if (Input.was('down')) {
       if (this.bs.sel === TUT) { this.bs.sel = -1; Sound.play('select'); }
-      else { this.bs.sel = -1; this.select((this.sel + 1) % SONGS.length); }
+      else if (this.row() < VOL_SIZE - 1) { this.bs.sel = -1; this.selectRow(this.row() + 1); }
     }
     if (Input.was('tutorial')) { Sound.play('confirm'); App.goto('tutorial', { from: 'songs' }); }
     if (Input.was('confirm') && (this.bs.sel === -1 || this.bs.sel === 1)) this.start();   // 滑鼠停在「返回」「新手教學」上時不開始
@@ -416,7 +450,7 @@ Screens.songs = {
     ctx.drawImage(Scene.glowSprite('#ffb04a'), T.x - 34, T.y - 30, T.w + 68, T.h + 64); ctx.restore();
     UI.pole(T.x - 16, 20, T.w + 30);
     if (UI.button(this.bs, '新手教學', T.x, T.y, T.w, T.h, { tag: true, sub: 'sub.tutorial', size: 22, ropeH: 20, wiggle: true })) App.goto('tutorial', { from: 'songs' });
-    UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : Input.padConnected ? '十字鍵 選曲・換頁　A 開始　Y 新手教學　B 返回' : '↑↓ 選曲　← → 換頁　ENTER 開始　T 新手教學');
+    UI.hint(Input.touchMode ? '上下滑動選曲・點中間的歌開始・左右切換 VOL' : Input.padConnected ? '↑↓ 選曲　← → 切換 VOL　A 開始　Y 新手教學　B 返回' : '↑↓／滾輪 選曲　← → 切換 VOL　ENTER 開始　T 新手教學');
   },
   card(song, i, x, y, w, h, on) {
     const loc = o => o[Save.data.lang] || o.zh;

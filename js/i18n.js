@@ -74,6 +74,7 @@ const I18N = {
     '鐵板上的災難': '鉄板の上の大惨事', '客人默默轉身去吃章魚燒了……明天再來練練吧！': 'お客さんは黙ってたこ焼き屋へ……また明日修行しよう！',
     // 選曲
     '選擇樂曲': '曲をえらぶ', '試聽中': '試聴中', '點兩下卡片也可以開始': 'カードを2回タップでもスタート', '↑↓ 選曲　← → 換頁　ENTER 開始': '↑↓ 選曲　← → ページ　ENTER スタート',
+    '上下滑動選曲・點中間的歌開始・左右切換 VOL': '上下スワイプで選曲・真ん中の曲をタップでスタート・左右で VOL 切替', '↑↓ 選曲　← → 切換 VOL　A 開始　Y 新手教學　B 返回': '↑↓ 選曲　← → VOL 切替　A スタート　Y チュートリアル　B 戻る', '↑↓／滾輪 選曲　← → 切換 VOL　ENTER 開始　T 新手教學': '↑↓／ホイール 選曲　← → VOL 切替　ENTER スタート　T チュートリアル',
     '↑↓ 選曲　← → 換頁　ENTER 開始　T 新手教學': '↑↓ 選曲　← → ページ　ENTER スタート　T チュートリアル', '十字鍵 選曲・換頁　A 開始　Y 新手教學　B 返回': '十字キー 選曲・ページ　A スタート　Y チュートリアル　B 戻る',
     '← → 切換樂曲': '← → 曲を切替', '每 8 小節節奏加快一次。共 20 首樂曲（2 集，每集 10 首），每種星級各 2 首，星越多越快、越難。': '8 小節ごとにテンポアップ。全 20 曲（2 集×10 曲）、★1～5 が各 2 曲、★が多いほど速くて難しい。',
     // 安裝到主畫面
@@ -147,6 +148,7 @@ const I18N = {
     '手忙腳亂的新人': 'Frantic Rookie', '鍋鏟揮得比拍子還快，培根飛到隔壁章魚燒攤了！': 'Your spatula outran the beat and the bacon landed at the takoyaki stall next door!',
     '鐵板上的災難': 'Griddle Disaster', '客人默默轉身去吃章魚燒了……明天再來練練吧！': 'The customers quietly left for takoyaki... Practice again tomorrow!',
     '選擇樂曲': 'SONGS', '試聽中': 'preview', '點兩下卡片也可以開始': 'Tap a card twice to start', '↑↓ 選曲　← → 換頁　ENTER 開始': '↑↓ song   ← → page   ENTER: start',
+    '上下滑動選曲・點中間的歌開始・左右切換 VOL': 'Swipe up/down to pick, tap the middle song to start, left/right for VOL', '↑↓ 選曲　← → 切換 VOL　A 開始　Y 新手教學　B 返回': '↑↓ song   ← → VOL   A: start   Y: tutorial   B: back', '↑↓／滾輪 選曲　← → 切換 VOL　ENTER 開始　T 新手教學': '↑↓ / wheel: song   ← → VOL   ENTER: start   T: tutorial',
     '↑↓ 選曲　← → 換頁　ENTER 開始　T 新手教學': '↑↓ song   ← → page   ENTER: start   T: tutorial', '十字鍵 選曲・換頁　A 開始　Y 新手教學　B 返回': 'D-pad: song / page   A: start   Y: tutorial   B: back',
     '← → 切換樂曲': '← → change song', '每 8 小節節奏加快一次。共 20 首樂曲（2 集，每集 10 首），每種星級各 2 首，星越多越快、越難。': 'The tempo rises every 8 bars. 20 songs in 2 volumes of 10, two per ★1-5; more ★ = faster and harder.',
     '安裝到主畫面': 'Add to Home Screen', '已經是 APP 模式': 'Running as an app', '變成 APP，全螢幕、離線也能玩': 'Full screen app, works offline', '教學 ▶': 'HOW ▶',
