@@ -7,10 +7,10 @@ const LANGS = [['zh', '中文'], ['ja', '日本語'], ['en', 'English']];
 
 const I18N = {
   zh: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM',
   },
   ja: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM',
     // 開始 / 主選單
     '節奏熱炒遊戲': 'リズム鉄板ゲーム', '開始遊戲': 'ゲーム開始', '操作說明': 'あそびかた', '排行榜': 'ランキング', '設定': 'せってい', 'CREDIT': 'クレジット',
     '十字鍵 選擇　A 決定　B 返回': '十字キー 選択　A 決定　B 戻る', '點選按鈕': 'ボタンをタップ', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ 選択　ENTER 決定　ESC 戻る',
@@ -59,6 +59,23 @@ const I18N = {
     '做出廣島燒！': '広島焼きを作ろう！', '炒麵、高麗菜、煎餅、培根各處理 1 個，就會合成一份廣島燒，+1000 分！右上角可以看收集進度。': '焼きそば・キャベツ・生地・ベーコンを 1 つずつ仕上げると広島焼きが完成、+1000 点！右上で集まり具合を確認できるよ。',
     '就是現在！': '今だ！', '完成！': 'クリア！', '繼續練習': '練習を続ける', '從頭開始': '最初から', '略過教學': 'チュートリアルをスキップ',
     // 自動校正
+    // 節奏分析
+    '節奏分析': 'リズム分析', 'RHYTHM REPORT': 'RHYTHM REPORT', '音感': '音感', '音感等級': '音感レベル', '最近 {0} 場': '直近 {0} 回', '資料還不多，結果僅供參考': 'データが少ないので参考程度に',
+    '人體節拍器': '人間メトロノーム', '音感絕佳': '音感バツグン', '節奏穩健': 'リズム安定', '漸入佳境': '上り調子', '還在暖身': 'ウォームアップ中', '音感待加強': '音感修行中',
+    '分毫不差！你的身體裡住著一台節拍器，連鐵板都跟著你的拍子滋滋響。': 'ピッタリ！体の中にメトロノームが住んでいる。鉄板まで君のリズムでジュージュー鳴ってるよ。',
+    '又準又穩，客人都說看你煎廣島燒像在看表演！': '正確で安定。お客さんも「焼く姿がまるでショーだ！」と大喜び。',
+    '大部分都踩在拍子上，再穩一點就是名攤師傅了。': 'ほとんど拍に乗れてる。もう少し安定すれば名物屋台の職人だ。',
+    '最近越打越準！手感正在升溫，繼續保持。': '最近どんどん正確に！手ごたえ上昇中、この調子で。',
+    '時快時慢，鍋鏟還在找節奏。跟著大鼓「咚、咚」數拍子試試看！': '早かったり遅かったり、ヘラがまだリズムを探してる。太鼓の「ドン、ドン」に合わせて数えてみよう！',
+    '節拍好像跑去隔壁攤了……先從 ★1 的慢歌開始練練手吧！': 'リズムが隣の屋台に逃げちゃった……まずは ★1 のゆっくりな曲で練習しよう！',
+    '進步曲線（準確度）': '上達グラフ（正確さ）', '準確度': '正確さ', '舊': '古い', '最新': '最新', '最近 5 場 ▲{0}%': '直近 5 回 ▲{0}%', '最近 5 場 ▼{0}%': '直近 5 回 ▼{0}%',
+    '時間差分布': 'タイミングの分布', '平均 {0}': '平均 {0}', '剛好': 'ぴったり', '各星級命中率': '★ごとの正確さ', '總場數': 'プレイ回数', '最高連擊': '最大コンボ', '最常玩': 'よく遊ぶ曲',
+    '先玩幾首歌，就會出現你的節奏分析喔！': '何曲か遊ぶと、ここにリズム分析が表示されるよ！',
+    '你習慣偏晚約 {0}ms：到「設定 → 自動校正」量一次會更準': '約 {0}ms 遅れがち：「せってい → 自動補正」で一度測ると正確に',
+    '你習慣偏早約 {0}ms：別急，聽到拍子再按': '約 {0}ms 早めがち：あせらず、拍が聞こえてから押そう',
+    '時間差忽早忽晚：跟著大鼓「咚、咚」在心裡數拍子': 'タイミングがばらつき気味：太鼓の「ドン、ドン」に合わせて心で数えよう',
+    '★{0} 開始比較吃力：多練幾首 ★{1} 的歌再挑戰': '★{0} から苦戦中：★{1} の曲で練習してから挑戦しよう',
+    '保持這個手感，挑戰更高的星級吧！': 'この調子で、もっと上の★に挑戦しよう！',
     '自動校正': '自動補正', '用藍牙耳機會有延遲：按「自動校正」量一次就好': 'Bluetooth イヤホンは遅れが出ます：「自動補正」で一度測ってね',
     '戴上平常玩的耳機（藍牙也可以），聽到「叩」聲就跟著點畫面（或按任意鍵）。前 4 下是預備。': 'いつものイヤホンをつけて（Bluetooth もOK）、「コン」が聞こえたら画面をタップ（どのキーでもOK）。最初の 4 回は準備。',
     '預備…': '準備中…', '跟著聲音點！': '音に合わせてタップ！', '準備…': 'よーい…', '點擊次數不夠，再測一次吧': 'タップが足りません。もう一度測ってね',
@@ -93,7 +110,7 @@ const I18N = {
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': '打つボタンはどれでも OK。マウスなら画面のどこをクリックしても OK（右上のポーズボタンを除く）。ポーズから再開すると 3 拍カウントしてから元のリズムに戻ります。',
   },
   en: {
-    'sub.start': 'はじめる', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう', 'sub.quit': 'おわる',
+    'sub.start': 'はじめる', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう', 'sub.quit': 'おわる', 'sub.rhythm': 'おんかん',
     '節奏熱炒遊戲': 'Rhythm Teppan Game', '開始遊戲': 'PLAY', '操作說明': 'HOW TO', '排行榜': 'RANKING', '設定': 'SETTINGS', 'CREDIT': 'CREDITS',
     '十字鍵 選擇　A 決定　B 返回': 'D-pad: select   A: OK   B: back', '點選按鈕': 'Tap a button', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ select   ENTER: OK   ESC: back',
     '繼續遊戲': 'RESUME', '重新開始': 'RESTART', '回主選單': 'MAIN MENU', '返回選擇樂曲': 'SONG SELECT', '繼續後會先倒數 3 拍，再接回原本的節拍': 'Resuming counts in 3 beats, then picks up the beat',
@@ -134,6 +151,23 @@ const I18N = {
     '做出廣島燒！': 'Make an okonomiyaki!', '炒麵、高麗菜、煎餅、培根各處理 1 個，就會合成一份廣島燒，+1000 分！右上角可以看收集進度。': 'Prep one each of noodles, cabbage, crepe and bacon to make an okonomiyaki: +1000! Your stock is shown at the top right.',
     '就是現在！': 'NOW!', '完成！': 'CLEAR!', '繼續練習': 'CONTINUE', '從頭開始': 'RESTART', '略過教學': 'SKIP TUTORIAL',
     // Auto calibration
+    // Rhythm report
+    '節奏分析': 'RHYTHM', 'RHYTHM REPORT': 'リズムぶんせき', '音感': 'SENSE', '音感等級': 'RHYTHM SENSE', '最近 {0} 場': 'last {0} plays', '資料還不多，結果僅供參考': 'Not much data yet — just a rough guide',
+    '人體節拍器': 'Human Metronome', '音感絕佳': 'Perfect Pitch-er', '節奏穩健': 'Steady Groove', '漸入佳境': 'On the Rise', '還在暖身': 'Warming Up', '音感待加強': 'Needs Practice',
+    '分毫不差！你的身體裡住著一台節拍器，連鐵板都跟著你的拍子滋滋響。': 'Spot on! There is a metronome living inside you — even the griddle sizzles to your beat.',
+    '又準又穩，客人都說看你煎廣島燒像在看表演！': 'Accurate and steady. Customers say watching you cook is a show!',
+    '大部分都踩在拍子上，再穩一點就是名攤師傅了。': 'Mostly on the beat. A little steadier and you are a master chef.',
+    '最近越打越準！手感正在升溫，繼續保持。': 'Getting more accurate lately! Your feel is heating up — keep it going.',
+    '時快時慢，鍋鏟還在找節奏。跟著大鼓「咚、咚」數拍子試試看！': 'Sometimes early, sometimes late — your spatula is still looking for the beat. Count along with the bass drum!',
+    '節拍好像跑去隔壁攤了……先從 ★1 的慢歌開始練練手吧！': 'The beat wandered off to the next stall... Start practicing with the slow ★1 songs!',
+    '進步曲線（準確度）': 'PROGRESS (ACCURACY)', '準確度': 'Accuracy', '舊': 'old', '最新': 'new', '最近 5 場 ▲{0}%': 'last 5 ▲{0}%', '最近 5 場 ▼{0}%': 'last 5 ▼{0}%',
+    '時間差分布': 'TIMING SPREAD', '平均 {0}': 'avg {0}', '剛好': 'on time', '各星級命中率': 'ACCURACY BY ★', '總場數': 'Plays', '最高連擊': 'Best combo', '最常玩': 'Favorite',
+    '先玩幾首歌，就會出現你的節奏分析喔！': 'Play a few songs and your rhythm report will appear here!',
+    '你習慣偏晚約 {0}ms：到「設定 → 自動校正」量一次會更準': 'You tend to be ~{0}ms late: run SETTINGS → AUTO CALIBRATE once',
+    '你習慣偏早約 {0}ms：別急，聽到拍子再按': 'You tend to be ~{0}ms early: relax and wait for the beat',
+    '時間差忽早忽晚：跟著大鼓「咚、咚」在心裡數拍子': 'Your timing wobbles: count along with the bass drum in your head',
+    '★{0} 開始比較吃力：多練幾首 ★{1} 的歌再挑戰': '★{0} gets tough: practice some ★{1} songs first',
+    '保持這個手感，挑戰更高的星級吧！': 'Keep it up and try more ★!',
     '自動校正': 'AUTO CALIBRATE', '用藍牙耳機會有延遲：按「自動校正」量一次就好': 'Bluetooth audio lags: run AUTO CALIBRATE once',
     '戴上平常玩的耳機（藍牙也可以），聽到「叩」聲就跟著點畫面（或按任意鍵）。前 4 下是預備。': 'Put on the headphones you play with (Bluetooth is fine) and tap the screen (or any key) on each "tock". The first 4 are a warm-up.',
     '預備…': 'Warm-up…', '跟著聲音點！': 'Tap with the sound!', '準備…': 'Get ready…', '點擊次數不夠，再測一次吧': 'Not enough taps - try again',

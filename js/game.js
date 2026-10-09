@@ -442,6 +442,7 @@ const Game = {
     const ratio = s.score / maxScoreFor(s.chart.notes.length);
     this.result = { song: this.song.id, score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length,
       ratio, rating: ratingFor(ratio) };
+    Rhythm.record(this.song, s, ratio);   // 節奏分析用的遊玩紀錄
     App.goto('result');
   },
 

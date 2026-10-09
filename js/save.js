@@ -3,7 +3,10 @@
 // ===== 本機存檔：設定與本機排行榜（localStorage；每首歌一個排行榜） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, eco: false, lang: null, tutorialDone: false, name: '', lastSong: null, boards: null },
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, eco: false, lang: null, tutorialDone: false, name: '', lastSong: null, boards: null,
+    history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
+    totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次
+  },
 
   // 各曲預設排行榜的分數倍率（曲子越難、音符越多，分數越高）
   SEED_SCALE: { tsukimi: 0.75, yatai: 1, swing: 1.05, funk: 1.12, hyper: 1.2, bossa: 0.75, chindon: 1, ska: 1.05, chip: 1.12, dnb: 1.2,
@@ -17,6 +20,8 @@ const Save = {
     } catch (e) { /* ignore */ }
     const d = this.data;
     if (!d.boards || typeof d.boards !== 'object' || Array.isArray(d.boards)) d.boards = {};
+    if (!Array.isArray(d.history)) d.history = [];
+    if (!d.totals || typeof d.totals !== 'object') d.totals = { plays: 0, oko: 0, maxCombo: 0, songs: {} };
     // 舊版只有一首歌的排行榜：搬到「屋台ばやし」
     if (Array.isArray(d.board)) { if (d.board.length && !d.boards.yatai) d.boards.yatai = d.board; delete d.board; }
     if (!d.lang) {   // 第一次：依瀏覽器語言

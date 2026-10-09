@@ -286,7 +286,7 @@ const TITLE = lay({ x: W / 2, y: 252, w: 460, h: 118, ty: 404 }, { x: 310, y: 21
 // 第 1 排 = 朱漆「開始遊戲」大木牌；第 2 排 = 掛在竹竿上的四塊木札
 Screens.menu = {
   sel: 0, n: 0, lastTag: 1,
-  TAGS: [['操作說明', 'sub.howto', 'howto'], ['排行榜', 'sub.ranking', 'ranking'], ['設定', 'sub.settings', 'settings'], ['CREDIT', 'sub.credits', 'credits']],
+  TAGS: [['操作說明', 'sub.howto', 'howto'], ['排行榜', 'sub.ranking', 'ranking'], ['節奏分析', 'sub.rhythm', 'rhythm'], ['設定', 'sub.settings', 'settings'], ['CREDIT', 'sub.credits', 'credits']],
   enter() { this.sel = 0; chef.idlePose = 'wave'; chef.queue = []; Sound.init(); Sound.duck(false); Sound.startBgm(); },
   frame() {
     if (LAND) return this.frameLand();
@@ -301,7 +301,7 @@ Screens.menu = {
     if (UI.button(this, '開始遊戲', 170, 980, 380, 92, { lacquer: true, sub: 'sub.start', size: 40 })) App.goto(Save.data.tutorialDone ? 'songs' : 'tutorial');   // 第一次先玩新手教學
     UI.pole(16, 1098, W - 32);
     this.TAGS.forEach(([label, sub, dest], k) => {
-      if (UI.button(this, label, 33 + k * 166, 1122, 154, 94, { tag: true, sub, size: 27, ropeH: 24 })) App.goto(dest);
+      if (UI.button(this, label, 24 + k * 136, 1122, 128, 94, { tag: true, sub, size: 25, ropeH: 24 })) App.goto(dest);   // 5 塊木札
     });
     this.nav();
     UI.navHint();
@@ -321,18 +321,18 @@ Screens.menu = {
     this.TAGS.forEach(([label, sub, dest], k) => {
       if (UI.button(this, label, 1430, top + 150 + k * 100, 380, 84, { sub, size: 32 })) App.goto(dest);
     });
-    if (DESKTOP_APP && UI.button(this, '結束遊戲', 1430, top + 550, 380, 84, { sub: 'sub.quit', size: 32, back: true })) window.desktop.quit();
+    if (DESKTOP_APP && UI.button(this, '結束遊戲', 1430, top + 150 + this.TAGS.length * 100, 380, 84, { sub: 'sub.quit', size: 32, back: true })) window.desktop.quit();
     UI.nav(this);
     UI.navHint();
     UI.copyright();
   },
-  // 兩排的方向鍵移動：0 = 開始遊戲；1~4 = 下排木札
+  // 兩排的方向鍵移動：0 = 開始遊戲；1~5 = 下排木札
   nav() {
     const s = this.sel, go = v => { if (v !== this.sel) { this.sel = v; Sound.play('select'); } };
     if (Input.was('down') && s === 0) go(this.lastTag);
     if (Input.was('up') && s > 0) { this.lastTag = s; go(0); }
     if (Input.was('left') && s > 1) go(s - 1);
-    if (Input.was('right') && s >= 1 && s < 4) go(s + 1);
+    if (Input.was('right') && s >= 1 && s < this.TAGS.length) go(s + 1);
     if (Input.was('right') && s === 0) go(this.lastTag);
   }
 };
@@ -1255,6 +1255,128 @@ function drawStars(cx, cy, n, size, max = 5) {
   }
   ctx.restore();
 }
+// ---------- 節奏分析 ----------
+// ① 音感等級（蓋章＋評語）② 進步曲線（最近 30 場準確度）③ 時間差分布（早／剛好／晚）＋建議 ④ 各星級命中率＋統計小卡
+// 直式由上往下排；橫式左右兩欄
+const RFS = s => s * lay(1, 1.3);   // 節奏分析的字級（橫式放大）
+Screens.rhythm = {
+  sel: 0, n: 0, t: 0, a: null,
+  R: lay({ lvl: [30, 184, 660, 160], curve: [30, 356, 660, 232], hist: [30, 600, 660, 250], stat: [30, 862, 660, 196] },
+         { lvl: [110, 170, 840, 210], curve: [110, 400, 840, 470], hist: [970, 170, 840, 440], stat: [970, 630, 840, 240] }),
+  enter() { this.t = 0; this.sel = 0; this.a = Rhythm.analyze(); chef.idlePose = 'wave'; },
+  frame(dt) {
+    this.t += dt;
+    menuBackdrop(0.74);
+    UI.header('節奏分析', 'RHYTHM REPORT');
+    const a = this.a, R = this.R;
+    if (!a) {
+      UI.panel(60, lay(420, 380), W - 120, 200, 26);
+      UI.text('♪', W / 2, lay(480, 440), 54, { fill: '#ffd23f', raw: true });
+      UI.text('先玩幾首歌，就會出現你的節奏分析喔！', W / 2, lay(560, 520), RFS(26), { fill: '#fff', stroke: null, maxW: W - 180 });
+    } else {
+      const k = i => ease(clamp((this.t - i * 0.12) * 3, 0, 1));   // 各區依序淡入
+      ctx.save(); ctx.globalAlpha = k(0); this.level(a, ...R.lvl); ctx.restore();
+      ctx.save(); ctx.globalAlpha = k(1); this.curve(a, ...R.curve, k(1)); ctx.restore();
+      ctx.save(); ctx.globalAlpha = k(2); this.hist(a, ...R.hist, k(2)); ctx.restore();
+      ctx.save(); ctx.globalAlpha = k(3); this.stats(a, ...R.stat); ctx.restore();
+    }
+    UI.begin(this);
+    if (UI.button(this, '返回', W / 2 - 110, lay(1090, 940), 220, 66, { back: true }) || Input.was('back')) App.goto('menu');
+    UI.nav(this);
+    UI.navHint();
+  },
+  // ① 音感等級
+  level(a, x, y, w, h) {
+    const L = a.level;
+    UI.panel(x, y, w, h, 24, 'rgba(255,248,232,.95)', L.color);
+    // 圓形印章
+    const cx = x + 86, cy = y + h / 2, r = Math.min(66, h / 2 - 14), s = 1 + (1 - ease(clamp(this.t * 3, 0, 1))) * 0.6;
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.12); ctx.scale(s, s);
+    ctx.strokeStyle = L.color; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.stroke();
+    ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, r - 8, 0, 7); ctx.stroke();
+    UI.text(tr('音感'), 0, -r * 0.36, r * 0.32, { fill: L.color, stroke: null, raw: true });
+    const nm = tr(L.name); UI.text(nm, 0, r * 0.18, r * 0.42, { fill: L.color, stroke: null, raw: true, maxW: r * 1.6 });
+    ctx.restore();
+    const tx = x + 176, tw = w - 200;
+    UI.text(tr('音感等級'), tx, y + 28, RFS(16), { align: 'left', fill: '#8a6a4a', stroke: null, raw: true });
+    UI.text(tr('最近 {0} 場', a.recentN), x + w - 22, y + 28, RFS(15), { align: 'right', fill: '#8a6a4a', stroke: null, raw: true });
+    UI.text(tr(L.name), tx, y + 66, lay(36, 42), { align: 'left', fill: L.color, stroke: null, raw: true, maxW: tw });
+    UI.wrap(L.text, tx, y + lay(108, 118), tw, lay(26, 30), lay(18, 21), { fill: '#5a3a1a' });
+    if (a.count < 5) UI.text(tr('資料還不多，結果僅供參考'), x + w - 22, y + h - 18, RFS(14), { align: 'right', fill: '#b06a3a', stroke: null, raw: true });
+  },
+  // ② 進步曲線：最近 30 場的準確度
+  curve(a, x, y, w, h, k) {
+    UI.panel(x, y, w, h, 22);
+    UI.text(tr('進步曲線（準確度）'), x + 24, y + 28, RFS(20), { align: 'left', fill: '#7fe4ff', stroke: null, raw: true });
+    UI.text(tr('準確度') + ' ' + Math.round(a.acc) + '%', x + w - 24, y + 28, RFS(20), { align: 'right', fill: '#ffd23f', stroke: null, raw: true });
+    const gx = x + 64, gy = y + 56, gw = w - 92, gh = h - 92, pts = a.curve, N = pts.length;
+    const Y = v => gy + gh - clamp(v, 0, 100) / 100 * gh, X = i => (N === 1 ? gx + gw / 2 : gx + i / (N - 1) * gw);
+    // 格線＋刻度
+    ctx.lineWidth = 1;
+    [0, 50, 100].forEach(v => { ctx.strokeStyle = v === 100 ? 'rgba(255,214,90,.35)' : 'rgba(255,255,255,.15)'; ctx.beginPath(); ctx.moveTo(gx, Y(v)); ctx.lineTo(gx + gw, Y(v)); ctx.stroke();
+      UI.text(v + '%', gx - 10, Y(v), RFS(13), { align: 'right', fill: '#cfd8ff', stroke: null, raw: true }); });
+    // 線條逐漸畫出（k = 0 → 1）
+    const shown = Math.max(1, Math.ceil(N * k));
+    ctx.save(); ctx.beginPath(); ctx.moveTo(X(0), Y(pts[0]));
+    for (let i = 1; i < shown; i++) ctx.lineTo(X(i), Y(pts[i]));
+    const line = new Path2D(); line.moveTo(X(0), Y(pts[0])); for (let i = 1; i < shown; i++) line.lineTo(X(i), Y(pts[i]));
+    ctx.lineTo(X(shown - 1), gy + gh); ctx.lineTo(X(0), gy + gh); ctx.closePath();
+    const gr = ctx.createLinearGradient(0, gy, 0, gy + gh); gr.addColorStop(0, 'rgba(255,184,74,.45)'); gr.addColorStop(1, 'rgba(255,184,74,0)');
+    ctx.fillStyle = gr; ctx.fill();
+    ctx.strokeStyle = '#ffb84a'; ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.stroke(line);
+    for (let i = 0; i < shown; i++) { const last = i === N - 1; ctx.fillStyle = last ? '#fff27a' : '#ffb84a'; ctx.beginPath(); ctx.arc(X(i), Y(pts[i]), last ? 7 : 4, 0, 7); ctx.fill(); }
+    ctx.restore();
+    UI.text(tr('舊'), gx, gy + gh + 20, RFS(13), { fill: '#cfd8ff', stroke: null, raw: true });
+    UI.text(tr('最新'), gx + gw, gy + gh + 20, RFS(13), { fill: '#fff27a', stroke: null, raw: true });
+    if (a.trend !== null) UI.text(tr(a.trend >= 0 ? '最近 5 場 ▲{0}%' : '最近 5 場 ▼{0}%', Math.abs(Math.round(a.trend))), x + w / 2, gy + gh + 20, RFS(14), { fill: a.trend >= 0 ? '#8dff8a' : '#ff9a8a', stroke: null, raw: true });
+  },
+  // ③ 時間差分布（山形長條）＋平均位置＋建議
+  hist(a, x, y, w, h, k) {
+    UI.panel(x, y, w, h, 22);
+    UI.text(tr('時間差分布'), x + 24, y + 28, RFS(20), { align: 'left', fill: '#7fe4ff', stroke: null, raw: true });
+    const bias = Math.round(a.bias);
+    UI.text(tr('平均 {0}', (bias > 0 ? tr('晚') + ' ' : bias < 0 ? tr('早') + ' ' : '') + Math.abs(bias) + 'ms') + '　±' + Math.round(a.sd) + 'ms', x + w - 24, y + 28, RFS(18), { align: 'right', fill: '#ffd23f', stroke: null, raw: true });
+    const advH = a.advice.length * lay(26, 30) + 14, gx = x + 30, gw = w - 60, gy = y + 56, gh = h - 56 - 40 - advH, B = a.hist.length, bw = gw / B;
+    const mx = Math.max(1, ...a.hist);
+    a.hist.forEach((v, i) => {
+      const bh = v / mx * gh * k, d = Math.abs(i + 0.5 - B / 2);   // 離中間越遠越偏紅
+      ctx.fillStyle = d < 1 ? '#8dff8a' : d < 2 ? '#ffe066' : d < 4 ? '#ffb84a' : '#ff7a6a';
+      rrect(gx + i * bw + 3, gy + gh - bh, bw - 6, Math.max(2, bh), 4); ctx.fill();
+    });
+    // 中線（剛好）與平均位置的三角形
+    const zx = gx + gw / 2, mxp = gx + clamp((a.bias + Rhythm.BIN * B / 2) / (Rhythm.BIN * B), 0, 1) * gw;
+    ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(zx, gy - 4); ctx.lineTo(zx, gy + gh); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.moveTo(mxp, gy + gh + 4); ctx.lineTo(mxp - 8, gy + gh + 16); ctx.lineTo(mxp + 8, gy + gh + 16); ctx.fill();
+    UI.text('◀ ' + tr('早'), gx, gy + gh + 28, RFS(15), { align: 'left', fill: '#7fb8ff', stroke: null, raw: true });
+    UI.text(tr('剛好'), zx, gy + gh + 28, RFS(15), { fill: '#8dff8a', stroke: null, raw: true });
+    UI.text(tr('晚') + ' ▶', gx + gw, gy + gh + 28, RFS(15), { align: 'right', fill: '#ff9a8a', stroke: null, raw: true });
+    a.advice.forEach((s, i) => UI.text('💡 ' + s, x + 24, gy + gh + 40 + lay(26, 30) * (i + 0.5) + 8, lay(17, 20), { align: 'left', fill: '#fff', stroke: null, raw: true, maxW: w - 48 }));
+  },
+  // ④ 各星級命中率＋統計小卡
+  stats(a, x, y, w, h) {
+    UI.panel(x, y, w, h, 22);
+    const half = w * 0.5, rowH = (h - 40) / 5;
+    UI.text(tr('各星級命中率'), x + 24, y + 24, RFS(17), { align: 'left', fill: '#7fe4ff', stroke: null, raw: true });
+    a.stars.forEach((s, i) => {
+      const yy = y + 44 + i * rowH + rowH / 2, bx = x + 86, bw = half - 120;
+      UI.text('★' + s.st, x + 30, yy, RFS(16), { align: 'left', fill: '#ffd23f', stroke: null, raw: true });
+      ctx.fillStyle = 'rgba(255,255,255,.12)'; rrect(bx, yy - 7, bw, 14, 7); ctx.fill();
+      if (s.acc !== null) { ctx.fillStyle = s.acc >= 85 ? '#8dff8a' : s.acc >= 65 ? '#ffe066' : '#ff9a6a'; rrect(bx, yy - 7, Math.max(10, bw * s.acc / 100), 14, 7); ctx.fill(); }
+      UI.text(s.acc === null ? '—' : Math.round(s.acc) + '%', bx + bw + 8, yy, RFS(14), { align: 'left', fill: '#fff', stroke: null, raw: true });
+    });
+    // 統計小卡（2×2＋最常玩）
+    const T = a.totals, tiles = [['總場數', String(T.plays)], ['廣島燒', String(T.oko)], ['最高連擊', String(T.maxCombo)], ['GREAT', Math.round(a.great) + '%']];
+    const tx = x + half + 10, tw = (half - 34) / 2, th = (h - 64) / 2;
+    tiles.forEach(([l, v], i) => {
+      const cx = tx + (i % 2) * (tw + 8), cy = y + 14 + Math.floor(i / 2) * (th + 6);
+      ctx.fillStyle = 'rgba(255,255,255,.08)'; rrect(cx, cy, tw, th, 12); ctx.fill();
+      UI.text(tr(l), cx + tw / 2, cy + th * 0.3, RFS(14), { fill: '#cfd8ff', stroke: null, raw: true, maxW: tw - 10 });
+      UI.text(v, cx + tw / 2, cy + th * 0.68, lay(26, 32), { fill: '#fff', stroke: null, raw: true, maxW: tw - 10 });
+    });
+    if (T.fav) UI.text(tr('最常玩') + '：' + T.fav.title, tx + half / 2 - 12, y + h - 22, RFS(15), { fill: '#ffe8b0', stroke: null, raw: true, maxW: half - 30 });
+  },
+};
+
 // ---------- CREDIT ----------
 Screens.credits = {
   sel: 0, n: 0, t: 0, wisps: [], spawn: 0,
