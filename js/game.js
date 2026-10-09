@@ -518,7 +518,6 @@ const Game = {
     const fx = this.s.gradeFx; if (!fx || fx.t > 0.6) return;
     const s = fx.t < 0.1 ? 0.6 + fx.t / 0.1 * 0.5 : 1.1 - Math.min(0.1, (fx.t - 0.1));
     const a = fx.t > 0.45 ? 1 - (fx.t - 0.45) / 0.15 : 1, y = 770 - fx.t * 30;
-    if (fx.g === 'GREAT') { drawImgW(IMG.great_text, ZONE.x, y, 330 * s, 0, a); return; }
     drawGradeText(fx.g, ZONE.x, y, s, a);
   },
   drawHUD(pulse, st) {
@@ -606,9 +605,24 @@ const Game = {
   },
 };
 
+// GREAT 圖補上白色外框（和 NICE / GOOD / BAD 文字的白邊一致）：把圖的剪影往四周錯開疊成白底，只做一次
+let greatOutlined = null;
+function greatSprite() {
+  const img = IMG.great_text;
+  if (!greatOutlined) {
+    const R = Math.round(9 * img.width / 330), c = document.createElement('canvas');   // 白邊寬 ≈ 文字版的白邊（以畫面 330px 寬計）
+    c.width = img.width + R * 2; c.height = img.height + R * 2;
+    const g = c.getContext('2d');
+    for (const r of [R, R * 0.5]) for (let i = 0; i < 32; i++) g.drawImage(img, R + Math.cos(i / 32 * Math.PI * 2) * r, R + Math.sin(i / 32 * Math.PI * 2) * r);
+    g.globalCompositeOperation = 'source-in'; g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height);
+    g.globalCompositeOperation = 'source-over'; g.drawImage(img, R, R);
+    greatOutlined = { c, k: c.width / img.width };
+  }
+  return greatOutlined;
+}
 // GOOD / NICE / BAD 文字（與 GREAT 圖同風格）
 function drawGradeText(g, x, y, s = 1, a = 1, size = 86) {
-  if (g === 'GREAT' && IMG.great_text) { drawImgW(IMG.great_text, x, y, size * 3.85 * s, 0, a); return; }
+  if (g === 'GREAT' && IMG.great_text) { const o = greatSprite(); drawImgW(o.c, x, y, size * 3.85 * s * o.k, 0, a); return; }
   const [c1, c2, c3] = GRADE_STYLE[g], text = g === 'NICE' ? 'NICE!' : g;
   ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.scale(s, s);
   ctx.font = `${size}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';

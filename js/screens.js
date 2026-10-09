@@ -351,8 +351,12 @@ Screens.songs = {
     UI.begin(this.bs);
     if (UI.button(this.bs, '返回', 50, 1040, 210, 76, { back: true }) || Input.was('back')) App.goto('menu');
     if (UI.button(this.bs, '開始遊戲', 280, 1034, 390, 86, { lacquer: true, sub: 'sub.start', size: 36 })) this.start();
-    // 小顆的「新手教學」：隨時可以回去複習
-    if (UI.button(this.bs, '新手教學', 270, 1138, 180, 48, { size: 21 })) App.goto('tutorial', { from: 'songs' });
+    // 右上角：掛在竹竿上的「新手教學」木札（和主選單同款）；燈火光暈＋每隔一陣子晃一下，提示可以按
+    const T = { x: 590, y: 40, w: 116, h: 82 }, pulse = 0.5 + 0.5 * Math.sin(Game.time * 3.2);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.25 + pulse * 0.35;
+    ctx.drawImage(Scene.glowSprite('#ffb04a'), T.x - 34, T.y - 30, T.w + 68, T.h + 64); ctx.restore();
+    UI.pole(574, 20, 146);
+    if (UI.button(this.bs, '新手教學', T.x, T.y, T.w, T.h, { tag: true, sub: 'sub.tutorial', size: 22, ropeH: 20, wiggle: true })) App.goto('tutorial', { from: 'songs' });
     UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : '↑↓ 選曲　← → 換頁　ENTER 開始');
   },
   card(song, i, x, y, w, h, on) {
@@ -994,7 +998,7 @@ Screens.credits = {
         const x = p.x + Math.sin(p.ph + age * 2.6) * p.amp * Math.min(1, k * 2) + (p.x - cx) * k * 0.3;
         const y = p.y - p.vy * age;
         const r = p.r * (1 + k * 1.6) * (1 - j * 0.15);
-        ctx.globalAlpha = Math.min(1, k * 5) * (1 - k) * (1 - k) * 0.75 * (1 - j * 0.2);   // 淡入 → 淡出
+        ctx.globalAlpha = Math.min(1, k * 5) * (1 - k) * (1 - k) * 0.5 * (1 - j * 0.2);   // 淡入 → 淡出
         ctx.drawImage(glow, x - r, y - r * 1.3, r * 2, r * 2.6);
       }
     }

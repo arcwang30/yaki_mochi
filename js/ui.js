@@ -184,7 +184,10 @@ const UI = {
     const t = Game.time, cx = x + w / 2, r = o.tag ? 8 : Math.min(14, h * 0.2);
     ctx.save();
     if (o.tag) {   // 繩子＋擺動（以掛點為軸）
-      const top = y - (o.ropeH || 24), sw = Math.sin(t * 2.2 + i * 1.3) * (focus ? 0.06 : 0.02);
+      let sw = Math.sin(t * 2.2 + i * 1.3) * (focus ? 0.06 : 0.02);
+      // o.wiggle：每 3 秒「晃～」一下（像被風吹動），提示玩家可以按
+      if (o.wiggle && !focus) { const p = (t % 3) / 0.9; if (p < 1) sw += Math.sin(p * Math.PI * 4) * 0.13 * (1 - p); }
+      const top = y - (o.ropeH || 24);
       ctx.translate(cx, top); ctx.rotate(sw); ctx.translate(-cx, -top);
       ctx.strokeStyle = '#2a1608'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(x + w * 0.26, y + 10); ctx.lineTo(cx, top); ctx.lineTo(x + w * 0.74, y + 10); ctx.stroke();

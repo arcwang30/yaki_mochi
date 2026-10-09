@@ -7,10 +7,10 @@ const LANGS = [['zh', '中文'], ['ja', '日本語'], ['en', 'English']];
 
 const I18N = {
   zh: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL',
   },
   ja: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL',
     // 開始 / 主選單
     '節奏熱炒遊戲': 'リズム鉄板ゲーム', '開始遊戲': 'ゲーム開始', '操作說明': 'あそびかた', '排行榜': 'ランキング', '設定': 'せってい', 'CREDIT': 'クレジット',
     '十字鍵 選擇　A 決定　B 返回': '十字キー 選択　A 決定　B 戻る', '點選按鈕': 'ボタンをタップ', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ 選択　ENTER 決定　ESC 戻る',
@@ -82,7 +82,7 @@ const I18N = {
     '請將手機直立握持': 'スマホを縦に持ってください',
   },
   en: {
-    'sub.start': 'はじめる', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット',
+    'sub.start': 'はじめる', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう',
     '節奏熱炒遊戲': 'Rhythm Teppan Game', '開始遊戲': 'PLAY', '操作說明': 'HOW TO', '排行榜': 'RANKING', '設定': 'SETTINGS', 'CREDIT': 'CREDITS',
     '十字鍵 選擇　A 決定　B 返回': 'D-pad: select   A: OK   B: back', '點選按鈕': 'Tap a button', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ select   ENTER: OK   ESC: back',
     '繼續遊戲': 'RESUME', '重新開始': 'RESTART', '回主選單': 'MAIN MENU', '返回選擇樂曲': 'SONG SELECT', '繼續後會先倒數 3 拍，再接回原本的節拍': 'Resuming counts in 3 beats, then picks up the beat',
