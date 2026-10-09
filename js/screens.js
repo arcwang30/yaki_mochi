@@ -65,8 +65,8 @@ function drawNightSky(pan = 0) {
   // 月亮
   const my = -pan * 0.42;
   ctx.save(); ctx.translate(0, my);
-  ctx.shadowColor = 'rgba(255,240,190,.8)'; ctx.shadowBlur = blur(40);
-  ctx.fillStyle = '#fff4cf'; ctx.beginPath(); ctx.arc(586, 150, 52, 0, 7); ctx.fill(); ctx.shadowColor = 'transparent';
+  if (!ECO()) { ctx.globalAlpha = 0.7; ctx.drawImage(Scene.glowSprite('#fff0be'), 586 - 112, 150 - 112, 224, 224); ctx.globalAlpha = 1; }   // 月暈（貼圖，不用模糊）
+  ctx.fillStyle = '#fff4cf'; ctx.beginPath(); ctx.arc(586, 150, 52, 0, 7); ctx.fill();
   ctx.fillStyle = 'rgba(230,210,160,.45)'; ctx.beginPath(); ctx.arc(570, 140, 9, 0, 7); ctx.arc(600, 170, 6, 0, 7); ctx.fill();
   ctx.restore();
   // 遠處燈籠串（垂墜曲線＋光點）
@@ -78,9 +78,7 @@ function drawNightSky(pan = 0) {
     for (let i = 0; i <= 12; i++) {
       const u = i / 12, x = -20 + u * (W + 40), y = (1 - u) * (1 - u) * (y0 - 60) + 2 * u * (1 - u) * (y0 + 60) + u * u * (y0 - 60) + 14 * sc;
       const fl = 0.75 + 0.25 * Math.sin(t * 6 + i * 2 + k);
-      const gg = ctx.createRadialGradient(x, y, 0, x, y, 26 * sc);
-      gg.addColorStop(0, `rgba(255,140,60,${0.7 * fl})`); gg.addColorStop(1, 'rgba(255,140,60,0)');
-      ctx.fillStyle = gg; ctx.fillRect(x - 30, y - 30, 60, 60);
+      ctx.globalAlpha = 0.7 * fl; ctx.drawImage(Scene.glowSprite('#ff8c3c'), x - 26 * sc, y - 26 * sc, 52 * sc, 52 * sc); ctx.globalAlpha = 1;   // 光暈貼圖（不每幀建漸層）
       ctx.fillStyle = i % 4 === 1 ? '#ffd040' : '#ff6a30'; ctx.beginPath(); ctx.ellipse(x, y, 7 * sc, 9 * sc, 0, 0, 7); ctx.fill();
     }
   });
@@ -151,9 +149,8 @@ const Fireworks = {
   draw() {
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
     for (const f of this.flashes) {
-      const a = f.life / 0.25, g = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, 220);
-      g.addColorStop(0, `rgba(255,240,200,${0.7 * a})`); g.addColorStop(0.25, `rgba(255,220,160,${0.35 * a})`); g.addColorStop(1, 'rgba(255,240,200,0)');
-      ctx.fillStyle = g; ctx.fillRect(f.x - 220, f.y - 220, 440, 440);
+      ctx.globalAlpha = 0.55 * (f.life / 0.25);
+      ctx.drawImage(Scene.glowSprite('#fff0c8'), f.x - 200, f.y - 200, 400, 400); ctx.globalAlpha = 1;
     }
     for (const r of this.rockets) {   // 升空的火光尾巴
       r.trail.forEach(([x, y], i) => { ctx.fillStyle = `rgba(255,210,140,${(i + 1) / r.trail.length * 0.8})`; ctx.beginPath(); ctx.arc(x, y, 1.5 + i * 0.25, 0, 7); ctx.fill(); });
@@ -376,7 +373,7 @@ Screens.songs = {
     if (on) {
       const s = 1.02 + Math.sin(Game.time * 6) * 0.004;
       ctx.translate(x + w / 2, y + h / 2); ctx.scale(s, s); ctx.translate(-(x + w / 2), -(y + h / 2));
-      ctx.save(); ctx.shadowColor = 'rgba(255,170,60,.95)'; ctx.shadowBlur = blur(26); rrect(x, y, w, h, 16); ctx.fillStyle = 'rgba(255,170,60,.6)'; ctx.fill(); ctx.restore();
+      UI.glow(x, y, w, h, 16, 'rgba(255,170,60,.95)', blur(26), { fill: 'rgba(255,170,60,.6)' });   // 光暈貼圖（不每幀模糊）
     }
     rrect(x + 4, y + 7, w, h, 16); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
     UI.wood(x, y, w, h, { r: 16, seed: 'song' + i, light: on });

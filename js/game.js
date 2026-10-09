@@ -78,7 +78,14 @@ const Scene = {
     const img = IMG.bg_stall;
     if (img) {
       const s = Math.max(W / img.width, H / img.height); this.bg = { s, x: (W - img.width * s) / 2, y: (H - img.height * s) / 2 };
-      ctx.drawImage(img, this.bg.x, this.bg.y, img.width * s, img.height * s);
+      // 背景先依畫布解析度縮放好存起來，之後每幀 1:1 貼上（省下每幀縮放大圖的運算）
+      if (!this.bgCache || this.bgCache.res !== RES) {
+        const c = document.createElement('canvas'); c.width = Math.round(W * RES); c.height = Math.round(H * RES);
+        const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
+        g.drawImage(img, this.bg.x * RES, this.bg.y * RES, img.width * s * RES, img.height * s * RES);
+        this.bgCache = { c, res: RES };
+      }
+      ctx.drawImage(this.bgCache.c, 0, 0, W, H);
     } else { ctx.fillStyle = '#1a1f3a'; ctx.fillRect(0, 0, W, H); }
     // 燈籠光暈：隨節拍一起閃
     const B = this.bg;
@@ -134,6 +141,18 @@ const Scene = {
   // 選單用的節拍脈動（跟著選單音樂的速度）
   idlePulse() { const p = Sound.bgmPulse(); if (p !== null) return p; const ph = Game.time * 92 / 60; return Math.exp(-(ph % 1) * 5); },
 };
+
+// 食材的焦黑版（沒按到時烤焦用）：每種只做一次
+const burntCache = {};
+function burntImg(name) {
+  if (!burntCache[name]) {
+    const img = IMG[name], c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
+    const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+    g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(20,12,8,.8)'; g.fillRect(0, 0, c.width, c.height);
+    burntCache[name] = c;
+  }
+  return burntCache[name];
+}
 
 // ---------- 譜面產生 ----------
 let bag = [];
@@ -426,7 +445,12 @@ const Game = {
       ctx.fillStyle = `rgba(0,0,0,${0.12 + p * 0.25})`;
       ctx.beginPath(); ctx.ellipse(ZONE.x, ZONE.y + 22, 40 + p * 60, 8 + p * 10, 0, 0, 7); ctx.fill();
     }
-    ctx.shadowColor = '#ffcf4a'; ctx.shadowBlur = blur(14 + pulse * 18);
+    // 金色光暈：快取的光暈圖跟著節拍放大、變亮（原本每幀用 shadowBlur 模糊，是遊戲中最耗電的一筆）
+    if (!ECO()) {
+      ctx.save(); ctx.translate(ZONE.x, ZONE.y); ctx.scale(w / ZONE.w, h / ZONE.h); ctx.globalAlpha = 0.6 + pulse * 0.4;
+      UI.glow(-ZONE.w / 2, -ZONE.h / 2, ZONE.w, ZONE.h, 20, '#ffcf4a', 26, { ring: 5 });
+      ctx.restore();
+    }
     ctx.strokeStyle = `rgba(255,214,90,${0.65 + pulse * 0.35})`; ctx.lineWidth = 5; ctx.setLineDash([16, 10]);
     ctx.lineDashOffset = -this.time * 30;
     rrect(ZONE.x - w / 2, ZONE.y - h / 2, w, h, 20); ctx.stroke();
@@ -467,9 +491,10 @@ const Game = {
         if (n.state === 'bad') {
           drawImgW(IMG[ing.raw], ZONE.x + n.dir * k * 700, landY - 30 - k * 500 + k * k * 1400, ing.rawW, n.dir * k * 12, 1 - k);
         } else { // 沒按：烤焦變黑後消失
-          ctx.save(); if (!ECO()) ctx.filter = `brightness(${1 - k * 0.8})`;
-          drawImgW(IMG[ing.raw], ZONE.x, landY - 30 + k * 20, ing.rawW, 0, 1 - k);
-          ctx.restore();
+          // 原圖淡出、預先做好的焦黑版疊上去（原本用 ctx.filter 每幀調亮度，很耗電）
+          const yy = landY - 30 + k * 20;
+          drawImgW(IMG[ing.raw], ZONE.x, yy, ing.rawW, 0, 1 - k);
+          if (!ECO()) drawImgW(burntImg(ing.raw), ZONE.x, yy, ing.rawW, 0, (1 - k) * Math.min(1, k * 1.6));
           if (!this.s.paused && Math.random() < 0.3) Fx.smoke(ZONE.x + rand(-60, 60), ZONE.y);
         }
       }
@@ -486,23 +511,26 @@ const Game = {
         const e = Math.min(1, p * 2.2), ex = ax + (bx - ax) * e, ey = ay + (by - ay) * e;
         const sx = ax + (bx - ax) * Math.max(0, p * 2.2 - 0.9), sy = ay + (by - ay) * Math.max(0, p * 2.2 - 0.9);
         ctx.globalAlpha = 1 - p;
-        ctx.shadowColor = '#bfe8ff'; ctx.shadowBlur = blur(16);
-        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 9 * (1 - p) + 2;
-        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(ex, ey);
+        if (!ECO()) { ctx.strokeStyle = 'rgba(191,232,255,.35)'; ctx.lineWidth = 9 * (1 - p) + 16; ctx.stroke(); }   // 刀光的光暈（粗的半透明線，不用模糊）
+        ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 9 * (1 - p) + 2; ctx.stroke();
       }
     } else if (act === 'sauce') {
       const p = Math.min(1, k / 0.22), fade = k > 0.3 ? Math.max(0, 1 - (k - 0.3) / 0.1) : 1;
       const pts = []; for (let i = 0; i <= 8; i++) pts.push([x - 92 + i * 23, y - 10 + (i % 2 ? -16 : 12)]);
       const m = p * 8;
       ctx.globalAlpha = fade;
-      ctx.strokeStyle = '#4a2010'; ctx.lineWidth = 8; ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = blur(4);
-      ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
-      for (let i = 1; i <= Math.ceil(m); i++) {
-        const f = Math.min(1, m - (i - 1)), [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-        ctx.lineTo(x0 + (x1 - x0) * f, y0 + (y1 - y0) * f);
-      }
-      ctx.stroke();
-      ctx.shadowBlur = 0; ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.stroke();   // 醬汁光澤
+      const line = dy => {
+        ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1] + dy);
+        for (let i = 1; i <= Math.ceil(m); i++) {
+          const f = Math.min(1, m - (i - 1)), [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+          ctx.lineTo(x0 + (x1 - x0) * f, y0 + (y1 - y0) * f + dy);
+        }
+      };
+      ctx.lineWidth = 8;
+      line(2); ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.stroke();   // 影子（位移，不用模糊）
+      line(0); ctx.strokeStyle = '#4a2010'; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; ctx.stroke();   // 醬汁光澤
     }
     ctx.restore();
   },
@@ -562,8 +590,7 @@ const Game = {
       if (a.t >= 0.95) continue;
       if (a.t < 0.55) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter';
-        const g = ctx.createRadialGradient(x, y, 0, x, y, 240); g.addColorStop(0, 'rgba(255,220,120,.55)'); g.addColorStop(1, 'rgba(255,220,120,0)');
-        ctx.fillStyle = g; ctx.fillRect(x - 240, y - 240, 480, 480); ctx.restore();
+        ctx.globalAlpha = 0.55; ctx.drawImage(Scene.glowSprite('#ffdc78'), x - 240, y - 240, 480, 480); ctx.restore();
       }
       drawImgW(IMG.okonomiyaki, x, y, w);
       if (a.t < 0.55) {   // 文字畫在圖上面，不被廣島燒蓋住
@@ -590,8 +617,8 @@ const Game = {
     const pressed = this.time - this.s.pressT < 0.1;
     ctx.save(); ctx.translate(ZONE.x, BTN_Y);
     ctx.globalCompositeOperation = 'lighter';
-    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 120); g.addColorStop(0, `rgba(255,120,60,${pressed ? 0.6 : 0.15 + pulse * 0.2})`); g.addColorStop(1, 'rgba(255,120,60,0)');
-    ctx.fillStyle = g; ctx.fillRect(-130, -120, 260, 240);
+    ctx.globalAlpha = pressed ? 0.6 : 0.15 + pulse * 0.2;   // 光暈貼圖（不每幀建漸層）
+    ctx.drawImage(Scene.glowSprite('#ff783c'), -120, -120, 240, 240);
     ctx.restore();
     drawButtonImg(ZONE.x, BTN_Y, 230 * (pressed ? 0.95 : 1 + pulse * 0.03), pressed ? 0.88 : 1);
   },

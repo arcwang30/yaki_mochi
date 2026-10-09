@@ -13,7 +13,9 @@ let RES = 1;   // 畫布實際解析度倍率（main.js 依螢幕設定；快取
 // ---- 省電模式（設定可開關）：每秒 30 幀、1 倍解析度、關閉模糊陰影 / 火星 / 濾鏡、特效粒子減半 ----
 const ECO = () => !!Save.data.eco;
 const blur = v => (ECO() ? 0 : v);              // 模糊陰影在手機上很耗電：省電模式直接關掉
-const FPS_MAX = () => (ECO() ? 30 : 60);         // 120Hz 螢幕也限制在 60（省電模式 30）
+// 120Hz 螢幕也限制在 60；選單畫面（動作慢）一律 30，省一半的繪製；省電模式全部 30
+const SMOOTH_SCREENS = ['game', 'tutorial', 'intro'];
+const FPS_MAX = () => (ECO() ? 30 : SMOOTH_SCREENS.includes(App.name) ? 60 : 30);
 const RES_MAX = () => (ECO() ? 1 : 2);
 
 // ---- 版面 ----

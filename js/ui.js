@@ -114,12 +114,31 @@ const UI = {
     ctx.fillStyle = '#3a3a3a'; ctx.beginPath(); ctx.arc(x, y, 4.5, 0, 7); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.arc(x - 1.3, y - 1.3, 1.6, 0, 7); ctx.fill();
   },
+  // 發光框：取代每幀的 shadowBlur（模糊在手機 GPU 上最耗電、最燙）。依尺寸畫一次快取成圖，之後每幀只貼圖
+  // o.fill：框內填色＋外圍光暈；o.ring：只要外框線的光暈（框線本身另外畫，例如判定框的虛線）
+  glowCache: new Map(),
+  glow(x, y, w, h, r, color, bl, o = {}) {
+    const lw = o.ring || 0, P = bl * 1.5 + lw + 2;
+    const key = [Math.round(w), Math.round(h), r, color, bl, o.fill || '', lw, RES].join('|');
+    let c = this.glowCache.get(key);
+    if (!c) {
+      if (this.glowCache.size > 60) this.glowCache.clear();
+      c = document.createElement('canvas'); c.width = Math.ceil((w + P * 2) * RES); c.height = Math.ceil((h + P * 2) * RES);
+      const g = c.getContext('2d'); g.scale(RES, RES);
+      const path = ox => { const q = Math.min(r, w / 2, h / 2), X = P + ox, Y = P; g.beginPath(); g.moveTo(X + q, Y); g.arcTo(X + w, Y, X + w, Y + h, q); g.arcTo(X + w, Y + h, X, Y + h, q); g.arcTo(X, Y + h, X, Y, q); g.arcTo(X, Y, X + w, Y, q); g.closePath(); };
+      g.shadowColor = color; g.shadowBlur = bl;   // shadowBlur 以裝置像素計（不受 scale 影響），和直接畫在主畫布上一樣
+      if (lw) {   // 只留光暈：把框線畫在畫布外，用陰影位移把光暈移回來
+        const off = w + P * 3; g.shadowOffsetX = off * RES; g.lineWidth = lw; g.strokeStyle = color; path(-off); g.stroke();
+      } else { g.fillStyle = o.fill || color; path(0); g.fill(); }
+      this.glowCache.set(key, c);
+    }
+    ctx.drawImage(c, x - P, y - P, w + P * 2, h + P * 2);
+  },
   // 小紅燈籠（焦點標記）
   lantern(x, y, s = 1) {
     ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
-    ctx.shadowColor = 'rgba(255,120,40,.9)'; ctx.shadowBlur = blur(12);
+    if (!ECO()) { ctx.save(); ctx.globalAlpha *= 0.9; ctx.drawImage(Scene.glowSprite('#ff7828'), -24, -27, 48, 54); ctx.restore(); }   // 燈火光暈（貼圖）
     ctx.fillStyle = '#e8402a'; ctx.beginPath(); ctx.ellipse(0, 0, 11, 14, 0, 0, 7); ctx.fill();
-    ctx.shadowBlur = 0;
     ctx.strokeStyle = 'rgba(80,10,0,.55)'; ctx.lineWidth = 1.2;
     for (const yy of [-7, 0, 7]) { ctx.beginPath(); ctx.ellipse(0, yy, 11 * Math.sqrt(1 - (yy / 14) ** 2), 2, 0, 0, 7); ctx.stroke(); }
     ctx.fillStyle = '#2a1608'; ctx.fillRect(-6, -17, 12, 4); ctx.fillRect(-6, 13, 12, 4);
@@ -131,12 +150,15 @@ const UI = {
     [...chars].forEach((ch, i) => {
       const px = x0 + i * (pw + gap), sway = Math.sin(t * 1.7 + i * 0.9) * 4;
       ctx.save();
-      ctx.beginPath(); ctx.moveTo(px, top); ctx.lineTo(px + pw, top);
-      ctx.lineTo(px + pw + sway, top + h); ctx.quadraticCurveTo(px + pw / 2 + sway, top + h + 6, px + sway, top + h);
-      ctx.closePath();
+      const cloth = dy => {
+        ctx.beginPath(); ctx.moveTo(px, top + dy); ctx.lineTo(px + pw, top + dy);
+        ctx.lineTo(px + pw + sway, top + h + dy); ctx.quadraticCurveTo(px + pw / 2 + sway, top + h + 6 + dy, px + sway, top + h + dy);
+        ctx.closePath();
+      };
+      cloth(5); ctx.fillStyle = 'rgba(0,0,0,.3)'; ctx.fill();   // 布的影子（位移的半透明色塊，不用模糊）
+      cloth(0);
       const g = ctx.createLinearGradient(0, top, 0, top + h); g.addColorStop(0, '#2a4a86'); g.addColorStop(1, '#16295a');
-      ctx.fillStyle = g; ctx.shadowColor = 'rgba(0,0,0,.45)'; ctx.shadowBlur = blur(10); ctx.shadowOffsetY = 5; ctx.fill();
-      ctx.shadowColor = 'transparent';
+      ctx.fillStyle = g; ctx.fill();
       ctx.clip();
       ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 2;   // 布的皺褶
       for (let k = 1; k < 3; k++) { ctx.beginPath(); ctx.moveTo(px + pw * k / 3, top); ctx.lineTo(px + pw * k / 3 + sway, top + h); ctx.stroke(); }
@@ -156,9 +178,8 @@ const UI = {
     ctx.font = `${size}px ${FONT}`;
     const w = ctx.measureText(str).width + 56, h = size * 2;
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.02);
-    ctx.shadowColor = 'rgba(0,0,0,.4)'; ctx.shadowBlur = blur(8); ctx.shadowOffsetY = 4;
+    ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(-w / 2 + 1, -h / 2 + 4, w, h);   // 影子（位移色塊，不用模糊）
     ctx.fillStyle = '#f7eed8'; ctx.fillRect(-w / 2, -h / 2, w, h);
-    ctx.shadowColor = 'transparent';
     ctx.strokeStyle = '#c8321e'; ctx.lineWidth = 2; ctx.strokeRect(-w / 2 + 5, -h / 2 + 5, w - 10, h - 10);
     ctx.restore();
     this.text(str, cx, cy + 1, size, { fill: '#a3200f', stroke: null, raw: true });
@@ -195,8 +216,8 @@ const UI = {
     const s = focus ? 1.05 + Math.sin(t * 8) * 0.01 : 1;
     ctx.translate(cx, y + h / 2); ctx.scale(s, s); ctx.translate(-cx, -(y + h / 2));
     if (focus) {   // 燈火般的光暈
-      ctx.save(); ctx.shadowColor = 'rgba(255,170,60,.95)'; ctx.shadowBlur = blur(24 + Math.sin(t * 6) * 6);
-      rrect(x, y, w, h, r); ctx.fillStyle = 'rgba(255,170,60,.6)'; ctx.fill(); ctx.restore();
+      ctx.save(); ctx.globalAlpha *= 0.82 + Math.sin(t * 6) * 0.18;   // 光暈貼圖一明一暗（原本是每幀改模糊半徑）
+      this.glow(x, y, w, h, r, 'rgba(255,170,60,.95)', blur(26), { fill: 'rgba(255,170,60,.6)' }); ctx.restore();
     }
     rrect(x + 4, y + 7, w, h, r); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
     this.wood(x, y, w, h, { r, seed: label, light: focus, lacquer: o.lacquer });
