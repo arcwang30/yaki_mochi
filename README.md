@@ -35,7 +35,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `js/online.js`, `js/firebase-config.js` | 線上排行榜（選用） |
 | `assets/images/` | 遊戲用圖（已去背、裁切、壓縮） |
 | `assets/icons/` | APP 圖示（192／512／maskable／Apple／favicon） |
-| `assets/audio/` | 語音（開場「いらっしゃいませ！」）；音量與起始位置在 `js/audio.js` 的 `VOICES` |
+| `assets/audio/` | 語音（開場「いらっしゃいませ！」、選曲「select song」）；音量與起始位置在 `js/audio.js` 的 `VOICES`。遊戲實際讀的是內嵌版 `js/voices.js`（file:// 開啟的桌面版也能播），換了音檔後執行 `tools/embed_voices.ps1` 重新產生 |
 | `assets/source/` | 原始圖片（企畫附圖、Excel 內的圖） |
 | `tools/` | `serve.ps1` 本機伺服器、`build.ps1` 封裝、`prep.html` + `prep_server.ps1` 素材前處理 |
 | `docs/企畫書.md` | 遊戲企畫 |

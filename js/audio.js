@@ -173,8 +173,11 @@ const Sound = {
     for (const [k, v] of Object.entries(this.VOICES)) {
       if (this.voices[k]) continue;
       this.voices[k] = 'loading';
-      fetch(v.url).then(r => r.arrayBuffer()).then(b => A.ctx.decodeAudioData(b))
-        .then(buf => { this.voices[k] = buf; }).catch(() => { this.voices[k] = null; });   // 直接開 index.html（file://）時讀不到，就安靜略過
+      // 優先用 js/voices.js 內嵌的資料（file:// 的桌面版也能播）；沒有才去讀音檔
+      const data = typeof VOICE_DATA !== 'undefined' && VOICE_DATA[k];
+      const bytes = data ? Promise.resolve(Uint8Array.from(atob(data), c => c.charCodeAt(0)).buffer) : fetch(v.url).then(r => r.arrayBuffer());
+      bytes.then(b => A.ctx.decodeAudioData(b))
+        .then(buf => { this.voices[k] = buf; }).catch(() => { this.voices[k] = null; });   // 讀不到就安靜略過
     }
   },
   playVoice(k, dest = A.ui, t) {
