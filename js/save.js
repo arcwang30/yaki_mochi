@@ -7,7 +7,8 @@ const Save = {
 
   // 各曲預設排行榜的分數倍率（曲子越難、音符越多，分數越高）
   SEED_SCALE: { tsukimi: 0.75, yatai: 1, swing: 1.05, funk: 1.12, hyper: 1.2, bossa: 0.75, chindon: 1, ska: 1.05, chip: 1.12, dnb: 1.2,
-    musicbox: 0.72, reggae: 0.75, citypop: 1, ondo: 1, samba: 1.05, surf: 1.05, disco: 1.12, boogie: 1.12, jrock: 1.2, hoedown: 1.2 },
+    musicbox: 0.72, reggae: 0.75, citypop: 1, ondo: 1, samba: 1.05, surf: 1.05, disco: 1.12, boogie: 1.12, jrock: 1.2, hoedown: 1.2,
+    gamelan: 0.7, hawaii: 0.75, synthwave: 1, future: 1, anime: 1.06, britpop: 1.12, dancepunk: 1.14, thrash: 1.22, power: 1.2, wametal: 1.2 },
 
   load() {
     try {

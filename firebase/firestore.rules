@@ -6,11 +6,15 @@ service cloud.firestore {
       allow read: if col in ['leaderboard_tsukimi', 'leaderboard_yatai', 'leaderboard_swing', 'leaderboard_funk', 'leaderboard_hyper',
                     'leaderboard_bossa', 'leaderboard_chindon', 'leaderboard_ska', 'leaderboard_chip', 'leaderboard_dnb',
                     'leaderboard_musicbox', 'leaderboard_reggae', 'leaderboard_citypop', 'leaderboard_ondo', 'leaderboard_samba',
-                    'leaderboard_surf', 'leaderboard_disco', 'leaderboard_boogie', 'leaderboard_jrock', 'leaderboard_hoedown'];
+                    'leaderboard_surf', 'leaderboard_disco', 'leaderboard_boogie', 'leaderboard_jrock', 'leaderboard_hoedown',
+                    'leaderboard_gamelan', 'leaderboard_hawaii', 'leaderboard_synthwave', 'leaderboard_future', 'leaderboard_anime',
+                    'leaderboard_britpop', 'leaderboard_dancepunk', 'leaderboard_thrash', 'leaderboard_power', 'leaderboard_wametal'];
       allow create: if col in ['leaderboard_tsukimi', 'leaderboard_yatai', 'leaderboard_swing', 'leaderboard_funk', 'leaderboard_hyper',
                     'leaderboard_bossa', 'leaderboard_chindon', 'leaderboard_ska', 'leaderboard_chip', 'leaderboard_dnb',
                     'leaderboard_musicbox', 'leaderboard_reggae', 'leaderboard_citypop', 'leaderboard_ondo', 'leaderboard_samba',
-                    'leaderboard_surf', 'leaderboard_disco', 'leaderboard_boogie', 'leaderboard_jrock', 'leaderboard_hoedown']
+                    'leaderboard_surf', 'leaderboard_disco', 'leaderboard_boogie', 'leaderboard_jrock', 'leaderboard_hoedown',
+                    'leaderboard_gamelan', 'leaderboard_hawaii', 'leaderboard_synthwave', 'leaderboard_future', 'leaderboard_anime',
+                    'leaderboard_britpop', 'leaderboard_dancepunk', 'leaderboard_thrash', 'leaderboard_power', 'leaderboard_wametal']
         && request.resource.data.keys().hasOnly(['name', 'score', 'oko', 'combo', 'ts'])
         && request.resource.data.name is string
         && request.resource.data.name.size() > 0 && request.resource.data.name.size() <= 8

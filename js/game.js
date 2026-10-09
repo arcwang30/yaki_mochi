@@ -193,7 +193,8 @@ function buildChart(song, t0) {
       const ms = measureInfo(song, { kind: m === MEASURES - 1 ? 'rest' : 'play', bpm: s.bpm, start: t, sec: si, idx: m });
       measures.push(ms);
       if (ms.kind === 'play') {
-        if (m % 2 === 0) { const lv = s.lv[(Math.random() * s.lv.length) | 0]; pat = PATTERNS[lv][(Math.random() * PATTERNS[lv].length) | 0]; }
+        // 節奏型：樂曲可以有自己的一套（song.patterns[lv]，例如金屬的馳騁節奏、電音的反拍），沒有就用通用的 PATTERNS
+        if (m % 2 === 0) { const lv = s.lv[(Math.random() * s.lv.length) | 0], pl = (song.patterns && song.patterns[lv]) || PATTERNS[lv]; pat = pl[(Math.random() * pl.length) | 0]; }
         for (const b of pat) {
           // 反拍（.5）依樂曲的搖擺比例落點，跟著音樂的「晃」
           const nt = ms.at(Math.floor(b) * 2 + (b % 1 ? 1 : 0));

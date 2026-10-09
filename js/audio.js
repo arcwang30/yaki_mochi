@@ -133,6 +133,62 @@ const SND = {
   },
   banjo(t, n, v = 1, dest = A.music) { const f = m2f(n); voice('square', f, t, 0.2, 0.045 * v, dest, { att: 0.001, lp: 4200, lpTo: 1300, lpT: 0.14 }); voice('triangle', f * 2, t, 0.1, 0.025 * v, dest, { att: 0.001 }); },
   fiddle(t, n, dur, v = 1, dest = A.music) { voice('sawtooth', m2f(n), t, 0.1, 0.065 * v, dest, { att: 0.025, hold: Math.max(0, dur - 0.08), lp: 3200, q: 2, vib: 0.01, vibRate: 6, vibDelay: 0.08 }); },
+  // ---- VOL.3 新曲用 ----
+  metallo(t, n, v = 1, dest = A.music, dec = 0.9) {   // 甘美朗金屬琴：非整數倍泛音＋兩把略為走音（ombak 波動）
+    const f = m2f(n);
+    [-4, 4].forEach(d => voice('sine', f, t, dec, 0.07 * v, dest, { att: 0.002, detune: d }));
+    voice('sine', f * 2.76, t, dec * 0.4, 0.025 * v, dest, { att: 0.001 });
+    voice('sine', f * 5.4, t, dec * 0.15, 0.012 * v, dest, { att: 0.001 });
+  },
+  gong(t, n, v = 1, dest = A.music) {   // 大鑼：低沉長餘韻＋拍頻
+    const f = m2f(n);
+    [-6, 6].forEach(d => voice('sine', f, t, 3.2, 0.16 * v, dest, { att: 0.01, detune: d }));
+    voice('sine', f * 2.02, t, 1.6, 0.05 * v, dest, { att: 0.01 });
+    voice('sine', f * 3.1, t, 0.8, 0.02 * v, dest, { att: 0.005 });
+  },
+  uke(t, notes, v = 1, dest = A.music, down = true) {   // 烏克麗麗：明亮短促，下刷由高到低 / 上刷由低到高
+    (down ? notes.slice().reverse() : notes).forEach((n, i) => { const x = t + i * 0.012, f = m2f(n);
+      voice('triangle', f, x, 0.35, 0.07 * v, dest, { att: 0.002, lp: 3000, lpTo: 1200, lpT: 0.2 }); voice('square', f, x, 0.08, 0.012 * v, dest, { att: 0.001, lp: 2600 }); });
+  },
+  steel(t, n, dur, v = 1, dest = A.music) {   // 夏威夷滑棒吉他：從下面滑上來＋慢顫音
+    osc('triangle', m2f(n - 2), t, Math.max(0.25, dur), 0.16 * v, dest, { to: m2f(n), bend: 0.1, att: 0.015 });
+    voice('sine', m2f(n), t + 0.1, Math.max(0.2, dur), 0.07 * v, dest, { att: 0.03, vib: 0.012, vibRate: 4.5, vibDelay: 0.05 });
+  },
+  gsnare(t, v = 1, dest = A.music) {   // 80 年代閘門殘響小鼓（又大又突然收掉）
+    nz(t, 0.2, 0.5 * v, dest, { f: 1700, q: 0.5 }); nz(t, 0.24, 0.22 * v, dest, { type: 'lowpass', f: 900 }); osc('triangle', 180, t, 0.1, 0.35 * v, dest, { to: 140 });
+  },
+  synbass(t, n, dur, v = 1, dest = A.music) { voice('sawtooth', m2f(n), t, 0.08, 0.13 * v, dest, { att: 0.003, hold: Math.max(0, dur - 0.06), lp: 1600, lpTo: 260, lpT: Math.max(0.06, dur), q: 4 }); },
+  synlead(t, n, dur, v = 1, dest = A.music) {   // 80 年代合成器主旋律（附附點八分音符回音）
+    const o = { att: 0.01, hold: Math.max(0, dur - 0.08), lp: 2600, q: 1.5, vib: 0.006, vibDelay: 0.2 };
+    [-7, 7].forEach(d => voice('sawtooth', m2f(n), t, 0.15, 0.04 * v, dest, Object.assign({ detune: d }, o)));
+    voice('sawtooth', m2f(n), t + 0.28, 0.15, 0.022 * v, dest, o);
+  },
+  chop(t, n, dur, v = 1, dest = A.music) {   // 人聲切片（共鳴峰＋往上勾）
+    osc('square', m2f(n - 1), t, Math.min(dur, 0.3), 0.05 * v, dest, { to: m2f(n), bend: 0.05, att: 0.005 });
+    voice('sawtooth', m2f(n), t, Math.min(dur, 0.3), 0.05 * v, dest, { att: 0.006, lp: 1500, lpTo: 900, q: 8, vib: 0.02, vibRate: 7 });
+  },
+  b808(t, n, dur, v = 1, dest = A.music) { osc('sine', m2f(n) * 1.6, t, Math.max(0.3, dur), 0.55 * v, dest, { to: m2f(n), bend: 0.06 }); },
+  tamb(t, v = 1, dest = A.music) { nz(t, 0.11, 0.2 * v, dest, { type: 'highpass', f: 7000 }); osc('square', 6200, t, 0.05, 0.012 * v, dest); },
+  choir(t, notes, dur, v = 1, dest = A.music) {   // 合唱「啊～」：鋸齒波＋共鳴峰濾波、慢起音
+    notes.forEach(n => [-9, 9].forEach(d => voice('sawtooth', m2f(n), t, 0.4, 0.03 * v, dest, { att: 0.25, hold: Math.max(0, dur - 0.3), lp: 1100, q: 3, detune: d, vib: 0.004 })));
+  },
+  vox(t, n, dur, v = 1, dest = A.music) {   // 歌聲般的主旋律（英搖）
+    voice('sawtooth', m2f(n), t, 0.12, 0.06 * v, dest, { att: 0.035, hold: Math.max(0, dur - 0.1), lp: 1700, q: 3, vib: 0.009, vibDelay: 0.18 });
+    voice('triangle', m2f(n), t, 0.12, 0.05 * v, dest, { att: 0.03, hold: Math.max(0, dur - 0.1) });
+  },
+  // 破音吉他（真的過一層失真）：notes 一起刷；o.mute 悶音（短、暗）、o.strum 刷弦間隔
+  dguitar(t, notes, dur, v = 1, dest = A.music, o = {}) {
+    const C = A.ctx;
+    // 失真曲線用奇數點，讓輸入 0 剛好對到 0（偶數點會有直流偏移，沒聲音時也一直漏出來）
+    if (!A.distCurve) { const N = 1025, c = new Float32Array(N), k = 50; for (let i = 0; i < N; i++) { const x = i * 2 / (N - 1) - 1; c[i] = (1 + k) * x / (1 + k * Math.abs(x)); } A.distCurve = c; }
+    const pre = C.createGain(), sh = C.createWaveShaper(), fl = C.createBiquadFilter(), g = C.createGain();
+    pre.gain.value = 0.45; g.gain.value = 0; sh.curve = A.distCurve; fl.type = 'lowpass'; fl.frequency.value = o.mute ? 1000 : 3200; fl.Q.value = 0.9;
+    const end = t + dur + 0.12;
+    notes.forEach((n, i) => [-9, 9].forEach(d => { const os = C.createOscillator(); os.type = 'sawtooth'; os.frequency.value = m2f(n); os.detune.value = d; os.connect(pre); os.start(t + i * (o.strum || 0)); os.stop(end); }));
+    pre.connect(sh); sh.connect(fl); fl.connect(g); g.connect(dest);
+    const pk = 0.06 * v, hold = o.mute ? Math.min(dur, 0.06) : dur * 0.7;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.004); g.gain.setValueAtTime(pk, t + 0.004 + hold); g.gain.exponentialRampToValueAtTime(0.0001, end);
+  },
   don(t, v = 1, dest = A.music) { osc('sine', 150, t, 0.34, 0.9 * v, dest, { to: 58, bend: 0.2 }); osc('sine', 88, t, 0.5, 0.3 * v, dest); nz(t, 0.05, 0.5 * v, dest, { type: 'lowpass', f: 500 }); },
   ka(t, v = 1, dest = A.music) { nz(t, 0.045, 0.45 * v, dest, { f: 3300, q: 4 }); osc('square', 1150, t, 0.02, 0.06 * v, dest); },
   kane(t, v = 1, dest = A.music) { [1, 2.41, 3.93].forEach((r, i) => osc('sine', 1750 * r, t, 0.13, 0.06 * v / (i + 1), dest)); },
