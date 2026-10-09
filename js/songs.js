@@ -1133,11 +1133,11 @@ SONGS.push(
     id: 'thrash', title: 'スラッシュ鉄板', stars: 5, color: '#b0b8c8',
     sub: { zh: '鞭擊鐵板', ja: 'Thrash Teppan', en: 'Thrash Teppan' },
     genre: { zh: '鞭擊金屬', ja: 'スラッシュメタル', en: 'Thrash Metal' },
-    sections: [{ bpm: 160, lv: [2] }, { bpm: 166, lv: [2, 3] }, { bpm: 172, lv: [3] }, { bpm: 178, lv: [3] }, { bpm: 184, lv: [3] }, { bpm: 190, lv: [3] }],
+    sections: [{ bpm: 140, lv: [2] }, { bpm: 146, lv: [2] }, { bpm: 152, lv: [2, 3] }, { bpm: 158, lv: [3] }, { bpm: 164, lv: [3] }, { bpm: 170, lv: [3] }],
     patterns: [
       null, null,
-      [[0, 0.5, 1], [2, 2.5, 3], [0, 1, 1.5, 2], [0, 0.5, 2, 2.5]],   // 馳騁（噠—噠噠）
-      [[0, 0.5, 1, 2, 2.5, 3], [0, 0.5, 1.5, 2, 2.5], [1, 1.5, 2, 3, 3.5], [0, 0.5, 1, 1.5, 3]],
+      [[0, 0.5, 1], [2, 2.5, 3], [0, 2, 2.5], [0, 1, 2]],   // 馳騁（噠—噠噠）；每小節最多 4 下、連續八分音符最多 3 下
+      [[0, 0.5, 1, 2], [0, 2, 2.5, 3], [0, 0.5, 2, 3], [1, 2, 2.5]],
     ],
     arrange(ms, add) {
       const T = THRASH, mi = ms.idx % 8, r = T.ROOT[mi], rest = ms.kind === 'rest';
@@ -1162,11 +1162,11 @@ SONGS.push(
     id: 'power', title: 'ドラゴン鉄板', stars: 5, color: '#ffd23f',
     sub: { zh: '飛龍鐵板', ja: 'Dragon Teppan', en: 'Dragon Teppan' },
     genre: { zh: '力量金屬', ja: 'パワーメタル', en: 'Power Metal' },
-    sections: [{ bpm: 150, lv: [2] }, { bpm: 158, lv: [2, 3] }, { bpm: 166, lv: [3] }, { bpm: 174, lv: [3] }, { bpm: 180, lv: [3] }, { bpm: 186, lv: [3] }],
+    sections: [{ bpm: 138, lv: [2] }, { bpm: 144, lv: [2] }, { bpm: 150, lv: [2, 3] }, { bpm: 156, lv: [3] }, { bpm: 162, lv: [3] }, { bpm: 168, lv: [3] }],
     patterns: [
       null, null,
-      [[0, 0.5, 1, 1.5], [2, 2.5, 3, 3.5], [0, 1, 2, 3], [0, 0.5, 2, 2.5]],   // 一路衝刺的八分音符
-      [[0, 0.5, 1, 1.5, 2, 3], [0, 1, 2, 2.5, 3, 3.5], [0, 0.5, 1, 2, 2.5, 3]],
+      [[0, 0.5, 1], [2, 2.5, 3], [0, 1, 2, 3], [0, 2, 2.5]],   // 一路衝刺的八分音符；每小節最多 4 下
+      [[0, 0.5, 1, 2], [0, 2, 2.5, 3], [0, 1, 2, 3], [0, 0.5, 2, 3]],
     ],
     arrange(ms, add) {
       const P = POWER, mi = ms.idx % 8, ch = P.CHORD[mi], r = P.ROOT[mi], rest = ms.kind === 'rest';
@@ -1193,11 +1193,11 @@ SONGS.push(
     id: 'wametal', title: '鬼焼きメタル', stars: 5, color: '#ff3a6a',
     sub: { zh: '鬼燒金屬', ja: 'Oni-yaki Metal', en: 'Oni-yaki Metal' },
     genre: { zh: '和風金屬・太鼓・三味線', ja: '和風メタル', en: 'Japanese Folk Metal' },
-    sections: [{ bpm: 148, lv: [2] }, { bpm: 156, lv: [2, 3] }, { bpm: 164, lv: [3] }, { bpm: 170, lv: [3] }, { bpm: 178, lv: [3] }, { bpm: 184, lv: [3] }],
+    sections: [{ bpm: 136, lv: [2] }, { bpm: 142, lv: [2] }, { bpm: 148, lv: [2, 3] }, { bpm: 154, lv: [3] }, { bpm: 160, lv: [3] }, { bpm: 166, lv: [3] }],
     patterns: [
       null, null,
-      [[0, 0.5, 1.5, 3], [0, 1.5, 2.5, 3], [0, 0.5, 2.5], [1.5, 2, 3.5]],   // 停—打—停的切分
-      [[0, 0.5, 1.5, 2.5, 3], [0, 1, 1.5, 3, 3.5], [0.5, 1.5, 2, 2.5, 3.5], [0, 0.5, 1.5, 3, 3.5]],
+      [[0, 0.5, 2], [0, 1.5, 3], [0, 2.5], [1.5, 3]],   // 停—打—停的切分；每小節最多 4 下
+      [[0, 0.5, 1.5, 3], [0, 1.5, 2.5, 3], [0, 0.5, 2.5, 3], [1.5, 2, 3]],
     ],
     arrange(ms, add) {
       const M = WAMETAL, mi = ms.idx % 8, r = M.ROOT[mi], rest = ms.kind === 'rest';
