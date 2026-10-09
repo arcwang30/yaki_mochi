@@ -74,6 +74,7 @@ const I18N = {
     '鐵板上的災難': '鉄板の上の大惨事', '客人默默轉身去吃章魚燒了……明天再來練練吧！': 'お客さんは黙ってたこ焼き屋へ……また明日修行しよう！',
     // 選曲
     '選擇樂曲': '曲をえらぶ', '試聽中': '試聴中', '點兩下卡片也可以開始': 'カードを2回タップでもスタート', '↑↓ 選曲　← → 換頁　ENTER 開始': '↑↓ 選曲　← → ページ　ENTER スタート',
+    '↑↓ 選曲　← → 換頁　ENTER 開始　T 新手教學': '↑↓ 選曲　← → ページ　ENTER スタート　T チュートリアル', '十字鍵 選曲・換頁　A 開始　Y 新手教學　B 返回': '十字キー 選曲・ページ　A スタート　Y チュートリアル　B 戻る',
     '← → 切換樂曲': '← → 曲を切替', '每 8 小節節奏加快一次。共 10 首樂曲（2 集），每集 1～5 星，星越多越快、越難。': '8 小節ごとにテンポアップ。全 10 曲（2 集）、各集 ★1～5、★が多いほど速くて難しい。',
     // 安裝到主畫面
     '安裝到主畫面': 'ホーム画面に追加', '已經是 APP 模式': 'アプリとして起動中', '變成 APP，全螢幕、離線也能玩': 'アプリ化：全画面・オフラインでも遊べる', '教學 ▶': '手順 ▶',
@@ -146,6 +147,7 @@ const I18N = {
     '手忙腳亂的新人': 'Frantic Rookie', '鍋鏟揮得比拍子還快，培根飛到隔壁章魚燒攤了！': 'Your spatula outran the beat and the bacon landed at the takoyaki stall next door!',
     '鐵板上的災難': 'Griddle Disaster', '客人默默轉身去吃章魚燒了……明天再來練練吧！': 'The customers quietly left for takoyaki... Practice again tomorrow!',
     '選擇樂曲': 'SONGS', '試聽中': 'preview', '點兩下卡片也可以開始': 'Tap a card twice to start', '↑↓ 選曲　← → 換頁　ENTER 開始': '↑↓ song   ← → page   ENTER: start',
+    '↑↓ 選曲　← → 換頁　ENTER 開始　T 新手教學': '↑↓ song   ← → page   ENTER: start   T: tutorial', '十字鍵 選曲・換頁　A 開始　Y 新手教學　B 返回': 'D-pad: song / page   A: start   Y: tutorial   B: back',
     '← → 切換樂曲': '← → change song', '每 8 小節節奏加快一次。共 10 首樂曲（2 集），每集 1～5 星，星越多越快、越難。': 'The tempo rises every 8 bars. 10 songs in 2 volumes, 1-5 ★ each; more ★ = faster and harder.',
     '安裝到主畫面': 'Add to Home Screen', '已經是 APP 模式': 'Running as an app', '變成 APP，全螢幕、離線也能玩': 'Full screen app, works offline', '教學 ▶': 'HOW ▶',
     '安裝後可以從主畫面直接開啟：全螢幕、開啟更快，沒有網路也能玩。': 'Launch it straight from your home screen: full screen, faster to open, and playable offline.',

@@ -368,9 +368,9 @@ Screens.songs = {
     }
     const C = this.CARD, page = Math.floor(this.sel / this.PER), P = this.pages();
     SONGS.slice(page * this.PER, page * this.PER + this.PER).forEach((song, k) => {
-      const i = page * this.PER + k, y = C.y0 + k * (C.h + C.gap), on = i === this.sel;
-      if (Input.ptr.moved && UI.inside(Input.ptr.x, Input.ptr.y, C.x, y, C.w, C.h) && !on) this.select(i);
-      for (const t of Input.taps) if (UI.inside(t.x, t.y, C.x, y, C.w, C.h)) { if (on) this.start(); else this.select(i); }
+      const i = page * this.PER + k, y = C.y0 + k * (C.h + C.gap), on = i === this.sel && this.bs.sel !== 2;   // 焦點在「新手教學」時，曲目卡不亮
+      if (Input.ptr.moved && UI.inside(Input.ptr.x, Input.ptr.y, C.x, y, C.w, C.h) && !on) { if (this.bs.sel === 2) this.bs.sel = -1; this.select(i); }
+      for (const t of Input.taps) if (UI.inside(t.x, t.y, C.x, y, C.w, C.h)) { if (on) this.start(); else { this.bs.sel = -1; this.select(i); } }
       this.card(song, i, C.x, y, C.w, C.h, on);
     });
     // 換頁列：◀ VOL.1 ●○ ▶
@@ -383,21 +383,39 @@ Screens.songs = {
       if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 110, 80)) this.setPage(page - 1);
       if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80)) this.setPage(page + 1);
     }
-    if (Input.was('up')) { this.bs.sel = -1; this.select((this.sel + SONGS.length - 1) % SONGS.length); }
-    if (Input.was('down')) { this.bs.sel = -1; this.select((this.sel + 1) % SONGS.length); }
+    // 鍵盤 / 手把：在每頁第一首按 ↑ → 焦點移到右上角的「新手教學」（bs.sel = 2），↓ 回到曲目；T 鍵 / 手把 Y 直接開教學
+    const TUT = 2;
+    if (Input.was('up')) {
+      if (this.bs.sel === TUT) { /* 已在最上面 */ }
+      else if (this.sel % this.PER === 0) { this.bs.sel = TUT; Sound.play('select'); }
+      else { this.bs.sel = -1; this.select(this.sel - 1); }
+    }
+    if (Input.was('down')) {
+      if (this.bs.sel === TUT) { this.bs.sel = -1; Sound.play('select'); }
+      else { this.bs.sel = -1; this.select((this.sel + 1) % SONGS.length); }
+    }
+    if (Input.was('tutorial')) { Sound.play('confirm'); App.goto('tutorial', { from: 'songs' }); }
     if (Input.was('confirm') && (this.bs.sel === -1 || this.bs.sel === 1)) this.start();   // 滑鼠停在「返回」「新手教學」上時不開始
     if (LAND) this.detail(SONGS[this.sel]);
     UI.begin(this.bs);
     const B = lay({ bx: 50, by: 1040, bw: 210, bh: 76, sx: 280, sy: 1034, sw: 390, sh: 86 }, { bx: 1000, by: 924, bw: 230, bh: 84, sx: 1250, sy: 918, sw: 570, sh: 96 });
-    if (UI.button(this.bs, '返回', B.bx, B.by, B.bw, B.bh, { back: true }) || Input.was('back')) App.goto('menu');
-    if (UI.button(this.bs, '開始遊戲', B.sx, B.sy, B.sw, B.sh, { lacquer: true, sub: 'sub.start', size: lay(36, 42) })) this.start();
+    if (LAND) {
+      // PC 版：不放大木牌，改成右下角的按鍵提示鈕（ENTER / ESC，接手把時顯示 A / B；滑鼠也能點）
+      const pad = Input.padConnected;
+      if (UI.prompt(B.sx + B.sw, 944, pad ? 'A' : 'ENTER', '開始遊戲', { hot: true })) this.start();
+      if (UI.prompt(UI.promptX - 18, 944, pad ? 'B' : 'ESC', '返回', { back: true }) || Input.was('back')) App.goto('menu');
+      this.bs.n = 2;   // 保留按鈕編號：新手教學一樣是第 2 個（↑ 移過去的焦點）
+    } else {
+      if (UI.button(this.bs, '返回', B.bx, B.by, B.bw, B.bh, { back: true }) || Input.was('back')) App.goto('menu');
+      if (UI.button(this.bs, '開始遊戲', B.sx, B.sy, B.sw, B.sh, { lacquer: true, sub: 'sub.start', size: lay(36, 42) })) this.start();
+    }
     // 右上角：掛在竹竿上的「新手教學」木札（和主選單同款）；燈火光暈＋每隔一陣子晃一下，提示可以按
     const T = lay({ x: 590, y: 40, w: 116, h: 82 }, { x: W - 170, y: 44, w: 130, h: 90 }), pulse = 0.5 + 0.5 * Math.sin(Game.time * 3.2);
-    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.25 + pulse * 0.35;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = this.bs.sel === 2 ? 0.75 + pulse * 0.25 : 0.25 + pulse * 0.35;   // 被選到時光暈更亮
     ctx.drawImage(Scene.glowSprite('#ffb04a'), T.x - 34, T.y - 30, T.w + 68, T.h + 64); ctx.restore();
     UI.pole(T.x - 16, 20, T.w + 30);
     if (UI.button(this.bs, '新手教學', T.x, T.y, T.w, T.h, { tag: true, sub: 'sub.tutorial', size: 22, ropeH: 20, wiggle: true })) App.goto('tutorial', { from: 'songs' });
-    UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : '↑↓ 選曲　← → 換頁　ENTER 開始');
+    UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : Input.padConnected ? '十字鍵 選曲・換頁　A 開始　Y 新手教學　B 返回' : '↑↓ 選曲　← → 換頁　ENTER 開始　T 新手教學');
   },
   card(song, i, x, y, w, h, on) {
     const loc = o => o[Save.data.lang] || o.zh;

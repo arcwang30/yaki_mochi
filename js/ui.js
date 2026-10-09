@@ -135,6 +135,24 @@ const UI = {
     }
     ctx.drawImage(c, x - P, y - P, w + P * 2, h + P * 2);
   },
+  // PC 版的按鍵提示鈕：［鍵帽］說明（右邊對齊在 xr）；滑鼠也可以點。回傳是否被點到，左緣位置存在 UI.promptX（排下一顆用）
+  // o.hot：主要動作（朱紅色）
+  prompt(xr, y, key, label, o = {}) {
+    label = tr(label);
+    ctx.font = `24px ${FONT}`; const lw = ctx.measureText(label).width;
+    ctx.font = `18px ${FONT}`; const kw = Math.max(44, ctx.measureText(key).width + 24);
+    const h = 56, w = kw + lw + 50, x = xr - w;
+    const hover = Input.ptr.x >= 0 && this.inside(Input.ptr.x, Input.ptr.y, x, y - h / 2, w, h);
+    this.panel(x, y - h / 2, w, h, h / 2, o.hot ? (hover ? '#ef5a34' : '#c43a1a') : (hover ? 'rgba(255,190,60,.35)' : 'rgba(16,22,52,.85)'), o.hot ? '#ffd9a0' : '#e8b64a');
+    ctx.fillStyle = 'rgba(0,0,0,.35)'; rrect(x + 14, y - 14, kw, 34, 8); ctx.fill();   // 鍵帽（下緣陰影）
+    ctx.fillStyle = '#f6ecd2'; rrect(x + 14, y - 18, kw, 34, 8); ctx.fill();
+    this.text(key, x + 14 + kw / 2, y - 1, 18, { fill: '#3a1d0a', stroke: null, raw: true });
+    this.text(label, x + kw + 30, y + 1, 24, { align: 'left', fill: '#fff', stroke: o.hot ? '#5a0f05' : '#101634', sw: 5, raw: true });
+    this.promptX = x;
+    const hit = this.tapIn(x, y - h / 2, w, h);
+    if (hit) Sound.play(o.back ? 'back' : 'confirm');
+    return hit;
+  },
   // 小紅燈籠（焦點標記）
   lantern(x, y, s = 1) {
     ctx.save(); ctx.translate(x, y); ctx.scale(s, s);
