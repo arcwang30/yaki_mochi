@@ -166,6 +166,7 @@ const Sound = {
   // ---- 語音（錄音檔）：走音效音量（設定的「音效」可調、可靜音）；offset 跳過錄音開頭的靜音 ----
   VOICES: {
     irasshaimase: { url: 'assets/audio/voice_irasshaimase.mp3', gain: 0.5, offset: 0.2 },   // 錄音本身很大聲（峰值 0.94）：比當下音樂清楚、但不搶戲（比打擊音效略小）
+    selectSong: { url: 'assets/audio/voice_select_song.mp3', gain: 0.42, offset: 0.12 },     // 選曲畫面的語音（比上面那段略大聲：調成聽起來一樣大）
   },
   voices: {},
   loadVoices() {

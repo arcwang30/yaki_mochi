@@ -50,22 +50,29 @@ Screens.boot = {
 };
 
 // ---------- 夜空（開始畫面與開場共用）：漸層、星星、月亮、遠處的燈籠串 ----------
-function drawNightSky() {
+// pan：開場鏡頭往下帶（野台升起的距離，0～H）；遠近不同的東西往上移的速度不同（視差）：星星最慢、月亮中等、燈籠串最快
+function drawNightSky(pan = 0) {
   const t = Game.time;
   const g = ctx.createLinearGradient(0, 0, 0, H);
   g.addColorStop(0, '#070b24'); g.addColorStop(0.6, '#1a1446'); g.addColorStop(1, '#2a1838');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   const R = mulberry(77);
   for (let i = 0; i < 90; i++) {
-    const x = R() * W, y = R() * H * 0.7, s = 0.6 + R() * 1.8, tw = 0.45 + 0.55 * Math.sin(t * (1 + R() * 2) + i);
+    const x = R() * W, y0 = R() * H * 0.7, s = 0.6 + R() * 1.8, tw = 0.45 + 0.55 * Math.sin(t * (1 + R() * 2) + i);
+    const y = ((y0 - pan * 0.18) % H + H) % H;   // 往上移出畫面的星星從下面補回來
     ctx.fillStyle = `rgba(255,255,240,${0.25 + tw * 0.6})`; ctx.beginPath(); ctx.arc(x, y, s, 0, 7); ctx.fill();
   }
   // 月亮
-  ctx.save(); ctx.shadowColor = 'rgba(255,240,190,.8)'; ctx.shadowBlur = blur(40);
-  ctx.fillStyle = '#fff4cf'; ctx.beginPath(); ctx.arc(586, 150, 52, 0, 7); ctx.fill(); ctx.restore();
+  const my = -pan * 0.42;
+  ctx.save(); ctx.translate(0, my);
+  ctx.shadowColor = 'rgba(255,240,190,.8)'; ctx.shadowBlur = blur(40);
+  ctx.fillStyle = '#fff4cf'; ctx.beginPath(); ctx.arc(586, 150, 52, 0, 7); ctx.fill(); ctx.shadowColor = 'transparent';
   ctx.fillStyle = 'rgba(230,210,160,.45)'; ctx.beginPath(); ctx.arc(570, 140, 9, 0, 7); ctx.arc(600, 170, 6, 0, 7); ctx.fill();
+  ctx.restore();
   // 遠處燈籠串（垂墜曲線＋光點）
-  [[700, 0.55], [860, 0.75]].forEach(([y0, sc], k) => {
+  [[700, 0.55, 0.62], [860, 0.75, 0.85]].forEach(([yb, sc, par], k) => {
+    const y0 = yb - pan * par;
+    if (y0 < -120) return;
     ctx.strokeStyle = 'rgba(20,10,30,.8)'; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(-20, y0 - 60); ctx.quadraticCurveTo(W / 2, y0 + 60, W + 20, y0 - 60); ctx.stroke();
     for (let i = 0; i <= 12; i++) {
@@ -194,12 +201,13 @@ Screens.intro = {
     this.skipLock -= dt;
     if (this.skipLock <= 0 && (Input.was('anykey') || Input.taps.length)) { this.finish(); return; }
 
-    drawNightSky();
+    // 1. 野台由下往上緩緩升起；夜空的月亮、燈籠串跟著往上移（鏡頭往下帶的感覺）
+    const p = clamp(t / T.rise, 0, 1), rise = (1 - (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)) * H;
+    drawNightSky(H - rise);
     // 0. 野台升起的同時，夜空施放煙火（畫在野台後面，野台升上來就自然被擋住）
     Fireworks.update(dt, t, this.bus);
     Fireworks.draw();
-    // 1. 野台由下往上緩緩升起
-    const p = clamp(t / T.rise, 0, 1), rise = (1 - (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)) * H;
+    // 落地：咚一聲＋揚塵＋震動
     let shake = 0;
     if (t >= T.rise) {
       this.once('land', () => {
@@ -316,8 +324,11 @@ Screens.songs = {
   },
   enter() {
     const i = SONGS.findIndex(s => s.id === Save.data.lastSong);
-    this.sel = i >= 0 ? i : 0; this.previewIdx = -1; this.previewT = 0.15; this.bs.sel = -1;
+    this.sel = i >= 0 ? i : 0; this.previewIdx = -1; this.bs.sel = -1;
     chef.idlePose = 'wave'; Sound.init(); Sound.duck(false);
+    // 選曲語音；試聽等語音講完（約 1.1 秒）再開始，不會蓋過去
+    Sound.stopBgm(); Sound.playVoice('selectSong', A.ui, A.ctx && A.ctx.currentTime + 0.25);
+    this.previewT = 1.3;
   },
   select(i) { if (i !== this.sel) { this.sel = i; this.previewT = 0.3; Sound.play('select'); } },
   start() { Sound.play('confirm'); App.goto('game', { song: SONGS[this.sel] }); },
