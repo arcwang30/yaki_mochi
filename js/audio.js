@@ -8,17 +8,22 @@ function env(g, t, att, peak, dec) {
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att);
   g.gain.exponentialRampToValueAtTime(0.0001, t + att + dec);
 }
+// 音源播完就把這一串節點拆掉。不拆的話，它們會一直掛在混音器上等垃圾回收，
+// 手機上回收得慢：玩久了掛著的節點越積越多，音訊處理越來越重、回收時卡頓（LAG 的主因）
+function release(src, ...nodes) { src.onended = () => { src.disconnect(); for (const n of nodes) n.disconnect(); }; }
 function osc(type, f, t, dur, peak, dest, o = {}) {
   const C = A.ctx, os = C.createOscillator(), g = C.createGain(), att = o.att || 0.004;
   os.type = type; os.frequency.setValueAtTime(f, t);
   if (o.to) os.frequency.exponentialRampToValueAtTime(o.to, t + (o.bend || dur));
   env(g, t, att, peak, dur); os.connect(g); g.connect(dest); os.start(t); os.stop(t + att + dur + 0.05);
+  release(os, g);
 }
 function nz(t, dur, peak, dest, o = {}) {
   const C = A.ctx, s = C.createBufferSource(), fl = C.createBiquadFilter(), g = C.createGain();
   s.buffer = A.noise; fl.type = o.type || 'bandpass'; fl.frequency.setValueAtTime(o.f || 1000, t);
   if (o.to) fl.frequency.exponentialRampToValueAtTime(o.to, t + dur); fl.Q.value = o.q || 1;
   env(g, t, 0.002, peak, dur); s.connect(fl); fl.connect(g); g.connect(dest); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
+  release(s, fl, g);
 }
 
 // 通用音色：波形＋（可選）低通濾波掃頻、顫音、延音
@@ -27,22 +32,24 @@ function voice(type, f, t, dur, peak, dest, o = {}) {
   os.type = type; os.frequency.setValueAtTime(f, t);
   if (o.detune) os.detune.value = o.detune;
   let node = os;
+  const extra = [];
   if (o.lp) {
     const fl = C.createBiquadFilter(); fl.type = 'lowpass'; fl.Q.value = o.q || 1;
     fl.frequency.setValueAtTime(o.lp, t);
     if (o.lpTo) fl.frequency.exponentialRampToValueAtTime(o.lpTo, t + (o.lpT || dur));
-    os.connect(fl); node = fl;
+    os.connect(fl); node = fl; extra.push(fl);
   }
-  let lfo = null;
   if (o.vib) {
-    lfo = C.createOscillator(); const lg = C.createGain();
+    const lfo = C.createOscillator(), lg = C.createGain();
     lfo.frequency.value = o.vibRate || 5.5; lg.gain.value = f * o.vib;
     lfo.connect(lg); lg.connect(os.frequency); lfo.start(t + (o.vibDelay || 0)); lfo.stop(t + att + hold + dur + 0.05);
+    extra.push(lfo, lg);
   }
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att);
   if (hold) g.gain.setValueAtTime(peak, t + att + hold);
   g.gain.exponentialRampToValueAtTime(0.0001, t + att + hold + dur);
   node.connect(g); g.connect(dest); os.start(t); os.stop(t + att + hold + dur + 0.05);
+  release(os, g, ...extra);
 }
 const m2f = n => 440 * Math.pow(2, (n - 69) / 12);   // MIDI 音高 → 頻率
 
@@ -184,7 +191,9 @@ const SND = {
     const pre = C.createGain(), sh = C.createWaveShaper(), fl = C.createBiquadFilter(), g = C.createGain();
     pre.gain.value = 0.45; g.gain.value = 0; sh.curve = A.distCurve; fl.type = 'lowpass'; fl.frequency.value = o.mute ? 1000 : 3200; fl.Q.value = 0.9;
     const end = t + dur + 0.12;
-    notes.forEach((n, i) => [-9, 9].forEach(d => { const os = C.createOscillator(); os.type = 'sawtooth'; os.frequency.value = m2f(n); os.detune.value = d; os.connect(pre); os.start(t + i * (o.strum || 0)); os.stop(end); }));
+    const oscs = [];
+    notes.forEach((n, i) => [-9, 9].forEach(d => { const os = C.createOscillator(); os.type = 'sawtooth'; os.frequency.value = m2f(n); os.detune.value = d; os.connect(pre); os.start(t + i * (o.strum || 0)); os.stop(end); oscs.push(os); }));
+    release(oscs[0], ...oscs.slice(1), pre, sh, fl, g);   // 全部同時停：整組一起拆
     pre.connect(sh); sh.connect(fl); fl.connect(g); g.connect(dest);
     const pk = 0.06 * v, hold = o.mute ? Math.min(dur, 0.06) : dur * 0.7;
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.004); g.gain.setValueAtTime(pk, t + 0.004 + hold); g.gain.exponentialRampToValueAtTime(0.0001, end);
@@ -198,13 +207,13 @@ const SND = {
     const C = A.ctx, os = C.createOscillator(), fl = C.createBiquadFilter(), g = C.createGain();
     os.type = 'sawtooth'; os.frequency.setValueAtTime(f * 1.025, t); os.frequency.exponentialRampToValueAtTime(f, t + 0.04);
     fl.type = 'lowpass'; fl.Q.value = 3; fl.frequency.setValueAtTime(4200, t); fl.frequency.exponentialRampToValueAtTime(700, t + 0.28);
-    env(g, t, 0.003, 0.2 * v, 0.42); os.connect(fl); fl.connect(g); g.connect(dest); os.start(t); os.stop(t + 0.5);
+    env(g, t, 0.003, 0.2 * v, 0.42); os.connect(fl); fl.connect(g); g.connect(dest); os.start(t); os.stop(t + 0.5); release(os, fl, g);
   },
   fue(t, f, dur, dest = A.music) {
     const C = A.ctx, os = C.createOscillator(), lfo = C.createOscillator(), lg = C.createGain(), g = C.createGain();
     os.type = 'sine'; os.frequency.value = f; lfo.frequency.value = 5.5; lg.gain.value = f * 0.012;
     lfo.connect(lg); lg.connect(os.frequency); env(g, t, 0.03, 0.07, dur);
-    os.connect(g); g.connect(dest); os.start(t); lfo.start(t); os.stop(t + dur + 0.1); lfo.stop(t + dur + 0.1);
+    os.connect(g); g.connect(dest); os.start(t); lfo.start(t); os.stop(t + dur + 0.1); lfo.stop(t + dur + 0.1); release(os, lfo, lg, g);
   },
   wood(t, hi, dest = A.music) { osc('sine', hi ? 1600 : 1050, t, 0.05, 0.45, dest); nz(t, 0.02, 0.3, dest, { f: 2200, q: 3 }); },
   // 食材被丟出的提示音：咻～＋每種食材不同音高的「啵」
@@ -274,6 +283,7 @@ const Sound = {
     const v = this.VOICES[k], s = A.ctx.createBufferSource(), g = A.ctx.createGain();
     s.buffer = buf; g.gain.value = v.gain;
     s.connect(g); g.connect(dest); s.start(t || A.ctx.currentTime, v.offset);
+    release(s, g);
   },
 
   // 輸出延遲（秒）：畫面與判定都扣掉，讓「聽到的拍子」和判定一致

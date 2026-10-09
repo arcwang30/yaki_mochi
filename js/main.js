@@ -6,12 +6,14 @@
   const nameInput = document.getElementById('nameInput');
   const rotate = document.getElementById('rotate');
 
+  let quality = 1;   // 自動畫質：手機變燙、持續掉幀時往下調（最低到 1 倍解析度），這次開啟期間不再調回
   function resize() {
     const scale = Math.min(window.innerWidth / W, window.innerHeight / H);
     cv.style.width = Math.floor(W * scale) + 'px';
     cv.style.height = Math.floor(H * scale) + 'px';
     stage.style.width = cv.style.width; stage.style.height = cv.style.height;
-    RES = clamp(scale * (window.devicePixelRatio || 1), 0.5, RES_MAX());   // 省電模式最高 1 倍
+    const natural = scale * (window.devicePixelRatio || 1);
+    RES = clamp(Math.max(natural * quality, Math.min(1, natural)), 0.5, RES_MAX());   // 省電模式最高 1 倍；quality = 自動降畫質的倍率（不低於 1 倍）
     cv.width = Math.round(W * RES);
     cv.height = Math.round(H * RES);
     nameInput.style.fontSize = Math.round(34 * scale) + 'px';
@@ -49,6 +51,17 @@
   const fonts = Promise.race([document.fonts.load('40px "Mochiy Pop One"'), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
   Promise.all([Assets.load(), fonts]).then(() => App.goto('title'));
 
+  // 遊戲中每 4 秒看一次平均幀間隔：明顯跟不上目標幀率（> 1.3 倍）就把解析度降 15%（不低於 1 倍），避免越玩越卡
+  const perf = { sum: 0, n: 0 };
+  function autoQuality(ms) {
+    if (App.name !== 'game' || (Game.s && Game.s.paused) || ms > 200) { perf.sum = 0; perf.n = 0; return; }
+    perf.sum += ms; perf.n++;
+    if (perf.sum < 4000) return;
+    const avg = perf.sum / perf.n, target = 1000 / FPS_MAX();
+    perf.sum = 0; perf.n = 0;
+    if (avg > target * 1.3 && RES > 1.01) { quality *= 0.85; resize(); }
+  }
+
   let last = performance.now();
   function loop(now) {
     // 幀率上限：60（120Hz 螢幕不會跑到 120）；省電模式 30。判定用事件時間戳記與音訊時鐘，不受幀率影響
@@ -57,6 +70,7 @@
     if (landscape) { rotate.style.display = 'flex'; pauseGame(); }
     else if (rotate.style.display !== 'none') rotate.style.display = 'none';
     const dt = Math.min((now - last) / 1000, 0.05);
+    autoQuality(now - last);
     last = now;
     Game.time += dt;
     Input.update();
