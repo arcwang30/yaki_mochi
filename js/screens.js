@@ -761,7 +761,7 @@ Screens.settings = {
     if (key === 'music') Sound.play('select');
   },
   setOffset(v) {
-    v = clamp(v, -150, 150);
+    v = clamp(v, -200, 400);   // 藍牙耳機常有 150～300ms 延遲
     if (v === Save.data.offset) return;
     Save.data.offset = v; Save.store(); Sound.play('select');
   },
@@ -811,14 +811,20 @@ Screens.settings = {
     const y2 = 434, off = Save.data.offset;
     this.panel(2, y2, 146);
     UI.text('判定校正', 84, y2 + 30, 30, { align: 'left' });
-    UI.text((off > 0 ? '+' : '') + off + ' ms', W / 2, y2 + 78, 36, { fill: '#ffd23f' });
-    UI.text('◀', 150, y2 + 78, 42, { fill: '#fff' }); UI.text('▶', 570, y2 + 78, 42, { fill: '#fff' });
-    if (UI.tapIn(90, y2 + 44, 120, 66)) { this.sel = 2; this.setOffset(off - 10); }
-    if (UI.tapIn(510, y2 + 44, 120, 66)) { this.sel = 2; this.setOffset(off + 10); }
+    // 右上：自動校正（跟著聲音點一點，量出耳機 / 喇叭的延遲）
+    const openCal = () => { Sound.play('confirm'); App.goto('calibrate', { from: this.from }); };
+    UI.panel(452, y2 + 12, 196, 40, 20, '#e8502a', '#fff');
+    UI.text(tr('自動校正') + ' ▶', 550, y2 + 33, 20, { stroke: '#5a0f05', sw: 5, raw: true, maxW: 180 });
+    if (UI.tapIn(446, y2 + 6, 208, 52)) { this.sel = 2; openCal(); }
+    if (this.sel === 2 && Input.was('confirm')) openCal();
+    UI.text((off > 0 ? '+' : '') + off + ' ms', W / 2, y2 + 80, 36, { fill: '#ffd23f' });
+    UI.text('◀', 150, y2 + 80, 42, { fill: '#fff' }); UI.text('▶', 570, y2 + 80, 42, { fill: '#fff' });
+    if (UI.tapIn(90, y2 + 56, 120, 54)) { this.sel = 2; this.setOffset(off - 10); }
+    if (UI.tapIn(510, y2 + 56, 120, 54)) { this.sel = 2; this.setOffset(off + 10); }
     if (this.sel === 2) { if (Input.was('left')) this.setOffset(off - 10); if (Input.was('right')) this.setOffset(off + 10); }
-    UI.text('總是判定偏晚 → 往＋調　偏早 → 往－調', W / 2, y2 + 124, 17, { fill: '#cfd8ff', stroke: null, maxW: 580 });
     const r = Game.result;
-    if (r && r.hits >= 5) UI.text(tr('上一局平均：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), 636, y2 + 30, 17, { align: 'right', fill: '#8dff8a', stroke: null, maxW: 300, raw: true });
+    if (r && r.hits >= 5) UI.text(tr('上一局平均：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), W / 2, y2 + 124, 17, { fill: '#8dff8a', stroke: null, maxW: 580, raw: true });
+    else UI.text('用藍牙耳機會有延遲：按「自動校正」量一次就好', W / 2, y2 + 124, 17, { fill: '#cfd8ff', stroke: null, maxW: 580 });
 
     // 3 震動、4 省電模式
     this.toggle(3, 590, 90, '震動', navigator.vibrate ? '手機打擊時輕微震動' : '此裝置不支援震動', Save.data.vibrate,
@@ -861,6 +867,84 @@ Screens.settings = {
     if (Input.was('down')) { this.sel = (this.sel + 1) % this.ROWS; Sound.play('select'); }
     UI.hint('↑↓ 選擇　← → 調整');
   }
+};
+// ---------- 自動校正：跟著「叩」聲點畫面，量出耳機 / 喇叭的延遲（藍牙常有 150～300ms） ----------
+// 畫面上不跟著拍子閃（避免玩家看畫面點），只在點下去時給回饋；前 WARM 下當預備不記錄，取中位數
+Screens.calibrate = {
+  sel: 0, n: 0, from: 'menu', BPM: 80, BEATS: 16, WARM: 4,
+  enter(arg) {
+    this.from = arg && arg.from === 'game' ? 'game' : 'menu';
+    Sound.init(); Sound.stopBgm(); Sound.duck(false);
+    this.reset();
+    Input.onHit = (x, y, t) => this.tap(t);
+  },
+  leave() { Input.onHit = null; },
+  reset() { this.t0 = A.ctx ? A.ctx.currentTime + 1.2 : 0; this.next = 0; this.errs = []; this.taps = 0; this.flash = -9; this.result = null; this.sel = 0; },
+  back() { App.goto('settings', { from: this.from, sel: 2 }); },
+  bd() { return 60 / this.BPM; },
+  tap(tMs) {
+    if (this.result || !A.ctx) return;
+    const delay = Math.max(0, (performance.now() - tMs) / 1000), at = A.ctx.currentTime - delay - Sound.latency();
+    const bd = this.bd(), k = Math.round((at - this.t0) / bd);
+    this.flash = Game.time;
+    if (k < this.WARM || k >= this.BEATS) return;
+    const e = at - (this.t0 + k * bd);
+    if (Math.abs(e) < bd * 0.5) { this.errs.push(e); this.taps++; }
+  },
+  frame() {
+    menuBackdrop(0.78);
+    UI.header('自動校正', 'TIMING CHECK');
+    const now = A.ctx ? A.ctx.currentTime : 0, bd = this.bd();
+    // 排「叩」聲（第 1 拍與預備拍用較高的聲音）
+    while (A.ctx && !this.result && this.next < this.BEATS && this.t0 + this.next * bd < now + 0.2) {
+      const k = this.next++; SND.wood(this.t0 + k * bd, k % 4 === 0, A.ui);
+    }
+    if (A.ctx && !this.result && now > this.t0 + this.BEATS * bd + 0.4) {
+      if (this.errs.length >= 6) {
+        const s = this.errs.slice().sort((a, b) => a - b), med = s[s.length >> 1];
+        this.result = { ms: clamp(Math.round(med * 100) * 10, -200, 400) };   // 以 10ms 為單位
+      } else this.result = { fail: true };
+      this.sel = 0;
+    }
+    UI.panel(40, 196, 640, 150, 24);
+    UI.wrap('戴上平常玩的耳機（藍牙也可以），聽到「叩」聲就跟著點畫面（或按任意鍵）。前 4 下是預備。', 70, 238, 580, 32, 21, { fill: '#fff' });
+    // 中央的大鼓：只在點下去時跳一下（不跟著拍子閃）
+    const k = clamp(1 - (Game.time - this.flash) / 0.18, 0, 1), cx = W / 2, cy = 620, r = 130 * (1 + k * 0.08);
+    ctx.save();
+    ctx.fillStyle = '#8a2a14'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+    ctx.fillStyle = k ? '#ffe6b0' : '#f2d7a0'; ctx.beginPath(); ctx.arc(cx, cy, r - 18, 0, 7); ctx.fill();
+    ctx.lineWidth = 6; ctx.strokeStyle = '#3a1608'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.stroke();
+    ctx.restore();
+    const need = this.BEATS - this.WARM;
+    if (!this.result) {
+      const started = now >= this.t0 - 0.05, beat = Math.floor((now - this.t0) / bd);
+      UI.text(started ? (beat < this.WARM ? tr('預備…') : tr('跟著聲音點！')) : tr('準備…'), cx, cy - 10, 32, { fill: '#7a2a10', stroke: null, raw: true });
+      UI.text(this.taps + ' / ' + need, cx, cy + 40, 26, { fill: '#7a2a10', stroke: null, raw: true });
+      // 進度點
+      for (let i = 0; i < need; i++) {
+        ctx.fillStyle = i < this.taps ? '#ffd23f' : 'rgba(255,255,255,.25)';
+        ctx.beginPath(); ctx.arc(cx - (need - 1) * 14 + i * 28, 820, 9, 0, 7); ctx.fill();
+      }
+      // 測量中按鍵（SPACE / ENTER）是拿來打拍子的：返回鈕不取得焦點，只能點或按 ESC
+      const q = { sel: -1, n: 0 };
+      if (UI.button(q, '返回', 250, 1040, 220, 70, { back: true }) || Input.was('back')) this.back();
+      return;
+    }
+    if (this.result.fail) {
+      UI.text('點擊次數不夠，再測一次吧', cx, cy, 26, { fill: '#7a2a10', stroke: null, maxW: 220 });
+    } else {
+      const ms = this.result.ms;
+      UI.text('測量完成！', cx, cy - 46, 28, { fill: '#7a2a10', stroke: null });
+      UI.text((ms > 0 ? '+' : '') + ms + ' ms', cx, cy + 6, 48, { fill: '#c8321e', stroke: null, raw: true });
+      UI.text(ms >= 100 ? '延遲偏大（藍牙常見）' : '延遲很小', cx, cy + 56, 18, { fill: '#7a2a10', stroke: null, maxW: 220 });
+    }
+    UI.begin(this);
+    if (!this.result.fail && UI.button(this, '套用', 160, 860, 400, 80, { lacquer: true, size: 34 })) { Save.data.offset = this.result.ms; Save.store(); this.back(); }
+    if (UI.button(this, '再測一次', 160, 956, 400, 64)) this.reset();
+    if (UI.button(this, '返回', 250, 1040, 220, 70, { back: true }) || Input.was('back')) this.back();
+    UI.nav(this);
+    UI.navHint();
+  },
 };
 // ---------- 安裝到主畫面（APP 簡易教學） ----------
 Screens.install = {

@@ -58,6 +58,11 @@ const I18N = {
     '跟著拍子連續打': 'リズムに乗って連続で！', '節奏變密囉！跟著音樂「咚、咚」的拍子按，比盯著食材更準。': 'リズムが細かくなったよ！食材を見るより、音楽の「ドン、ドン」に合わせるのがコツ。',
     '做出廣島燒！': '広島焼きを作ろう！', '炒麵、高麗菜、煎餅、培根各處理 1 個，就會合成一份廣島燒，+1000 分！右上角可以看收集進度。': '焼きそば・キャベツ・生地・ベーコンを 1 つずつ仕上げると広島焼きが完成、+1000 点！右上で集まり具合を確認できるよ。',
     '就是現在！': '今だ！', '完成！': 'クリア！', '繼續練習': '練習を続ける', '從頭開始': '最初から', '略過教學': 'チュートリアルをスキップ',
+    // 自動校正
+    '自動校正': '自動補正', '用藍牙耳機會有延遲：按「自動校正」量一次就好': 'Bluetooth イヤホンは遅れが出ます：「自動補正」で一度測ってね',
+    '戴上平常玩的耳機（藍牙也可以），聽到「叩」聲就跟著點畫面（或按任意鍵）。前 4 下是預備。': 'いつものイヤホンをつけて（Bluetooth もOK）、「コン」が聞こえたら画面をタップ（どのキーでもOK）。最初の 4 回は準備。',
+    '預備…': '準備中…', '跟著聲音點！': '音に合わせてタップ！', '準備…': 'よーい…', '點擊次數不夠，再測一次吧': 'タップが足りません。もう一度測ってね',
+    '測量完成！': '測定完了！', '延遲偏大（藍牙常見）': '遅れ大きめ（Bluetooth によくある）', '延遲很小': '遅れはほぼなし', '套用': '適用する', '再測一次': 'もう一度測る',
     '歡迎光臨！': 'いらっしゃいませ！', '只要一顆按鈕！先用一首慢歌，練習跟著節拍處理食材吧。': 'ボタンはひとつだけ！まずはゆっくりな曲で、リズムに合わせて食材をさばく練習をしよう。',
     '開始練習': '練習スタート', '教學完成！': 'チュートリアル完了！', '前往選擇樂曲': '曲をえらぶ', '再練習一次': 'もう一度練習',
     '跟著音樂的拍子按，比盯著食材更準': '食材を見るより、音楽の拍に合わせて押すのがコツ', '每 8 小節會 SPEED UP，節奏越來越快': '8 小節ごとに SPEED UP、どんどん速くなる',
@@ -122,6 +127,11 @@ const I18N = {
     '跟著拍子連續打': 'Keep the beat going', '節奏變密囉！跟著音樂「咚、咚」的拍子按，比盯著食材更準。': 'More notes now! Tap along with the beat of the music - it works better than watching the food.',
     '做出廣島燒！': 'Make an okonomiyaki!', '炒麵、高麗菜、煎餅、培根各處理 1 個，就會合成一份廣島燒，+1000 分！右上角可以看收集進度。': 'Prep one each of noodles, cabbage, crepe and bacon to make an okonomiyaki: +1000! Your stock is shown at the top right.',
     '就是現在！': 'NOW!', '完成！': 'CLEAR!', '繼續練習': 'CONTINUE', '從頭開始': 'RESTART', '略過教學': 'SKIP TUTORIAL',
+    // Auto calibration
+    '自動校正': 'AUTO CALIBRATE', '用藍牙耳機會有延遲：按「自動校正」量一次就好': 'Bluetooth audio lags: run AUTO CALIBRATE once',
+    '戴上平常玩的耳機（藍牙也可以），聽到「叩」聲就跟著點畫面（或按任意鍵）。前 4 下是預備。': 'Put on the headphones you play with (Bluetooth is fine) and tap the screen (or any key) on each "tock". The first 4 are a warm-up.',
+    '預備…': 'Warm-up…', '跟著聲音點！': 'Tap with the sound!', '準備…': 'Get ready…', '點擊次數不夠，再測一次吧': 'Not enough taps - try again',
+    '測量完成！': 'Done!', '延遲偏大（藍牙常見）': 'Big delay (common with Bluetooth)', '延遲很小': 'Very little delay', '套用': 'APPLY', '再測一次': 'MEASURE AGAIN',
     '歡迎光臨！': 'Welcome!', '只要一顆按鈕！先用一首慢歌，練習跟著節拍處理食材吧。': 'Just one button! Practice prepping ingredients to the beat with a slow song first.',
     '開始練習': 'START', '教學完成！': 'TUTORIAL CLEAR!', '前往選擇樂曲': 'PICK A SONG', '再練習一次': 'PRACTICE AGAIN',
     '跟著音樂的拍子按，比盯著食材更準': 'Tap to the beat of the music, not the food', '每 8 小節會 SPEED UP，節奏越來越快': 'Every 8 bars: SPEED UP!',

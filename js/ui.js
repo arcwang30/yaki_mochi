@@ -127,8 +127,9 @@ const UI = {
       const g = c.getContext('2d'); g.scale(RES, RES);
       const path = ox => { const q = Math.min(r, w / 2, h / 2), X = P + ox, Y = P; g.beginPath(); g.moveTo(X + q, Y); g.arcTo(X + w, Y, X + w, Y + h, q); g.arcTo(X + w, Y + h, X, Y + h, q); g.arcTo(X, Y + h, X, Y, q); g.arcTo(X, Y, X + w, Y, q); g.closePath(); };
       g.shadowColor = color; g.shadowBlur = bl;   // shadowBlur 以裝置像素計（不受 scale 影響），和直接畫在主畫布上一樣
-      if (lw) {   // 只留光暈：把框線畫在畫布外，用陰影位移把光暈移回來
-        const off = w + P * 3; g.shadowOffsetX = off * RES; g.lineWidth = lw; g.strokeStyle = color; path(-off); g.stroke();
+      if (lw) {   // 只留光暈：框線連同光暈畫上去，再把框線本身擦掉（Safari 不畫畫布外圖形的陰影，不能用位移技巧）
+        g.lineWidth = lw; g.strokeStyle = color; path(0); g.stroke();
+        g.shadowColor = 'transparent'; g.globalCompositeOperation = 'destination-out'; g.lineWidth = lw + 1; g.stroke();
       } else { g.fillStyle = o.fill || color; path(0); g.fill(); }
       this.glowCache.set(key, c);
     }

@@ -232,7 +232,8 @@ const Game = {
 
   // 樂曲時鐘（秒）：暫停時停住；繼續時把暫停的時間扣掉
   clock() { const s = this.s; return (s.paused ? s.pauseAt : A.ctx.currentTime) - s.off; },
-  songTime() { return this.clock() - Sound.latency(); },
+  // 畫面用的時間：扣掉輸出延遲＋判定校正（藍牙耳機的延遲瀏覽器常常量不到，靠校正補）→ 看到的、聽到的、判定三者一致
+  songTime() { return this.clock() - Sound.latency() - Save.data.offset / 1000; },
   measureAt(t) {
     const ms = this.s.chart.measures; let m = ms[0];
     for (const x of ms) { if (x.start <= t) m = x; else break; }
