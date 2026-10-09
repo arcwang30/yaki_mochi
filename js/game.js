@@ -134,8 +134,24 @@ const Scene = {
     } else ctx.drawImage(img, 0, 0, w, h);
     ctx.restore();
   },
+  // 鐵板吧台：原圖的椅腳與柱子在圖的下緣被切掉，看起來像浮在半空。
+  // 把椅腳中段（只有直的腳，第 332～345 列）往下拉長 EXT 像素，讓椅子和柱子站到地面，再加上椅子的影子。只做一次
+  griddleImg() {
+    if (this.griddleCache) return this.griddleCache;
+    const img = IMG.griddle, EXT = 56, A = 332, B = 345;
+    const c = document.createElement('canvas'); c.width = img.width; c.height = img.height + EXT;
+    const g = c.getContext('2d');
+    // 椅子落地的影子（畫在最底下）
+    g.fillStyle = 'rgba(0,0,0,.32)';
+    for (const [x0, x1] of [[62, 192], [233, 352], [408, 528], [569, 696]]) { g.beginPath(); g.ellipse((x0 + x1) / 2, c.height - 6, (x1 - x0) / 2 + 8, 7, 0, 0, 7); g.fill(); }
+    g.drawImage(img, 0, 0, img.width, B, 0, 0, img.width, B);                              // 上半（到椅腳中段）
+    g.drawImage(img, 0, A, img.width, B - A, 0, B, img.width, EXT);                        // 拉長的椅腳
+    g.drawImage(img, 0, B, img.width, img.height - B, 0, B + EXT, img.width, img.height - B);   // 橫桿與腳底
+    return (this.griddleCache = c);
+  },
   griddle() {
-    const img = IMG.griddle; if (!img) return;
+    if (!IMG.griddle) return;
+    const img = this.griddleImg();
     ctx.drawImage(img, 0, GRIDDLE_Y, W, W * img.height / img.width);
   },
   // 選單用的節拍脈動（跟著選單音樂的速度）
