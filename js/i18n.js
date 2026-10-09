@@ -7,10 +7,10 @@ const LANGS = [['zh', '中文'], ['ja', '日本語'], ['en', 'English']];
 
 const I18N = {
   zh: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT',
   },
   ja: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT',
     // 開始 / 主選單
     '節奏熱炒遊戲': 'リズム鉄板ゲーム', '開始遊戲': 'ゲーム開始', '操作說明': 'あそびかた', '排行榜': 'ランキング', '設定': 'せってい', 'CREDIT': 'クレジット',
     '十字鍵 選擇　A 決定　B 返回': '十字キー 選択　A 決定　B 戻る', '點選按鈕': 'ボタンをタップ', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ 選択　ENTER 決定　ESC 戻る',
@@ -85,9 +85,13 @@ const I18N = {
     '點右上角的「︙」選單': '右上の「︙」メニューをタップ', '選「安裝應用程式」或「加到主畫面」': '「アプリをインストール」または「ホーム画面に追加」', '按「安裝」就完成了': '「インストール」で完了',
     '點網址列右邊的「安裝」圖示 ⊕': 'アドレスバー右の「インストール」アイコン ⊕', '按「安裝」，桌面就會出現圖示': '「インストール」でデスクトップにアイコンが出ます',
     '請將手機直立握持': 'スマホを縦に持ってください',
+    // PC 版（橫式）
+    '結束遊戲': 'ゲーム終了', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
+    '滑鼠': 'マウス', '左鍵點擊\n畫面任何地方': '画面のどこでも\n左クリック', '移動游標': 'カーソルを移動', '左鍵點擊按鈕': 'ボタンを左クリック',
+    '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': '打つボタンはどれでも OK。マウスなら画面のどこをクリックしても OK（右上のポーズボタンを除く）。ポーズから再開すると 3 拍カウントしてから元のリズムに戻ります。',
   },
   en: {
-    'sub.start': 'はじめる', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう',
+    'sub.start': 'はじめる', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう', 'sub.quit': 'おわる',
     '節奏熱炒遊戲': 'Rhythm Teppan Game', '開始遊戲': 'PLAY', '操作說明': 'HOW TO', '排行榜': 'RANKING', '設定': 'SETTINGS', 'CREDIT': 'CREDITS',
     '十字鍵 選擇　A 決定　B 返回': 'D-pad: select   A: OK   B: back', '點選按鈕': 'Tap a button', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ select   ENTER: OK   ESC: back',
     '繼續遊戲': 'RESUME', '重新開始': 'RESTART', '回主選單': 'MAIN MENU', '返回選擇樂曲': 'SONG SELECT', '繼續後會先倒數 3 拍，再接回原本的節拍': 'Resuming counts in 3 beats, then picks up the beat',
@@ -152,6 +156,10 @@ const I18N = {
     '點右上角的「︙」選單': 'Tap the "︙" menu at the top right', '選「安裝應用程式」或「加到主畫面」': 'Choose "Install app" or "Add to Home screen"', '按「安裝」就完成了': 'Tap "Install" — done!',
     '點網址列右邊的「安裝」圖示 ⊕': 'Click the install icon ⊕ in the address bar', '按「安裝」，桌面就會出現圖示': 'Click "Install" — an icon appears on your desktop',
     '請將手機直立握持': 'Please hold your phone upright',
+    // PC version (landscape)
+    '結束遊戲': 'QUIT GAME', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
+    '滑鼠': 'Mouse', '左鍵點擊\n畫面任何地方': 'Left-click\nanywhere', '移動游標': 'Move cursor', '左鍵點擊按鈕': 'Click button',
+    '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': 'Any hit button works. With a mouse, click anywhere on the screen (except the pause button at top right). After a pause, RESUME counts 3 beats and then rejoins the rhythm.',
   },
 };
 

@@ -35,9 +35,12 @@ const App = {
 
 const Screens = {};
 
+// 暫停選單的按鈕位置：直式照原本座標；橫式整排置中、往上移
+const PX = W / 2 - 200, PY = y => lay(y, y - 162);
+
 // 選單共用背景：攤位場景（主角揮手）＋暗化
 function menuBackdrop(dimA) {
-  Scene.draw(Scene.idlePulse());
+  worldBegin(); Scene.draw(Scene.idlePulse()); ctx.restore();
   if (dimA) UI.dim(dimA);
 }
 
@@ -63,14 +66,14 @@ function drawNightSky(pan = 0) {
     ctx.fillStyle = `rgba(255,255,240,${0.25 + tw * 0.6})`; ctx.beginPath(); ctx.arc(x, y, s, 0, 7); ctx.fill();
   }
   // 月亮
-  const my = -pan * 0.42;
+  const my = -pan * 0.42, mx = lay(586, 1730);
   ctx.save(); ctx.translate(0, my);
-  if (!ECO()) { ctx.globalAlpha = 0.7; ctx.drawImage(Scene.glowSprite('#fff0be'), 586 - 112, 150 - 112, 224, 224); ctx.globalAlpha = 1; }   // 月暈（貼圖，不用模糊）
-  ctx.fillStyle = '#fff4cf'; ctx.beginPath(); ctx.arc(586, 150, 52, 0, 7); ctx.fill();
-  ctx.fillStyle = 'rgba(230,210,160,.45)'; ctx.beginPath(); ctx.arc(570, 140, 9, 0, 7); ctx.arc(600, 170, 6, 0, 7); ctx.fill();
+  if (!ECO()) { ctx.globalAlpha = 0.7; ctx.drawImage(Scene.glowSprite('#fff0be'), mx - 112, lay(150, 120) - 112, 224, 224); ctx.globalAlpha = 1; }   // 月暈（貼圖，不用模糊）
+  ctx.fillStyle = '#fff4cf'; ctx.beginPath(); ctx.arc(mx, lay(150, 120), 52, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(230,210,160,.45)'; ctx.beginPath(); ctx.arc(mx - 16, lay(140, 110), 9, 0, 7); ctx.arc(mx + 14, lay(170, 140), 6, 0, 7); ctx.fill();
   ctx.restore();
   // 遠處燈籠串（垂墜曲線＋光點）
-  [[700, 0.55, 0.62], [860, 0.75, 0.85]].forEach(([yb, sc, par], k) => {
+  [[lay(700, 560), 0.55, 0.62], [lay(860, 720), 0.75, 0.85]].forEach(([yb, sc, par], k) => {
     const y0 = yb - pan * par;
     if (y0 < -120) return;
     ctx.strokeStyle = 'rgba(20,10,30,.8)'; ctx.lineWidth = 2;
@@ -101,7 +104,7 @@ Screens.title = {
   frame() {
     drawNightSky();
     const label = Input.touchMode ? 'TAP TO START' : Input.padConnected ? 'PRESS START' : 'PRESS ANY KEY';
-    UI.text(label, W / 2, 1000, 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: 0.55 + 0.45 * Math.sin(Game.time * 4), raw: true });
+    UI.text(label, W / 2, lay(1000, 860), 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: 0.55 + 0.45 * Math.sin(Game.time * 4), raw: true });
     UI.copyright();
     if (Input.was('anykey') || Input.taps.length) { Sound.unlock(); App.cut('intro'); }
   }
@@ -117,7 +120,8 @@ const Fireworks = {
   reset() { this.rockets = []; this.sparks = []; this.flashes = []; this.next = 0; },
   update(dt, t, bus) {
     while (this.next < this.PLAN.length && t >= this.PLAN[this.next][0]) {
-      const [, x, peak, cols] = this.PLAN[this.next++], dur = rand(0.55, 0.72);
+      const [, px, pp, cols] = this.PLAN[this.next++], dur = rand(0.55, 0.72);
+      const x = px * W / SW, peak = pp * H / SH;   // 施放位置以直式畫面設計，橫式等比換算
       this.rockets.push({ x0: x + rand(-40, 40), x, y0: H + 20, peak, t: 0, dur, cols, trail: [] });
       if (bus) this.whistle(bus, dur);
     }
@@ -209,7 +213,7 @@ Screens.intro = {
     if (t >= T.rise) {
       this.once('land', () => {
         if (this.bus) { SND.kick(A.ctx.currentTime, 1, this.bus); SND.don(A.ctx.currentTime, 0.8, this.bus); }
-        for (let i = 0; i < 26; i++) Fx.particles.push({ x: rand(0, W), y: H - rand(0, 30), vx: rand(-60, 60), vy: rand(-140, -40), life: rand(0.6, 1.2), max: 1.2, size: rand(14, 26), g: -10, kind: 'steam' });
+        for (let i = 0; i < lay(26, 60); i++) Fx.particles.push({ x: rand(VIEW.x0, VIEW.x1), y: SH - rand(0, 30), vx: rand(-60, 60), vy: rand(-140, -40), life: rand(0.6, 1.2), max: 1.2, size: rand(14, 26), g: -10, kind: 'steam' });
       });
       shake = Math.max(0, 1 - (t - T.rise) / 0.35) * Math.sin(t * 70) * 7;
     }
@@ -218,14 +222,16 @@ Screens.intro = {
     const lit = i => clamp((t - litStart - i * per) / 0.15, 0, 1);
     LANTERNS.forEach((_, i) => { if (t >= litStart + i * per && i % 3 === 0) this.once('l' + i, () => { if (this.bus) osc('sine', 700 + (i % 5) * 90, A.ctx.currentTime, 0.08, 0.12, this.bus); }); });
 
-    ctx.save(); ctx.translate(shake * 0.4, rise + shake);
-    Scene.background(0.3, lit);
+    const riseW = rise / Cam.k;   // 世界座標的升起距離
+    worldBegin();
+    ctx.save(); ctx.translate(shake * 0.4, riseW + shake);
+    Scene.background(0.3, lit, false);
     ctx.restore();
     // 3. 主角從右邊一蹦一跳走進來（在吧台後面）
     if (t >= T.walk0) {
       const wp = clamp((t - T.walk0) / (T.walk1 - T.walk0), 0, 1), e = 1 - Math.pow(1 - wp, 2);
       const walking = wp < 1, phase = (t - T.walk0) * 5.2;
-      const dx = (1 - e) * (W * 0.75), hop = walking ? -Math.abs(Math.sin(phase * Math.PI)) * 18 : 0, rot = walking ? Math.sin(phase * Math.PI) * 0.05 : 0;
+      const dx = (1 - e) * lay(SW * 0.75, 820), hop = walking ? -Math.abs(Math.sin(phase * Math.PI)) * 18 : 0, rot = walking ? Math.sin(phase * Math.PI) * 0.05 : 0;
       if (walking) { const step = Math.floor(phase); this.once('step' + step, () => { if (this.bus) SND.wood(A.ctx.currentTime, false, this.bus); }); }
       if (!walking) {
         this.once('wave', () => {
@@ -240,7 +246,7 @@ Screens.intro = {
       }
       Scene.chef(0, dx, hop, rot);
     }
-    ctx.save(); ctx.translate(shake * 0.4, rise + shake); Scene.griddle(); ctx.restore();
+    ctx.save(); ctx.translate(shake * 0.4, riseW + shake); Scene.griddle(); ctx.restore();
     Fx.draw();
     // 4. 歡迎光臨！
     if (t >= T.walk1 && t < T.end) {
@@ -248,13 +254,14 @@ Screens.intro = {
       ctx.save(); ctx.translate(500, 560); ctx.scale(0.6 + 0.4 * ease(k), 0.6 + 0.4 * ease(k));
       speechBubble(0, 0, '歡迎光臨！', a); ctx.restore();
     }
+    ctx.restore();   // 世界座標結束
     // 5. 暖簾從上方落下、彈一下
     if (t >= T.noren) {
       const k = clamp((t - T.noren) / 0.6, 0, 1);
       const bounce = k < 1 ? Math.sin(k * Math.PI * 2.5) * (1 - k) * 40 : 0;
-      const y = lerp(-180, 252, Math.min(1, k * 1.6)) + bounce;
+      const y = lerp(-180, TITLE.y, Math.min(1, k * 1.6)) + bounce;
       this.once('noren', () => { if (this.bus) nz(A.ctx.currentTime, 0.25, 0.25, this.bus, { f: 900, to: 300, q: 1 }); });
-      UI.noren(W / 2, y, 460, 118, 'リズム屋台');
+      UI.noren(TITLE.x, y, TITLE.w, TITLE.h, 'リズム屋台');
     }
     UI.text('SKIP ▶▶', W - 20, H - 26, 20, { align: 'right', fill: 'rgba(255,255,255,.75)', stroke: 'rgba(0,0,0,.6)', sw: 4, raw: true });
     if (t >= T.end) this.finish();
@@ -271,6 +278,9 @@ function noiseRumble(dur, dest) {
   osc('sine', 48, t, dur, 0.25, dest, { att: 0.4 });
 }
 
+// 標題暖簾的位置（開場落下的位置 = 主選單的位置）：直式在攤位招牌下方；橫式在左側街景上
+const TITLE = lay({ x: W / 2, y: 252, w: 460, h: 118, ty: 404 }, { x: 310, y: 210, w: 540, h: 140, ty: 440 });
+
 // ---------- 主選單 ----------
 // 按鈕放在畫面最下方（攤位前的吧台與板凳上），不擋主角：
 // 第 1 排 = 朱漆「開始遊戲」大木牌；第 2 排 = 掛在竹竿上的四塊木札
@@ -279,12 +289,13 @@ Screens.menu = {
   TAGS: [['操作說明', 'sub.howto', 'howto'], ['排行榜', 'sub.ranking', 'ranking'], ['設定', 'sub.settings', 'settings'], ['CREDIT', 'sub.credits', 'credits']],
   enter() { this.sel = 0; chef.idlePose = 'wave'; chef.queue = []; Sound.init(); Sound.duck(false); Sound.startBgm(); },
   frame() {
+    if (LAND) return this.frameLand();
     menuBackdrop(0);
     const gr = ctx.createLinearGradient(0, 930, 0, H);   // 下方壓暗，讓木牌清楚
     gr.addColorStop(0, 'rgba(8,10,30,0)'); gr.addColorStop(1, 'rgba(8,10,30,.82)');
     ctx.fillStyle = gr; ctx.fillRect(0, 930, W, H - 930);
-    UI.noren(W / 2, 252, 460, 118, 'リズム屋台');
-    UI.tanzaku(W / 2, 404, '節奏熱炒遊戲');
+    UI.noren(TITLE.x, TITLE.y, TITLE.w, TITLE.h, 'リズム屋台');
+    UI.tanzaku(TITLE.x, TITLE.ty, '節奏熱炒遊戲', lay(22, 28));
 
     UI.begin(this);
     if (UI.button(this, '開始遊戲', 170, 980, 380, 92, { lacquer: true, sub: 'sub.start', size: 40 })) App.goto(Save.data.tutorialDone ? 'songs' : 'tutorial');   // 第一次先玩新手教學
@@ -293,6 +304,25 @@ Screens.menu = {
       if (UI.button(this, label, 33 + k * 166, 1122, 154, 94, { tag: true, sub, size: 27, ropeH: 24 })) App.goto(dest);
     });
     this.nav();
+    UI.navHint();
+    UI.copyright();
+  },
+  // 橫式：左側標題暖簾；右側一欄木牌（上下鍵移動）。桌面版多一個「結束遊戲」
+  frameLand() {
+    menuBackdrop(0);
+    const gr = ctx.createLinearGradient(1240, 0, W, 0);   // 右側壓暗，讓木牌清楚
+    gr.addColorStop(0, 'rgba(8,10,30,0)'); gr.addColorStop(0.35, 'rgba(8,10,30,.55)'); gr.addColorStop(1, 'rgba(8,10,30,.8)');
+    ctx.fillStyle = gr; ctx.fillRect(1240, 0, W - 1240, H);
+    UI.noren(TITLE.x, TITLE.y, TITLE.w, TITLE.h, 'リズム屋台');
+    UI.tanzaku(TITLE.x, TITLE.ty, '節奏熱炒遊戲', 28);
+    UI.begin(this);
+    const top = DESKTOP_APP ? 230 : 270;
+    if (UI.button(this, '開始遊戲', 1400, top, 440, 116, { lacquer: true, sub: 'sub.start', size: 46 })) App.goto(Save.data.tutorialDone ? 'songs' : 'tutorial');
+    this.TAGS.forEach(([label, sub, dest], k) => {
+      if (UI.button(this, label, 1430, top + 150 + k * 100, 380, 84, { sub, size: 32 })) App.goto(dest);
+    });
+    if (DESKTOP_APP && UI.button(this, '結束遊戲', 1430, top + 550, 380, 84, { sub: 'sub.quit', size: 32, back: true })) window.desktop.quit();
+    UI.nav(this);
     UI.navHint();
     UI.copyright();
   },
@@ -311,7 +341,7 @@ Screens.menu = {
 // 卡片：編號、歌名、副標・風格、BPM、星級、HISCORE；選中的卡片會試聽（停留 0.3 秒才開始，快速捲動不會一直重播）
 Screens.songs = {
   sel: 0, previewIdx: -1, previewT: 0, bs: { sel: -1, n: 0 },
-  CARD: { x: 40, y0: 192, w: 640, h: 140, gap: 10 },
+  CARD: lay({ x: 40, y0: 192, w: 640, h: 140, gap: 10 }, { x: 100, y0: 176, w: 840, h: 136, gap: 10 }),
   PER: 5,   // 每頁 5 首（VOL.1、VOL.2 各一套 1～5 星）
   pages() { return Math.ceil(SONGS.length / this.PER); },
   setPage(p) {
@@ -345,25 +375,27 @@ Screens.songs = {
     });
     // 換頁列：◀ VOL.1 ●○ ▶
     if (P > 1) {
-      const py = 978;
-      UI.wood(200, py - 26, 320, 52, { r: 26, seed: 'page-bar' });
-      UI.text('VOL.' + (page + 1), W / 2 - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
-      for (let p = 0; p < P; p++) { ctx.fillStyle = p === page ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(W / 2 + 40 + p * 24, py, 8, 0, 7); ctx.fill(); }
-      UI.text('◀', 160, py, 40, { fill: '#ffd23f' }); UI.text('▶', 560, py, 40, { fill: '#ffd23f' });
-      if (Input.was('left') || UI.tapIn(110, py - 40, 110, 80)) this.setPage(page - 1);
-      if (Input.was('right') || UI.tapIn(500, py - 40, 110, 80)) this.setPage(page + 1);
+      const py = lay(978, 944), cx = C.x + C.w / 2;
+      UI.wood(cx - 160, py - 26, 320, 52, { r: 26, seed: 'page-bar' });
+      UI.text('VOL.' + (page + 1), cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
+      for (let p = 0; p < P; p++) { ctx.fillStyle = p === page ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 40 + p * 24, py, 8, 0, 7); ctx.fill(); }
+      UI.text('◀', cx - 200, py, 40, { fill: '#ffd23f' }); UI.text('▶', cx + 200, py, 40, { fill: '#ffd23f' });
+      if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 110, 80)) this.setPage(page - 1);
+      if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80)) this.setPage(page + 1);
     }
     if (Input.was('up')) { this.bs.sel = -1; this.select((this.sel + SONGS.length - 1) % SONGS.length); }
     if (Input.was('down')) { this.bs.sel = -1; this.select((this.sel + 1) % SONGS.length); }
     if (Input.was('confirm') && (this.bs.sel === -1 || this.bs.sel === 1)) this.start();   // 滑鼠停在「返回」「新手教學」上時不開始
+    if (LAND) this.detail(SONGS[this.sel]);
     UI.begin(this.bs);
-    if (UI.button(this.bs, '返回', 50, 1040, 210, 76, { back: true }) || Input.was('back')) App.goto('menu');
-    if (UI.button(this.bs, '開始遊戲', 280, 1034, 390, 86, { lacquer: true, sub: 'sub.start', size: 36 })) this.start();
+    const B = lay({ bx: 50, by: 1040, bw: 210, bh: 76, sx: 280, sy: 1034, sw: 390, sh: 86 }, { bx: 1000, by: 924, bw: 230, bh: 84, sx: 1250, sy: 918, sw: 570, sh: 96 });
+    if (UI.button(this.bs, '返回', B.bx, B.by, B.bw, B.bh, { back: true }) || Input.was('back')) App.goto('menu');
+    if (UI.button(this.bs, '開始遊戲', B.sx, B.sy, B.sw, B.sh, { lacquer: true, sub: 'sub.start', size: lay(36, 42) })) this.start();
     // 右上角：掛在竹竿上的「新手教學」木札（和主選單同款）；燈火光暈＋每隔一陣子晃一下，提示可以按
-    const T = { x: 590, y: 40, w: 116, h: 82 }, pulse = 0.5 + 0.5 * Math.sin(Game.time * 3.2);
+    const T = lay({ x: 590, y: 40, w: 116, h: 82 }, { x: W - 170, y: 44, w: 130, h: 90 }), pulse = 0.5 + 0.5 * Math.sin(Game.time * 3.2);
     ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = 0.25 + pulse * 0.35;
     ctx.drawImage(Scene.glowSprite('#ffb04a'), T.x - 34, T.y - 30, T.w + 68, T.h + 64); ctx.restore();
-    UI.pole(574, 20, 146);
+    UI.pole(T.x - 16, 20, T.w + 30);
     if (UI.button(this.bs, '新手教學', T.x, T.y, T.w, T.h, { tag: true, sub: 'sub.tutorial', size: 22, ropeH: 20, wiggle: true })) App.goto('tutorial', { from: 'songs' });
     UI.hint(Input.touchMode ? '點兩下卡片也可以開始' : '↑↓ 選曲　← → 換頁　ENTER 開始');
   },
@@ -383,8 +415,8 @@ Screens.songs = {
     ctx.lineWidth = 4; ctx.strokeStyle = '#3e2210'; ctx.stroke();
     UI.text(String(i + 1), bx, by + 2, 34, { fill: '#fff', stroke: '#3e2210', sw: 6, raw: true });
     const ink = on ? '#9a1a08' : '#3a1d0a', soft = on ? '#8a3a10' : '#6a3c18';
-    UI.text(song.title, x + 104, y + 40, 32, { align: 'left', fill: ink, stroke: null, raw: true, maxW: 320 });
-    UI.text(loc(song.sub) + '・' + loc(song.genre), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: 330 });
+    UI.text(song.title, x + 104, y + 40, 32, { align: 'left', fill: ink, stroke: null, raw: true, maxW: w - 320 });
+    UI.text(loc(song.sub) + '・' + loc(song.genre), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: w - 310 });
     const S = song.sections;
     UI.text(`BPM ${S[0].bpm}–${S[S.length - 1].bpm}`, x + 104, y + 116, 17, { align: 'left', fill: soft, stroke: null, raw: true });
     if (on && this.previewIdx === i) {
@@ -396,6 +428,35 @@ Screens.songs = {
     UI.text('HISCORE', x + w - 24, y + 84, 14, { align: 'right', fill: soft, stroke: null, raw: true });
     UI.text(pad(Save.best(song.id), 7), x + w - 24, y + 114, 24, { align: 'right', fill: ink, stroke: null, raw: true });
     ctx.restore();
+  },
+  // 橫式右側：選中樂曲的詳細資料（大字歌名、星級、各段速度圖、HISCORE）
+  detail(song) {
+    const loc = o => o[Save.data.lang] || o.zh, x = 1000, y = 176, w = 820, h = 720, cx = x + w / 2;
+    UI.panel(x, y, w, h, 28, 'rgba(16,22,52,.86)');
+    ctx.fillStyle = song.color; ctx.beginPath(); ctx.arc(x + 84, y + 92, 52, 0, 7); ctx.fill();
+    ctx.lineWidth = 5; ctx.strokeStyle = '#fff3d8'; ctx.stroke();
+    UI.text(String(this.sel + 1), x + 84, y + 95, 52, { fill: '#fff', stroke: '#3e2210', sw: 8, raw: true });
+    UI.text(song.title, x + 160, y + 72, 52, { align: 'left', fill: '#fff', raw: true, maxW: w - 190, sw: 8 });
+    UI.text(loc(song.sub) + '・' + loc(song.genre), x + 162, y + 132, 24, { align: 'left', fill: '#ffe8b0', stroke: null, raw: true, maxW: w - 190 });
+    ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 180, w - 80, 2);
+    drawStars(cx, y + 236, song.stars, 48);
+    // 各段速度：一段一根柱子（越後面越快），正在試聽的那段亮起
+    const S = song.sections, lo = S[0].bpm, hi = S[S.length - 1].bpm, gw = w - 160, bw = gw / S.length;
+    UI.text('TEMPO', x + 80, y + 300, 20, { align: 'left', fill: '#7fe4ff', stroke: null, raw: true });
+    UI.text(`BPM ${lo} → ${hi}`, x + w - 80, y + 300, 24, { align: 'right', fill: '#fff', stroke: null, raw: true });
+    const preview = this.previewIdx === this.sel, pv = Math.min(2, S.length - 1);
+    S.forEach((s, i) => {
+      const bh = 30 + 90 * (s.bpm - lo) / Math.max(1, hi - lo), bx = x + 80 + i * bw + 6, by = y + 450 - bh;
+      ctx.fillStyle = preview && i === pv ? '#ffd23f' : hexA(song.color, 0.85); rrect(bx, by, bw - 12, bh, 8); ctx.fill();
+      UI.text(String(s.bpm), bx + (bw - 12) / 2, y + 474, 16, { fill: '#cfd8ff', stroke: null, raw: true });
+    });
+    if (preview) {
+      const b = Math.abs(Math.sin(Game.time * 5)) * 5;
+      UI.text('♪ ' + tr('試聽中'), cx, y + 520 - b, 22, { fill: '#ffd23f', stroke: null, raw: true });
+    }
+    ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 556, w - 80, 2);
+    UI.text('HISCORE', x + 80, y + 630, 26, { align: 'left', fill: '#ffb0a0', stroke: null, raw: true });
+    UI.text(pad(Save.best(song.id), 7), x + w - 80, y + 632, 64, { align: 'right', fill: '#fff', raw: true, sw: 9 });
   },
 };
 
@@ -428,20 +489,20 @@ Screens.game = {
     if (s.resumeT > 0) {
       UI.dim(0.3);
       const k = Game.countdown();
-      if (k) UI.text(String(k), W / 2, 560, 140, { fill: '#fff', stroke: '#c43a1a', sw: 20 });
-      UI.text('跟著拍子準備！', W / 2, 680, 30, { fill: '#ffe066', sw: 8 });
+      if (k) UI.text(String(k), W / 2, lay(560, 470), 140, { fill: '#fff', stroke: '#c43a1a', sw: 20 });
+      UI.text('跟著拍子準備！', W / 2, lay(680, 590), 30, { fill: '#ffe066', sw: 8 });
       return;
     }
     UI.dim(0.62);
-    UI.text('PAUSE', W / 2, 400, 96, { fill: '#fff27a', stroke: '#c43a1a', sw: 16 });
+    UI.text('PAUSE', W / 2, lay(400, 230), 96, { fill: '#fff27a', stroke: '#c43a1a', sw: 16 });
     UI.begin(this);
-    if (UI.button(this, '繼續遊戲', 160, 492, 400, 70, { c1: '#8dff8a', c2: '#2fc46a' })) Game.resume();
-    if (UI.button(this, '重新開始', 160, 578, 400, 70, { c1: '#ffe680', c2: '#ffb02e' })) { Game.newRun(); this.sel = 0; }
-    if (UI.button(this, '返回選擇樂曲', 160, 664, 400, 70)) { s.ended = true; App.goto('songs'); }   // 選曲畫面會停在這首歌上
-    if (UI.button(this, '設定', 160, 750, 400, 70, { c1: '#d6b3ff', c2: '#9a6bff' })) App.goto('settings', { from: 'game' });
-    if (UI.button(this, '回主選單', 160, 836, 400, 70, { c1: '#ffb3d1', c2: '#ff6b9a', back: true })) { s.ended = true; App.goto('menu'); }
+    if (UI.button(this, '繼續遊戲', PX, PY(492), 400, 70, { c1: '#8dff8a', c2: '#2fc46a' })) Game.resume();
+    if (UI.button(this, '重新開始', PX, PY(578), 400, 70, { c1: '#ffe680', c2: '#ffb02e' })) { Game.newRun(); this.sel = 0; }
+    if (UI.button(this, '返回選擇樂曲', PX, PY(664), 400, 70)) { s.ended = true; App.goto('songs'); }   // 選曲畫面會停在這首歌上
+    if (UI.button(this, '設定', PX, PY(750), 400, 70, { c1: '#d6b3ff', c2: '#9a6bff' })) App.goto('settings', { from: 'game' });
+    if (UI.button(this, '回主選單', PX, PY(836), 400, 70, { c1: '#ffb3d1', c2: '#ff6b9a', back: true })) { s.ended = true; App.goto('menu'); }
     UI.nav(this);
-    UI.text('繼續後會先倒數 3 拍，再接回原本的節拍', W / 2, 950, 20, { fill: '#e6ecff', stroke: null });
+    UI.text('繼續後會先倒數 3 拍，再接回原本的節拍', W / 2, PY(950), 20, { fill: '#e6ecff', stroke: null });
     UI.navHint();
   }
 };
@@ -531,6 +592,7 @@ Screens.tutorial = {
     const s = Game.s;
     if (!this.STEPS[this.step].guide || s.paused) return;
     const st = Game.songTime();
+    worldBegin();
     for (const n of s.chart.notes) {
       if (n.state !== 'fly' || st < n.throwT) continue;
       const p = clamp((st - n.throwT) / (n.t - n.throwT), 0, 1), k = 1 - p;
@@ -546,11 +608,12 @@ Screens.tutorial = {
       }
       break;   // 只提示最近的一個
     }
+    ctx.restore();
   },
   // 上方的步驟卡片：STEP n/3、標題、說明、進度點
   drawCard() {
     const s = Game.s, st = this.STEPS[this.step], cleared = this.clearT >= 0;
-    const x = 24, y = 232, w = 612, txtW = w - 48;   // 招牌下方（不擋 LOGO）
+    const [x, y, w] = lay([24, 232, 612], [1340, 540, 540]), txtW = w - 48;   // 直式：招牌下方（不擋 LOGO）；橫式：右側食材欄下方
     const lines = UI.lines(tr(st.text), txtW, 19);
     const h = 104 + lines.length * 27;
     // 「廣島燒完成！」的字會出現在卡片位置：那時卡片變淡
@@ -582,31 +645,31 @@ Screens.tutorial = {
     if (s.resumeT > 0) {
       UI.dim(0.3);
       const k = Game.countdown();
-      if (k) UI.text(String(k), W / 2, 560, 140, { fill: '#fff', stroke: '#c43a1a', sw: 20 });
-      UI.text('跟著拍子準備！', W / 2, 680, 30, { fill: '#ffe066', sw: 8 });
+      if (k) UI.text(String(k), W / 2, lay(560, 470), 140, { fill: '#fff', stroke: '#c43a1a', sw: 20 });
+      UI.text('跟著拍子準備！', W / 2, lay(680, 590), 30, { fill: '#ffe066', sw: 8 });
       return;
     }
     UI.dim(0.62);
-    UI.text('PAUSE', W / 2, 400, 96, { fill: '#fff27a', stroke: '#c43a1a', sw: 16 });
+    UI.text('PAUSE', W / 2, lay(400, 230), 96, { fill: '#fff27a', stroke: '#c43a1a', sw: 16 });
     UI.begin(this);
-    if (UI.button(this, '繼續練習', 160, 492, 400, 70, { c1: '#8dff8a', c2: '#2fc46a' })) Game.resume();
-    if (UI.button(this, '從頭開始', 160, 578, 400, 70)) this.begin();
-    if (UI.button(this, '略過教學', 160, 664, 400, 70)) { s.ended = true; this.exit('songs'); }
-    if (UI.button(this, '回主選單', 160, 750, 400, 70, { back: true })) { s.ended = true; App.goto('menu'); }
+    if (UI.button(this, '繼續練習', PX, PY(492), 400, 70, { c1: '#8dff8a', c2: '#2fc46a' })) Game.resume();
+    if (UI.button(this, '從頭開始', PX, PY(578), 400, 70)) this.begin();
+    if (UI.button(this, '略過教學', PX, PY(664), 400, 70)) { s.ended = true; this.exit('songs'); }
+    if (UI.button(this, '回主選單', PX, PY(750), 400, 70, { back: true })) { s.ended = true; App.goto('menu'); }
     UI.nav(this);
     UI.navHint();
   },
   intro() {
     menuBackdrop(0.25);
-    const x = 50, y = 800, w = 620;
+    const w = lay(620, 800), x = (W - w) / 2, y = lay(800, 730);
     const lines = UI.lines(tr('只要一顆按鈕！先用一首慢歌，練習跟著節拍處理食材吧。'), w - 60, 21);
     UI.panel(x, y, w, 130 + lines.length * 32, 24);
     UI.ribbon(W / 2, y, tr('新手教學'), 34, 320);
     UI.text('歡迎光臨！', W / 2, y + 66, 32, { fill: '#fff27a', stroke: null });
     lines.forEach((ln, i) => UI.text(ln, W / 2, y + 112 + i * 32, 21, { fill: '#fff', stroke: null, raw: true }));
     UI.begin(this);
-    if (UI.button(this, '略過', 50, 1104, 200, 76, { back: true })) this.exit('songs');
-    if (UI.button(this, '開始練習', 270, 1098, 400, 88, { lacquer: true, size: 36 })) this.begin();
+    if (UI.button(this, '略過', W / 2 - 310, lay(1104, 916), 200, 76, { back: true })) this.exit('songs');
+    if (UI.button(this, '開始練習', W / 2 - 90, lay(1098, 910), 400, 88, { lacquer: true, size: 36 })) this.begin();
     if (Input.was('left')) this.sel = 0;
     if (Input.was('right')) this.sel = 1;
     if (Input.was('back')) App.goto(this.from);
@@ -617,7 +680,7 @@ Screens.tutorial = {
     const k = ease(clamp(this.doneT / 0.35, 0, 1));
     UI.dim(0.55 * k);
     ctx.save(); ctx.globalAlpha *= k; ctx.translate(0, (1 - k) * 40);
-    const x = 60, y = 330, w = 600;
+    const x = W / 2 - 300, y = lay(330, 160), w = 600;
     UI.panel(x, y, w, 330, 26);
     UI.ribbon(W / 2, y, tr('教學完成！'), 40, 380);
     const tips = ['跟著音樂的拍子按，比盯著食材更準', '每 8 小節會 SPEED UP，節奏越來越快', '連擊越多加分越多，BAD 會中斷連擊', '四種食材湊齊就是一份廣島燒！'];
@@ -628,8 +691,8 @@ Screens.tutorial = {
     ctx.restore();
     if (this.doneT < 0.5) return;
     UI.begin(this);
-    if (UI.button(this, '前往選擇樂曲', 160, 700, 400, 86, { lacquer: true, size: 34 })) App.goto('songs');
-    if (UI.button(this, '再練習一次', 160, 806, 400, 66)) this.begin();
+    if (UI.button(this, '前往選擇樂曲', PX, y + 370, 400, 86, { lacquer: true, size: 34 })) App.goto('songs');
+    if (UI.button(this, '再練習一次', PX, y + 476, 400, 66)) this.begin();
     UI.nav(this);
     UI.navHint();
   },
@@ -640,105 +703,151 @@ Screens.howto = {
   page: 0, sel: 0, n: 0,
   PAGES: ['遊戲規則', '操作方式', '判定與計分', '食材圖鑑'],
   slideDir: 0, slideT: 1,
+  // 面板、◀ ▶ 點擊範圍、返回鈕：直式在下方；橫式 ◀ ▶ 在面板兩側
+  L: lay({ panel: [30, 190, 660, 860], prev: [80, 1112], next: [640, 1112], tapPrev: [30, 1072, 120, 80], tapNext: [570, 1072, 120, 80], back: [250, 1076] },
+    { panel: [160, 190, 1600, 720], prev: [96, 550], next: [W - 96, 550], tapPrev: [20, 450, 140, 200], tapNext: [W - 160, 450, 140, 200], back: [W / 2 - 110, 946] }),
   enter() { this.page = 0; this.sel = 0; this.slideT = 1; chef.idlePose = 'wave'; },
   frame(dt) {
+    const L = this.L;
     menuBackdrop(0.7);
     UI.header('操作說明', `${tr(this.PAGES[this.page])}  (${this.page + 1}/${this.PAGES.length})`);
-    UI.panel(30, 190, 660, 860, 26);
+    UI.panel(...L.panel, 26);
 
     const N = this.PAGES.length;
     const go = d => { this.page = (this.page + d + N) % N; this.slideDir = d; this.slideT = 0; Sound.play('select'); };
     // 換頁：← → / 點 ◀ ▶ / 手機上左右滑動（手指往左 = 下一頁）
-    if (Input.was('left') || UI.tapIn(30, 1072, 120, 80) || Input.swipe === 'right') go(-1);
-    if (Input.was('right') || UI.tapIn(570, 1072, 120, 80) || Input.swipe === 'left') go(1);
+    if (Input.was('left') || UI.tapIn(...L.tapPrev) || Input.swipe === 'right') go(-1);
+    if (Input.was('right') || UI.tapIn(...L.tapNext) || Input.swipe === 'left') go(1);
     // 內容跟著手指移動；換頁時新的一頁從滑動的方向滑進來
     this.slideT = Math.min(1, this.slideT + dt / 0.28);
     const e = ease(this.slideT), off = this.slideDir * (1 - e) * 300 + Input.dragX() * 0.6;
     ctx.save();
-    rrect(30, 190, 660, 860, 26); ctx.clip();
+    rrect(...L.panel, 26); ctx.clip();
     ctx.translate(off, 0); ctx.globalAlpha *= clamp(0.25 + 0.75 * e - Math.abs(Input.dragX()) / 900, 0, 1);
-    [this.p1, this.p2, this.p3, this.p4][this.page].call(this);
+    (LAND ? [this.p1L, this.p2L, this.p3L, this.p4L] : [this.p1, this.p2, this.p3, this.p4])[this.page].call(this);
     ctx.restore();
-    UI.text('◀', 80, 1112, 48, { fill: '#ffd23f' }); UI.text('▶', 640, 1112, 48, { fill: '#ffd23f' });
+    UI.text('◀', ...L.prev, 48, { fill: '#ffd23f' }); UI.text('▶', ...L.next, 48, { fill: '#ffd23f' });
     UI.begin(this);
-    if (UI.button(this, '返回', 250, 1076, 220, 70, { back: true }) || Input.was('back')) App.goto('menu');
+    if (UI.button(this, '返回', ...L.back, 220, 70, { back: true }) || Input.was('back')) App.goto('menu');
     UI.nav(this);
     UI.hint(Input.touchMode ? '左右滑動可以換頁' : '← → 換頁');
   },
-  row(y, icon, title, desc) {
-    if (typeof icon === 'string') UI.text(icon, 100, y + 40, 46, { stroke: null });
-    else icon(100, y + 40);
-    UI.text(title, 170, y + 14, 28, { align: 'left', fill: '#fff27a', stroke: null });
-    UI.wrap(desc, 170, y + 54, 490, 32, 21, { fill: '#fff' });
+  // ox = 這一列的左緣（圖示在 ox+70，文字從 ox+140 開始）
+  row(y, icon, title, desc, ox = 30, ww = 490) {
+    if (typeof icon === 'string') UI.text(icon, ox + 70, y + 40, 46, { stroke: null });
+    else icon(ox + 70, y + 40);
+    UI.text(title, ox + 140, y + 14, 28, { align: 'left', fill: '#fff27a', stroke: null });
+    UI.wrap(desc, ox + 140, y + 54, ww, 32, 21, { fill: '#fff' });
   },
-  p1() {
-    const rows = [
-      [(x, y) => drawButtonImg(x - 14, y + 20, 92), '跟著節拍按按鈕', '食材會從左右兩邊丟到鐵板中央的金色框裡，落下的瞬間按下按鈕！'],
-      [(x, y) => drawImgW(IMG.cabbage_raw, x, y, 96), '先聽，再按', '食材丟出時會發出「咻～啵」提示音，2 拍之後落下。跟著音樂的節拍就對了。'],
-      [(x, y) => drawImgW(IMG.okonomiyaki, x, y, 110), '湊齊四種食材', '炒麵、高麗菜、煎餅、培根各處理好 1 個，就會自動合成一份廣島燒，加 1000 分！'],
-      ['⏩', '越來越快', '每 8 小節節奏加快一次。共 10 首樂曲（2 集），每集 1～5 星，星越多越快、越難。'],
-      ['🏆', '排行榜', '遊戲結束時，分數進入前 20 名就能登錄姓名。'],
-    ];
-    rows.forEach(([ic, t, d], i) => this.row(222 + i * 164, ic, t, d));
+  RULES: [
+    [(x, y) => drawButtonImg(x - 14, y + 20, 92), '跟著節拍按按鈕', '食材會從左右兩邊丟到鐵板中央的金色框裡，落下的瞬間按下按鈕！'],
+    [(x, y) => drawImgW(IMG.cabbage_raw, x, y, 96), '先聽，再按', '食材丟出時會發出「咻～啵」提示音，2 拍之後落下。跟著音樂的節拍就對了。'],
+    [(x, y) => drawImgW(IMG.okonomiyaki, x, y, 110), '湊齊四種食材', '炒麵、高麗菜、煎餅、培根各處理好 1 個，就會自動合成一份廣島燒，加 1000 分！'],
+    ['⏩', '越來越快', '每 8 小節節奏加快一次。共 10 首樂曲（2 集），每集 1～5 星，星越多越快、越難。'],
+    ['🏆', '排行榜', '遊戲結束時，分數進入前 20 名就能登錄姓名。'],
+  ],
+  p1() { this.RULES.forEach(([ic, t, d], i) => this.row(222 + i * 164, ic, t, d)); },
+  p1L() { this.RULES.forEach(([ic, t, d], i) => this.row(236 + (i % 3) * 210, ic, t, d, i < 3 ? 190 : 980, 600)); },   // 左欄 3 列、右欄 2 列
+  // 操作對照表（第 4 欄：直式 = 手機觸控；橫式 = 滑鼠）
+  CONTROLS() {
+    const touch = !LAND;
+    return {
+      cols: ['操作', '鍵盤', '遊戲手把', touch ? '手機' : '滑鼠'],
+      rows: [
+        ['處理食材', 'SPACE・ENTER\nF・J・D・K', 'A・B・X・Y\nLB・RB・LT・RT', touch ? '點擊畫面\n任何地方' : '左鍵點擊\n畫面任何地方'],
+        ['暫停', 'ESC・P', 'START', '右上\n⏸ 按鈕'],
+        ['選單移動', '↑↓←→\nW・A・S・D', '十字鍵\n左搖桿', touch ? '點選' : '移動游標'],
+        ['決定', 'ENTER\nSPACE', 'A', touch ? '點擊按鈕' : '左鍵點擊按鈕'],
+        ['返回', 'ESC\nBACKSPACE', 'B・BACK', '返回按鈕'],
+      ],
+    };
   },
-  p2() {
-    const cols = [['操作', 110], ['鍵盤', 270], ['遊戲手把', 440], ['手機', 600]];
-    cols.forEach(([t, x]) => UI.text(t, x, 232, 22, { fill: '#7fe4ff', stroke: null }));
-    const rows = [
-      ['處理食材', 'SPACE・ENTER\nF・J・D・K', 'A・B・X・Y\nLB・RB・LT・RT', '點擊畫面\n任何地方'],
-      ['暫停', 'ESC・P', 'START', '右上\n⏸ 按鈕'],
-      ['選單移動', '↑↓←→\nW・A・S・D', '十字鍵\n左搖桿', '點選'],
-      ['決定', 'ENTER\nSPACE', 'A', '點擊按鈕'],
-      ['返回', 'ESC\nBACKSPACE', 'B・BACK', '返回按鈕'],
-    ];
+  // xs = 各欄中心；rect = [列底色左緣, 列高, 寬]；f0 / f1 = 第一欄 / 其他欄字級
+  table(xs, y0, dy, rect, f0, f1, mw0, mw1) {
+    const { cols, rows } = this.CONTROLS();
+    cols.forEach((t, k) => UI.text(t, xs[k], y0 - 68, f0 - 1, { fill: '#7fe4ff', stroke: null }));
     rows.forEach((r, i) => {
-      const y = 300 + i * 100;
-      ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.13)'; ctx.fillRect(42, y - 44, 636, 92);
+      const y = y0 + i * dy;
+      ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.13)'; ctx.fillRect(rect[0], y - rect[1] / 2, rect[2], rect[1]);
       r.forEach((t, k) => {
         const ls = tr(t).split('\n');
-        ls.forEach((ln, j) => UI.text(ln, cols[k][1], y + (j - (ls.length - 1) / 2) * 30, k === 0 ? 23 : 18,
-          { fill: k === 0 ? '#fff27a' : '#fff', stroke: null, maxW: k === 0 ? 130 : 160, raw: true }));
+        ls.forEach((ln, j) => UI.text(ln, xs[k], y + (j - (ls.length - 1) / 2) * 30, k === 0 ? f0 : f1,
+          { fill: k === 0 ? '#fff27a' : '#fff', stroke: null, maxW: k === 0 ? mw0 : mw1, raw: true }));
       });
     });
+  },
+  padLine(x, y, mw) {
     const pad = Input.padConnected;
-    UI.text(pad ? '🎮 遊戲手把已連接' : '🎮 遊戲手把：未連接（接上後按任一鍵即可使用）', W / 2, 838, 20, { fill: pad ? '#8dff8a' : '#cfd8ff', stroke: null, maxW: 620 });
+    UI.text(pad ? '🎮 遊戲手把已連接' : '🎮 遊戲手把：未連接（接上後按任一鍵即可使用）', x, y, 20, { fill: pad ? '#8dff8a' : '#cfd8ff', stroke: null, maxW: mw });
+  },
+  p2() {
+    this.table([110, 270, 440, 600], 300, 100, [42, 92, 636], 23, 18, 130, 160);
+    this.padLine(W / 2, 838, 620);
     UI.wrap('打擊鍵按任何一顆都可以；在手機上點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。', 60, 892, 600, 32, 20, { fill: '#fff' });
   },
-  p3() {
-    UI.text('判定', 130, 236, 22, { fill: '#7fe4ff', stroke: null });
-    UI.text('時間差', 400, 236, 22, { fill: '#7fe4ff', stroke: null });
-    UI.text('得分', 590, 236, 22, { fill: '#7fe4ff', stroke: null });
-    const rows = [['GREAT', '±50ms 以內', '300'], ['NICE', '±90ms 以內', '200'], ['GOOD', '±130ms 以內', '100'], ['BAD', '太早／太晚／沒按', '0']];
-    rows.forEach(([g, w, p], i) => {
-      const y = 300 + i * 92;
-      ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.13)'; ctx.fillRect(42, y - 42, 636, 84);
-      drawGradeText(g, 130, y, 1, 1, 40);
-      UI.text(w, 400, y, 22, { fill: '#fff', stroke: null });
-      UI.text(p, 590, y, 30, { fill: '#ffe680', stroke: null });
+  p2L() {
+    this.table([330, 720, 1110, 1500], 312, 96, [190, 88, 1540], 26, 21, 280, 340);
+    this.padLine(W / 2, 806, 1400);
+    UI.wrap('打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。', 220, 852, 1480, 32, 21, { fill: '#fff' });
+  },
+  GRADES: [['GREAT', '±50ms 以內', '300'], ['NICE', '±90ms 以內', '200'], ['GOOD', '±130ms 以內', '100'], ['BAD', '太早／太晚／沒按', '0']],
+  NOTES: [
+    ['連擊加分', '每次命中再加「連擊數 × 4」分（最多 +200）。BAD 會中斷連擊。'],
+    ['廣島燒', '四種食材各 1 個合成一份，+1000 分。'],
+    ['揮空不扣分', '沒有食材時按下按鈕只會揮空，可以放心跟著拍子按。'],
+    ['判定校正', '如果總覺得判定偏早或偏晚，可以到「設定」調整。'],
+  ],
+  grades(xs, y0, dy, rect) {
+    UI.text('判定', xs[0], y0 - 64, 22, { fill: '#7fe4ff', stroke: null });
+    UI.text('時間差', xs[1], y0 - 64, 22, { fill: '#7fe4ff', stroke: null });
+    UI.text('得分', xs[2], y0 - 64, 22, { fill: '#7fe4ff', stroke: null });
+    this.GRADES.forEach(([g, w, p], i) => {
+      const y = y0 + i * dy;
+      ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.13)'; ctx.fillRect(rect[0], y - rect[1] / 2, rect[2], rect[1]);
+      drawGradeText(g, xs[0], y, 1, 1, 40);
+      UI.text(w, xs[1], y, 22, { fill: '#fff', stroke: null });
+      UI.text(p, xs[2], y, 30, { fill: '#ffe680', stroke: null });
     });
-    const notes = [
-      ['連擊加分', '每次命中再加「連擊數 × 4」分（最多 +200）。BAD 會中斷連擊。'],
-      ['廣島燒', '四種食材各 1 個合成一份，+1000 分。'],
-      ['揮空不扣分', '沒有食材時按下按鈕只會揮空，可以放心跟著拍子按。'],
-      ['判定校正', '如果總覺得判定偏早或偏晚，可以到「設定」調整。'],
-    ];
+  },
+  p3() {
+    this.grades([130, 400, 590], 300, 92, [42, 84, 636]);
     let y = 700;
-    notes.forEach(([t, d]) => {
+    this.NOTES.forEach(([t, d]) => {
       UI.text(t, 60, y, 22, { align: 'left', fill: '#7fe4ff', stroke: null });
       y += UI.wrap(d, 210, y, 450, 30, 20, { fill: '#fff' }) + 22;
     });
   },
+  p3L() {   // 左：判定表；右：計分說明
+    this.grades([320, 600, 830], 330, 110, [190, 96, 760]);
+    let y = 270;
+    this.NOTES.forEach(([t, d]) => {
+      UI.text(t, 1010, y, 26, { align: 'left', fill: '#7fe4ff', stroke: null });
+      y += UI.wrap(d, 1010, y + 44, 680, 32, 22, { fill: '#fff' }) + 76;
+    });
+  },
+  // 食材圖鑑一格：生食材 ➜ 處理後，右邊是名稱、主角動作、提示音
+  ingredient(k, x, y, mw) {
+    const ing = ING[k];
+    drawImgW(IMG[ing.raw], x + 88, y, 140);
+    UI.text('➜', x + 198, y, 40, { fill: '#ffd23f', stroke: null });
+    drawImgW(IMG[ing.done], x + 308, y, 160);
+    UI.text(ing.name, x + 418, y - 34, 30, { align: 'left', fill: '#fff27a', stroke: null });
+    UI.text(tr('主角動作：{0}', tr(ing.act)), x + 418, y + 10, 20, { align: 'left', fill: '#fff', stroke: null, maxW: mw, raw: true });
+    const pitch = ['低', '中', '高', '中高'][[440, 523, 784, 659].indexOf(ing.cue)];
+    UI.text(tr('提示音：{0}音「啵」', tr(pitch)), x + 418, y + 44, 18, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: mw, raw: true });
+  },
   p4() {
     TYPES.forEach((k, i) => {
-      const ing = ING[k], y = 300 + i * 190;
+      const y = 300 + i * 190;
       ctx.fillStyle = i % 2 ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.13)'; ctx.fillRect(42, y - 84, 636, 172);
-      drawImgW(IMG[ing.raw], 130, y, 140);
-      UI.text('➜', 240, y, 40, { fill: '#ffd23f', stroke: null });
-      drawImgW(IMG[ing.done], 350, y, 160);
-      UI.text(ing.name, 460, y - 34, 30, { align: 'left', fill: '#fff27a', stroke: null });
-      UI.text(tr('主角動作：{0}', tr(ing.act)), 460, y + 10, 20, { align: 'left', fill: '#fff', stroke: null, maxW: 220, raw: true });
-      const pitch = ['低', '中', '高', '中高'][[440, 523, 784, 659].indexOf(ing.cue)];
-      UI.text(tr('提示音：{0}音「啵」', tr(pitch)), 460, y + 44, 18, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 220, raw: true });
+      this.ingredient(k, 42, y, 220);
+    });
+  },
+  p4L() {   // 2×2
+    TYPES.forEach((k, i) => {
+      const x = 190 + (i % 2) * 780, y = 380 + Math.floor(i / 2) * 330;
+      ctx.fillStyle = (i % 2) ^ Math.floor(i / 2) ? 'rgba(255,255,255,.06)' : 'rgba(255,255,255,.13)'; rrect(x, y - 140, 760, 280, 18); ctx.fill();
+      this.ingredient(k, x + 20, y, 300);
     });
   },
 };
@@ -746,7 +855,11 @@ Screens.howto = {
 // ---------- 設定 ----------
 Screens.settings = {
   sel: 0, n: 0, from: 'menu',
-  ROWS: 8,
+  ROWS: DESKTOP_APP ? 7 : 8,   // 桌面版沒有「安裝到主畫面」
+  // 各列的位置 [x, y]：直式一欄；橫式兩欄（左：音量、判定校正；右：全螢幕、省電、語言、安裝）
+  POS: lay([[50, 182], [50, 308], [50, 434], [50, 590], [50, 690], [50, 790], [50, 914]],
+    [[300, 250], [300, 376], [300, 502], [1000, 250], [1000, 350], [1000, 450], [1000, 574]]),
+  BACK: lay([230, 1030], [W / 2 - 130, 760]),
   enter(arg) {
     this.from = arg && arg.from === 'game' ? 'game' : 'menu';
     this.sel = arg && arg.sel !== undefined ? arg.sel : 0;
@@ -767,8 +880,9 @@ Screens.settings = {
   },
   panel(i, y, h) {
     const on = this.sel === i;
-    UI.panel(50, y, 620, h, 24, on ? 'rgba(255,190,60,.3)' : 'rgba(16,22,52,.82)', on ? '#ffd23f' : '#e8b64a');
-    if (Input.ptr.moved && UI.inside(Input.ptr.x, Input.ptr.y, 50, y, 620, h)) this.sel = i;
+    const X = this.POS[i][0];
+    UI.panel(X, y, 620, h, 24, on ? 'rgba(255,190,60,.3)' : 'rgba(16,22,52,.82)', on ? '#ffd23f' : '#e8b64a');
+    if (Input.ptr.moved && UI.inside(Input.ptr.x, Input.ptr.y, X, y, 620, h)) this.sel = i;
   },
   setLang(l) {
     if (Save.data.lang === l) return;
@@ -776,13 +890,14 @@ Screens.settings = {
     document.getElementById('rotate').textContent = tr('請將手機直立握持');
   },
   // ON / OFF 開關列
-  toggle(i, y, h, label, sub, on, flip) {
+  toggle(i, h, label, sub, on, flip) {
+    const [X, y] = this.POS[i];
     this.panel(i, y, h);
-    UI.text(label, 84, y + 30, 30, { align: 'left', maxW: 380 });
-    UI.text(sub, 84, y + 66, 16, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
-    UI.panel(500, y + (h - 56) / 2, 140, 56, 28, on ? '#2fc46a' : 'rgba(255,255,255,.18)', '#fff');
-    UI.text(on ? 'ON' : 'OFF', 570, y + h / 2 + 1, 28);
-    if (UI.tapIn(50, y, 620, h)) { this.sel = i; flip(); }
+    UI.text(label, X + 34, y + 30, 30, { align: 'left', maxW: 380 });
+    UI.text(sub, X + 34, y + 66, 16, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
+    UI.panel(X + 450, y + (h - 56) / 2, 140, 56, 28, on ? '#2fc46a' : 'rgba(255,255,255,.18)', '#fff');
+    UI.text(on ? 'ON' : 'OFF', X + 520, y + h / 2 + 1, 28);
+    if (UI.tapIn(X, y, 620, h)) { this.sel = i; flip(); }
     if (this.sel === i && (Input.was('left') || Input.was('right') || Input.was('confirm'))) flip();
   },
   frame() {
@@ -790,54 +905,56 @@ Screens.settings = {
     UI.header('設定', 'SETTINGS');
 
     // 0 音樂、1 音效
-    [['音樂', 'music', 182], ['音效', 'sfx', 308]].forEach(([label, key, y], i) => {
+    [['音樂', 'music'], ['音效', 'sfx']].forEach(([label, key], i) => {
+      const [X, y] = this.POS[i];
       this.panel(i, y, 116);
       const v = Save.data[key];
-      UI.text(label, 84, y + 30, 30, { align: 'left' });
-      UI.text(v === 0 ? 'MUTE' : String(v), 636, y + 30, 30, { align: 'right', fill: '#ffd23f' });
+      UI.text(label, X + 34, y + 30, 30, { align: 'left' });
+      UI.text(v === 0 ? 'MUTE' : String(v), X + 586, y + 30, 30, { align: 'right', fill: '#ffd23f' });
       for (let k = 0; k < 5; k++) {
-        const bx = 140 + k * 92, bh = 22 + k * 7;
+        const bx = X + 90 + k * 92, bh = 22 + k * 7;
         ctx.fillStyle = k < v ? (key === 'music' ? '#7fe4ff' : '#ffb347') : 'rgba(255,255,255,.2)';
         rrect(bx, y + 104 - bh, 70, bh, 8); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#1a1f3a'; ctx.stroke();
         if (UI.tapIn(bx - 8, y + 46, 86, 70)) { this.sel = i; this.setVol(key, k + 1 === v ? k : k + 1); }
       }
-      UI.text('−', 92, y + 84, 44); UI.text('+', 628, y + 84, 44);
-      if (UI.tapIn(56, y + 46, 70, 70)) { this.sel = i; this.setVol(key, v - 1); }
-      if (UI.tapIn(594, y + 46, 70, 70)) { this.sel = i; this.setVol(key, v + 1); }
+      UI.text('−', X + 42, y + 84, 44); UI.text('+', X + 578, y + 84, 44);
+      if (UI.tapIn(X + 6, y + 46, 70, 70)) { this.sel = i; this.setVol(key, v - 1); }
+      if (UI.tapIn(X + 544, y + 46, 70, 70)) { this.sel = i; this.setVol(key, v + 1); }
       if (this.sel === i) { if (Input.was('left')) this.setVol(key, v - 1); if (Input.was('right')) this.setVol(key, v + 1); }
     });
 
     // 2 判定校正
-    const y2 = 434, off = Save.data.offset;
+    { const [X, y2] = this.POS[2], off = Save.data.offset;
     this.panel(2, y2, 146);
-    UI.text('判定校正', 84, y2 + 30, 30, { align: 'left' });
+    UI.text('判定校正', X + 34, y2 + 30, 30, { align: 'left' });
     // 右上：自動校正（跟著聲音點一點，量出耳機 / 喇叭的延遲）
     const openCal = () => { Sound.play('confirm'); App.goto('calibrate', { from: this.from }); };
-    UI.panel(452, y2 + 12, 196, 40, 20, '#e8502a', '#fff');
-    UI.text(tr('自動校正') + ' ▶', 550, y2 + 33, 20, { stroke: '#5a0f05', sw: 5, raw: true, maxW: 180 });
-    if (UI.tapIn(446, y2 + 6, 208, 52)) { this.sel = 2; openCal(); }
+    UI.panel(X + 402, y2 + 12, 196, 40, 20, '#e8502a', '#fff');
+    UI.text(tr('自動校正') + ' ▶', X + 500, y2 + 33, 20, { stroke: '#5a0f05', sw: 5, raw: true, maxW: 180 });
+    if (UI.tapIn(X + 396, y2 + 6, 208, 52)) { this.sel = 2; openCal(); }
     if (this.sel === 2 && Input.was('confirm')) openCal();
-    UI.text((off > 0 ? '+' : '') + off + ' ms', W / 2, y2 + 80, 36, { fill: '#ffd23f' });
-    UI.text('◀', 150, y2 + 80, 42, { fill: '#fff' }); UI.text('▶', 570, y2 + 80, 42, { fill: '#fff' });
-    if (UI.tapIn(90, y2 + 56, 120, 54)) { this.sel = 2; this.setOffset(off - 10); }
-    if (UI.tapIn(510, y2 + 56, 120, 54)) { this.sel = 2; this.setOffset(off + 10); }
+    UI.text((off > 0 ? '+' : '') + off + ' ms', X + 310, y2 + 80, 36, { fill: '#ffd23f' });
+    UI.text('◀', X + 100, y2 + 80, 42, { fill: '#fff' }); UI.text('▶', X + 520, y2 + 80, 42, { fill: '#fff' });
+    if (UI.tapIn(X + 40, y2 + 56, 120, 54)) { this.sel = 2; this.setOffset(off - 10); }
+    if (UI.tapIn(X + 460, y2 + 56, 120, 54)) { this.sel = 2; this.setOffset(off + 10); }
     if (this.sel === 2) { if (Input.was('left')) this.setOffset(off - 10); if (Input.was('right')) this.setOffset(off + 10); }
     const r = Game.result;
-    if (r && r.hits >= 5) UI.text(tr('上一局平均：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), W / 2, y2 + 124, 17, { fill: '#8dff8a', stroke: null, maxW: 580, raw: true });
-    else UI.text('用藍牙耳機會有延遲：按「自動校正」量一次就好', W / 2, y2 + 124, 17, { fill: '#cfd8ff', stroke: null, maxW: 580 });
+    if (r && r.hits >= 5) UI.text(tr('上一局平均：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), X + 310, y2 + 124, 17, { fill: '#8dff8a', stroke: null, maxW: 580, raw: true });
+    else UI.text('用藍牙耳機會有延遲：按「自動校正」量一次就好', X + 310, y2 + 124, 17, { fill: '#cfd8ff', stroke: null, maxW: 580 }); }
 
-    // 3 震動、4 省電模式
-    this.toggle(3, 590, 90, '震動', navigator.vibrate ? '手機打擊時輕微震動' : '此裝置不支援震動', Save.data.vibrate,
+    // 3 震動（橫式 = 全螢幕）、4 省電模式
+    if (LAND) this.toggle(3, 90, '全螢幕', 'F11 也可以切換', Display.fullscreen(), () => { Display.setFullscreen(!Display.fullscreen()); Sound.play('confirm'); });
+    else this.toggle(3, 90, '震動', navigator.vibrate ? '手機打擊時輕微震動' : '此裝置不支援震動', Save.data.vibrate,
       () => { Save.data.vibrate = !Save.data.vibrate; Save.store(); Sound.play('confirm'); Sound.vibrate(30); });
-    this.toggle(4, 690, 90, '省電模式', '每秒 30 幀・較低解析度・減少特效（判定不受影響）', Save.data.eco,
+    this.toggle(4, 90, '省電模式', '每秒 30 幀・較低解析度・減少特效（判定不受影響）', Save.data.eco,
       () => { Save.data.eco = !Save.data.eco; Save.store(); Sound.play('confirm'); if (window.applyPowerMode) window.applyPowerMode(); });
 
     // 5 語言
-    const y4 = 790;
+    { const [X, y4] = this.POS[5];
     this.panel(5, y4, 114);
-    UI.text('語言', 84, y4 + 28, 30, { align: 'left' });
+    UI.text('語言', X + 34, y4 + 28, 30, { align: 'left' });
     LANGS.forEach(([code, label], k) => {
-      const x = 74 + k * 196, on = Save.data.lang === code;
+      const x = X + 24 + k * 196, on = Save.data.lang === code;
       UI.panel(x, y4 + 52, 180, 50, 25, on ? '#e8502a' : 'rgba(255,255,255,.16)', on ? '#fff' : 'rgba(255,255,255,.4)');
       UI.text(label, x + 90, y4 + 77, 24, { fill: '#fff', stroke: on ? '#5a0f05' : null, raw: true });
       if (UI.tapIn(x, y4 + 52, 180, 50)) { this.sel = 5; this.setLang(code); }
@@ -847,21 +964,23 @@ Screens.settings = {
       if (Input.was('left')) this.setLang(LANGS[(idx + LANGS.length - 1) % LANGS.length][0]);
       if (Input.was('right')) this.setLang(LANGS[(idx + 1) % LANGS.length][0]);
     }
+    }
 
-    // 6 安裝到主畫面（APP）
-    const y5 = 914, inst = PWA.installed();
+    // 6 安裝到主畫面（APP；桌面版沒有）
+    if (!DESKTOP_APP) { const [X, y5] = this.POS[6], inst = PWA.installed();
     this.panel(6, y5, 90);
-    UI.text('安裝到主畫面', 84, y5 + 30, 30, { align: 'left', maxW: 400 });
-    UI.text(inst ? '已經是 APP 模式' : '變成 APP，全螢幕、離線也能玩', 84, y5 + 66, 16, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
-    UI.panel(500, y5 + 17, 140, 56, 28, inst ? '#2fc46a' : '#e8502a', '#fff');
-    UI.text(inst ? '✓' : '教學 ▶', 570, y5 + 46, 24, { stroke: '#5a0f05', sw: 5 });
+    UI.text('安裝到主畫面', X + 34, y5 + 30, 30, { align: 'left', maxW: 400 });
+    UI.text(inst ? '已經是 APP 模式' : '變成 APP，全螢幕、離線也能玩', X + 34, y5 + 66, 16, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
+    UI.panel(X + 450, y5 + 17, 140, 56, 28, inst ? '#2fc46a' : '#e8502a', '#fff');
+    UI.text(inst ? '✓' : '教學 ▶', X + 520, y5 + 46, 24, { stroke: '#5a0f05', sw: 5 });
     const openInstall = () => { Sound.play('confirm'); App.goto('install', { from: this.from }); };
-    if (UI.tapIn(50, y5, 620, 90)) { this.sel = 6; openInstall(); }
+    if (UI.tapIn(X, y5, 620, 90)) { this.sel = 6; openInstall(); }
     if (this.sel === 6 && Input.was('confirm')) openInstall();
+    }
 
-    // 7 返回
-    UI.begin(this); this.n = 7;
-    if (UI.button(this, this.from === 'game' ? '返回遊戲' : '返回', 230, 1030, 260, 66, { back: true }) || Input.was('back')) this.back();
+    // 最後一列：返回
+    UI.begin(this); this.n = this.ROWS - 1;
+    if (UI.button(this, this.from === 'game' ? '返回遊戲' : '返回', ...this.BACK, 260, 66, { back: true }) || Input.was('back')) this.back();
     this.n = this.ROWS;
     if (Input.was('up')) { this.sel = (this.sel + this.ROWS - 1) % this.ROWS; Sound.play('select'); }
     if (Input.was('down')) { this.sel = (this.sel + 1) % this.ROWS; Sound.play('select'); }
@@ -906,10 +1025,11 @@ Screens.calibrate = {
       } else this.result = { fail: true };
       this.sel = 0;
     }
-    UI.panel(40, 196, 640, 150, 24);
-    UI.wrap('戴上平常玩的耳機（藍牙也可以），聽到「叩」聲就跟著點畫面（或按任意鍵）。前 4 下是預備。', 70, 238, 580, 32, 21, { fill: '#fff' });
+    const pw = lay(640, 900), CY = y => lay(y, y - 160);   // 橫式：說明框加寬、其他往上移
+    UI.panel((W - pw) / 2, lay(196, 180), pw, lay(150, 120), 24);
+    UI.wrap('戴上平常玩的耳機（藍牙也可以），聽到「叩」聲就跟著點畫面（或按任意鍵）。前 4 下是預備。', (W - pw) / 2 + 30, lay(238, 222), pw - 60, 32, 21, { fill: '#fff' });
     // 中央的大鼓：只在點下去時跳一下（不跟著拍子閃）
-    const k = clamp(1 - (Game.time - this.flash) / 0.18, 0, 1), cx = W / 2, cy = 620, r = 130 * (1 + k * 0.08);
+    const k = clamp(1 - (Game.time - this.flash) / 0.18, 0, 1), cx = W / 2, cy = CY(620), r = 130 * (1 + k * 0.08);
     ctx.save();
     ctx.fillStyle = '#8a2a14'; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
     ctx.fillStyle = k ? '#ffe6b0' : '#f2d7a0'; ctx.beginPath(); ctx.arc(cx, cy, r - 18, 0, 7); ctx.fill();
@@ -923,11 +1043,11 @@ Screens.calibrate = {
       // 進度點
       for (let i = 0; i < need; i++) {
         ctx.fillStyle = i < this.taps ? '#ffd23f' : 'rgba(255,255,255,.25)';
-        ctx.beginPath(); ctx.arc(cx - (need - 1) * 14 + i * 28, 820, 9, 0, 7); ctx.fill();
+        ctx.beginPath(); ctx.arc(cx - (need - 1) * 14 + i * 28, CY(820), 9, 0, 7); ctx.fill();
       }
       // 測量中按鍵（SPACE / ENTER）是拿來打拍子的：返回鈕不取得焦點，只能點或按 ESC
       const q = { sel: -1, n: 0 };
-      if (UI.button(q, '返回', 250, 1040, 220, 70, { back: true }) || Input.was('back')) this.back();
+      if (UI.button(q, '返回', W / 2 - 110, CY(1040), 220, 70, { back: true }) || Input.was('back')) this.back();
       return;
     }
     if (this.result.fail) {
@@ -939,9 +1059,9 @@ Screens.calibrate = {
       UI.text(ms >= 100 ? '延遲偏大（藍牙常見）' : '延遲很小', cx, cy + 56, 18, { fill: '#7a2a10', stroke: null, maxW: 220 });
     }
     UI.begin(this);
-    if (!this.result.fail && UI.button(this, '套用', 160, 860, 400, 80, { lacquer: true, size: 34 })) { Save.data.offset = this.result.ms; Save.store(); this.back(); }
-    if (UI.button(this, '再測一次', 160, 956, 400, 64)) this.reset();
-    if (UI.button(this, '返回', 250, 1040, 220, 70, { back: true }) || Input.was('back')) this.back();
+    if (!this.result.fail && UI.button(this, '套用', PX, CY(860), 400, 80, { lacquer: true, size: 34 })) { Save.data.offset = this.result.ms; Save.store(); this.back(); }
+    if (UI.button(this, '再測一次', PX, CY(956), 400, 64)) this.reset();
+    if (UI.button(this, '返回', W / 2 - 110, CY(1040), 220, 70, { back: true }) || Input.was('back')) this.back();
     UI.nav(this);
     UI.navHint();
   },
@@ -959,8 +1079,9 @@ Screens.install = {
   frame() {
     if (this.from === 'game') { Game.draw(); UI.dim(0.78); } else menuBackdrop(0.72);
     UI.header('安裝到主畫面', 'INSTALL APP');
-    UI.panel(30, 190, 660, 850, 26);
-    UI.wrap('安裝後可以從主畫面直接開啟：全螢幕、開啟更快，沒有網路也能玩。', 60, 232, 600, 32, 21, { fill: '#fff' });
+    const P = lay([30, 190, 660, 850], [160, 190, 1600, 720]);
+    UI.panel(...P, 26);
+    UI.wrap('安裝後可以從主畫面直接開啟：全螢幕、開啟更快，沒有網路也能玩。', P[0] + 30, 232, P[2] - 60, 32, 21, { fill: '#fff' });
 
     UI.begin(this);
     let y = 316;
@@ -968,30 +1089,33 @@ Screens.install = {
       UI.text('✓ 目前已經是 APP 模式', W / 2, y + 20, 26, { fill: '#8dff8a', stroke: null });
       y += 64;
     } else if (PWA.canPrompt()) {
-      if (UI.button(this, '立即安裝', 190, y - 4, 340, 76, { lacquer: true, sub: 'INSTALL', size: 34 }) && !this.busy) {
+      if (UI.button(this, '立即安裝', W / 2 - 170, y - 4, 340, 76, { lacquer: true, sub: 'INSTALL', size: 34 }) && !this.busy) {
         this.busy = true; PWA.install().finally(() => { this.busy = false; });
       }
       y += 96;
     }
     // 目前的裝置排第一個並標亮
     const mine = PWA.platform();
-    ['ios', 'android', 'desktop'].sort((a, b) => (b === mine) - (a === mine)).forEach(key => {
+    // 直式：上下排；橫式：三欄並排
+    const y0 = y;
+    ['ios', 'android', 'desktop'].sort((a, b) => (b === mine) - (a === mine)).forEach((key, c) => {
       const [title, steps, note] = this.GUIDES[key], on = key === mine;
-      const h = 62 + steps.length * 38 + (note ? 30 : 0);
-      UI.panel(50, y, 620, h, 18, on ? 'rgba(255,190,60,.18)' : 'rgba(255,255,255,.06)', on ? '#ffd23f' : 'rgba(255,255,255,.25)');
-      UI.text(title, 76, y + 32, 25, { align: 'left', fill: on ? '#fff27a' : '#cfe0ff', stroke: null, maxW: 420 });
-      if (on) { UI.panel(520, y + 14, 132, 36, 18, '#e8502a', '#fff'); UI.text('你的裝置', 586, y + 32, 17, { stroke: null, maxW: 116 }); }
+      const h = LAND ? 250 : 62 + steps.length * 38 + (note ? 30 : 0), gx = lay(50, 190 + c * 520), gw = lay(620, 500);
+      if (LAND) y = y0;
+      UI.panel(gx, y, gw, h, 18, on ? 'rgba(255,190,60,.18)' : 'rgba(255,255,255,.06)', on ? '#ffd23f' : 'rgba(255,255,255,.25)');
+      UI.text(title, gx + 26, y + 32, 25, { align: 'left', fill: on ? '#fff27a' : '#cfe0ff', stroke: null, maxW: gw - 200 });
+      if (on) { UI.panel(gx + gw - 150, y + 14, 132, 36, 18, '#e8502a', '#fff'); UI.text('你的裝置', gx + gw - 84, y + 32, 17, { stroke: null, maxW: 116 }); }
       steps.forEach((st, i) => {
         const sy = y + 74 + i * 38;
-        ctx.fillStyle = on ? '#e8502a' : 'rgba(255,255,255,.3)'; ctx.beginPath(); ctx.arc(90, sy, 14, 0, 7); ctx.fill();
-        UI.text(String(i + 1), 90, sy + 1, 17, { stroke: null, raw: true });
-        UI.text(st, 116, sy, 20, { align: 'left', fill: '#fff', stroke: null, maxW: 530 });
+        ctx.fillStyle = on ? '#e8502a' : 'rgba(255,255,255,.3)'; ctx.beginPath(); ctx.arc(gx + 40, sy, 14, 0, 7); ctx.fill();
+        UI.text(String(i + 1), gx + 40, sy + 1, 17, { stroke: null, raw: true });
+        UI.text(st, gx + 66, sy, 20, { align: 'left', fill: '#fff', stroke: null, maxW: gw - 90 });
       });
-      if (note) UI.text(note, 76, y + h - 22, 17, { align: 'left', fill: '#ffb0a0', stroke: null, maxW: 560 });
+      if (note) UI.text(note, gx + 26, y + h - 22, 17, { align: 'left', fill: '#ffb0a0', stroke: null, maxW: gw - 60 });
       y += h + 16;
     });
 
-    if (UI.button(this, '返回', 250, 1062, 220, 68, { back: true }) || Input.was('back')) this.back();
+    if (UI.button(this, '返回', W / 2 - 110, lay(1062, 946), 220, 68, { back: true }) || Input.was('back')) this.back();
     UI.nav(this);
     UI.navHint();
   }
@@ -1020,37 +1144,42 @@ Screens.ranking = {
     UI.header('排行榜', Online.enabled ? 'LEADERBOARD（線上）' : 'LEADERBOARD（本機）');
     // 樂曲切換列
     const song = SONGS[this.idx];
-    UI.wood(60, 182, 600, 66, { r: 14, seed: 'rank-bar' });
+    UI.wood(W / 2 - 300, 182, 600, 66, { r: 14, seed: 'rank-bar' });
     UI.text(song.title, W / 2, 205, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 420 });
     drawStars(W / 2, 233, song.stars, 16);
-    UI.text('◀', 92, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 }); UI.text('▶', 628, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 });
-    if (Input.was('left') || UI.tapIn(40, 176, 120, 80)) this.move(-1);
-    if (Input.was('right') || UI.tapIn(560, 176, 120, 80)) this.move(1);
+    UI.text('◀', W / 2 - 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 }); UI.text('▶', W / 2 + 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 });
+    if (Input.was('left') || UI.tapIn(W / 2 - 320, 176, 120, 80)) this.move(-1);
+    if (Input.was('right') || UI.tapIn(W / 2 + 200, 176, 120, 80)) this.move(1);
 
-    UI.panel(30, 262, 660, 790, 26);
-    const C = { rank: 82, name: 136, oko: 478, score: 660 };
-    UI.text('名次', C.rank, 290, 18, { fill: '#7fe4ff', stroke: null });
-    UI.text('姓名', C.name, 290, 18, { align: 'left', fill: '#7fe4ff', stroke: null });
-    UI.text('廣島燒', C.oko, 290, 18, { fill: '#7fe4ff', stroke: null });
-    UI.text('分數', C.score, 290, 18, { align: 'right', fill: '#7fe4ff', stroke: null });
+    // 直式：一欄 20 名；橫式：兩欄各 10 名（列較高、字較大）
+    UI.panel(...lay([30, 262, 660, 790], [160, 262, 1600, 650]), 26);
+    const cols = lay(1, 2), per = 20 / cols, rw = lay(636, 770), rh = lay(34, 50), dy = lay(35.5, 56), fs = lay(21, 26);
+    const colX = c => lay(42, 180 + c * 790), Cx = x0 => ({ rank: x0 + 40, name: x0 + 94, oko: x0 + lay(436, 570), score: x0 + rw - 18 });
+    for (let c = 0; c < cols; c++) {
+      const C = Cx(colX(c));
+      UI.text('名次', C.rank, 290, 18, { fill: '#7fe4ff', stroke: null });
+      UI.text('姓名', C.name, 290, 18, { align: 'left', fill: '#7fe4ff', stroke: null });
+      UI.text('廣島燒', C.oko, 290, 18, { fill: '#7fe4ff', stroke: null });
+      UI.text('分數', C.score, 290, 18, { align: 'right', fill: '#7fe4ff', stroke: null });
+    }
     const glob = Online.enabled, b = glob ? (this.list || []) : Save.board(song.id);
-    if (glob && this.loading) UI.text('讀取中…', W / 2, 640, 30);
+    if (glob && this.loading) UI.text('讀取中…', W / 2, lay(640, 580), 30);
     for (let i = 0; i < 20; i++) {
-      const y = 326 + i * 35.5, e = b[i];
+      const c = Math.floor(i / per), x0 = colX(c), C = Cx(x0), y = lay(326, 334) + (i % per) * dy, e = b[i];
       const isHl = e && (glob ? (this.hlId && e.id === this.hlId) : e === this.hl);
       ctx.fillStyle = isHl ? `rgba(255,210,63,${0.35 + 0.25 * Math.sin(Game.time * 8)})` : (i % 2 ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.12)');
-      ctx.fillRect(42, y - 17, 636, 34);
+      ctx.fillRect(x0, y - rh / 2, rw, rh);
       const col = i === 0 ? '#ffd23f' : i === 1 ? '#e0e6f0' : i === 2 ? '#f0a070' : '#ffffff';
-      UI.text(String(i + 1), C.rank, y, 21, { fill: col, stroke: null });
+      UI.text(String(i + 1), C.rank, y, fs, { fill: col, stroke: null });
       if (e) {
-        UI.text(e.name, C.name, y, 21, { align: 'left', fill: isHl ? '#fff27a' : '#fff', stroke: null, maxW: 280, raw: true });
-        UI.text('×' + (e.oko || 0), C.oko, y, 19, { fill: '#ffb0a0', stroke: null });
-        UI.text(pad(e.score, 7), C.score, y, 21, { align: 'right', fill: col, stroke: null });
-      } else UI.text('---', C.name, y, 21, { align: 'left', fill: 'rgba(255,255,255,.4)', stroke: null });
+        UI.text(e.name, C.name, y, fs, { align: 'left', fill: isHl ? '#fff27a' : '#fff', stroke: null, maxW: lay(280, 380), raw: true });
+        UI.text('×' + (e.oko || 0), C.oko, y, fs - 2, { fill: '#ffb0a0', stroke: null });
+        UI.text(pad(e.score, 7), C.score, y, fs, { align: 'right', fill: col, stroke: null });
+      } else UI.text('---', C.name, y, fs, { align: 'left', fill: 'rgba(255,255,255,.4)', stroke: null });
     }
-    if (this.err) UI.text('無法連線，暫時無法顯示線上排行', W / 2, 1036, 17, { fill: '#ff9fb5', stroke: null });
+    if (this.err) UI.text('無法連線，暫時無法顯示線上排行', W / 2, lay(1036, 930), 17, { fill: '#ff9fb5', stroke: null });
     UI.begin(this);
-    if (UI.button(this, '返回主選單', 220, 1076, 280, 70, { back: true }) || Input.was('back')) App.goto('menu');
+    if (UI.button(this, '返回主選單', W / 2 - 140, lay(1076, 952), 280, 70, { back: true }) || Input.was('back')) App.goto('menu');
     UI.nav(this);
     UI.hint('← → 切換樂曲');
     UI.copyright();
@@ -1101,22 +1230,24 @@ Screens.credits = {
     this.t += dt;
     menuBackdrop(0.6);
     UI.header('CREDIT', '製作名單');
-    UI.panel(60, 200, 600, 820, 26);
+    // 直式：名單在上、廣島燒在下；橫式：名單在左、廣島燒在右
+    const L = lay({ panel: [60, 200, 600, 820], nx: W / 2, y0: 286, ox: W / 2, oy: 800, ty: 900 }, { panel: [360, 190, 1200, 700], nx: 700, y0: 300, ox: 1220, oy: 470, ty: 680 });
+    UI.panel(...L.panel, 26);
     const line = (i, y, fn) => { const k = clamp((this.t - i * 0.15) * 4, 0, 1); ctx.save(); ctx.globalAlpha = k; ctx.translate(0, (1 - k) * 20); fn(y); ctx.restore(); };
-    let y = 286, idx = 0;
+    let y = L.y0, idx = 0;
     for (const [role, names] of CREDITS) {
-      line(idx++, y, yy => UI.text(role, W / 2, yy, 30, { fill: '#7fe4ff', stroke: null }));
+      line(idx++, y, yy => UI.text(role, L.nx, yy, 30, { fill: '#7fe4ff', stroke: null }));
       y += 64;
-      for (const n of names) { line(idx++, y, yy => UI.text(n, W / 2, yy, 42, { fill: '#fff', raw: true })); y += 60; }
+      for (const n of names) { line(idx++, y, yy => UI.text(n, L.nx, yy, 42, { fill: '#fff', raw: true })); y += 60; }
       y += 30;
     }
     const okoK = clamp((this.t - idx * 0.15) * 4, 0, 1);
-    line(idx++, 800, yy => drawImgW(IMG.okonomiyaki, W / 2, yy, 240));
-    if (okoK >= 1) this.steam(dt, W / 2, 790);
-    line(idx++, 900, yy => UI.text('大王焼き  リズム屋台', W / 2, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
-    line(idx++, 950, yy => UI.text("©Arc's Concept Game", W / 2, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
+    line(idx++, L.oy, yy => drawImgW(IMG.okonomiyaki, L.ox, yy, lay(240, 300)));
+    if (okoK >= 1) this.steam(dt, L.ox, L.oy - 10);
+    line(idx++, L.ty, yy => UI.text('大王焼き  リズム屋台', L.ox, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
+    line(idx++, L.ty + 50, yy => UI.text("©Arc's Concept Game", L.ox, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
     UI.begin(this);
-    if (UI.button(this, '返回', 250, 1076, 220, 70, { back: true }) || Input.was('back')) App.goto('menu');
+    if (UI.button(this, '返回', W / 2 - 110, lay(1076, 940), 220, 70, { back: true }) || Input.was('back')) App.goto('menu');
     UI.nav(this);
     UI.copyright();
   }
@@ -1161,6 +1292,10 @@ Screens.result = {
     const o = this.r.oko;
     chef.queue = []; chef.idlePose = o >= 8 ? 'cheer' : o >= 3 ? 'nice' : 'bad';
     this.input = document.getElementById('nameInput');
+    if (LAND) {   // 姓名輸入框（HTML）：橫式放在右側按鈕欄（以畫布百分比定位；直式用 style.css 的位置）
+      const p = (v, t) => (v / t * 100) + '%';
+      Object.assign(this.input.style, { left: p(1180, W), top: p(350, H), width: p(400, W), height: p(72, H) });
+    }
     this.input.value = Save.data.name || '';
     this.input.onkeydown = e => { if (e.key === 'Enter') this.submit(); };
     if (Online.enabled) Online.top(this.song.id).catch(() => {});
@@ -1184,43 +1319,44 @@ Screens.result = {
     menuBackdrop(0.55);
     const k = ease(clamp(t / 0.5, 0, 1));
     ctx.save(); ctx.globalAlpha = k; ctx.translate(0, (1 - k) * 40);
-    const x = 50, y = 120, w = 620, h = 700;
+    const x = lay(50, 340), y = lay(120, 170), w = 620, h = 700, cx = x + w / 2;   // 橫式：成績卡在左、按鈕在右
     ctx.fillStyle = 'rgba(255,250,238,.97)'; rrect(x, y, w, h, 28); ctx.fill(); ctx.strokeStyle = '#1f2a5a'; ctx.lineWidth = 6; ctx.stroke();
-    UI.ribbon(W / 2, y + 4, '本日營業結束！', 34, 380);
-    drawImgW(IMG.okonomiyaki, W / 2 - 70, y + 140, 240);
-    UI.text('×' + r.oko, W / 2 + 150, y + 150, 72, { fill: '#c8321e', stroke: '#fff', sw: 10 });
-    UI.text('完成的廣島燒', W / 2, y + 242, 20, { fill: '#6b4a2a', stroke: null });
-    UI.text('SCORE', W / 2, y + 290, 22, { fill: '#6b4a2a', stroke: null });
+    UI.ribbon(cx, y + 4, '本日營業結束！', 34, 380);
+    drawImgW(IMG.okonomiyaki, cx - 70, y + 140, 240);
+    UI.text('×' + r.oko, cx + 150, y + 150, 72, { fill: '#c8321e', stroke: '#fff', sw: 10 });
+    UI.text('完成的廣島燒', cx, y + 242, 20, { fill: '#6b4a2a', stroke: null });
+    UI.text('SCORE', cx, y + 290, 22, { fill: '#6b4a2a', stroke: null });
     const cnt = clamp((t - 0.4) / 1.0, 0, 1);
-    UI.text(String(Math.floor(r.score * cnt)), W / 2, y + 344, 64, { fill: '#1f2a5a', stroke: null });
-    if (this.newRecord && t > 1.4) UI.text('★ NEW RECORD ★', W / 2, y + 400, 26, { fill: '#d6462a', stroke: null, alpha: 0.6 + 0.4 * Math.sin(Game.time * 6) });
-    else UI.text('HISCORE  ' + pad(Save.best(this.song.id), 7), W / 2, y + 400, 22, { fill: '#6b4a2a', stroke: null });
+    UI.text(String(Math.floor(r.score * cnt)), cx, y + 344, 64, { fill: '#1f2a5a', stroke: null });
+    if (this.newRecord && t > 1.4) UI.text('★ NEW RECORD ★', cx, y + 400, 26, { fill: '#d6462a', stroke: null, alpha: 0.6 + 0.4 * Math.sin(Game.time * 6) });
+    else UI.text('HISCORE  ' + pad(Save.best(this.song.id), 7), cx, y + 400, 22, { fill: '#6b4a2a', stroke: null });
     ['GREAT', 'NICE', 'GOOD', 'BAD'].forEach((g, i) => {
       const gx = x + 80 + i * 153;
       drawGradeText(g, gx, y + 466, 1, 1, 26);
       UI.text(String(r.grades[g]), gx, y + 514, 34, { fill: '#1f2a5a', stroke: null });
     });
-    UI.text('MAX COMBO  ' + r.maxCombo, W / 2, y + 556, 24, { fill: '#1f2a5a', stroke: null });
-    if (r.hits >= 5) UI.text(tr('平均時間差：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), W / 2, y + 586, 16, { fill: '#8a6a4a', stroke: null, raw: true });
+    UI.text('MAX COMBO  ' + r.maxCombo, cx, y + 556, 24, { fill: '#1f2a5a', stroke: null });
+    if (r.hits >= 5) UI.text(tr('平均時間差：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), cx, y + 586, 16, { fill: '#8a6a4a', stroke: null, raw: true });
     this.drawRating(r, x, y + 604, w, t);
     ctx.restore();
 
     if (t < 1.6) { if (t > 0.4 && (Input.taps.length || Input.was('confirm'))) { this.t = 1.6; Input.taps.length = 0; Input.pressed.delete('confirm'); } return; }
     if (!this.checked) { this.checked = true; this.qualifies = Online.enabled ? Online.qualifies(r.score, this.song.id) : Save.qualifies(r.score, this.song.id); }
     UI.begin(this);
+    const BX = lay(160, 1180), BY = i => lay(872 + i * 74, 340 + i * 96);
     if (this.qualifies && !this.submitted) {
-      UI.text('進榜！請輸入你的姓名', W / 2, 880, 30, { fill: '#ffd23f', sw: 8 });
+      UI.text('進榜！請輸入你的姓名', BX + 200, lay(880, 300), 30, { fill: '#ffd23f', sw: 8 });
       this.input.style.display = 'block';
       if (!this.shownInput) { this.shownInput = true; if (!Input.touchMode) { this.input.focus(); this.input.select(); } }
-      if (UI.button(this, '登錄', 130, 1060, 220, 70, { c1: '#8dff8a', c2: '#2fc46a' })) this.submit();
-      if (UI.button(this, '略過', 370, 1060, 220, 70, { back: true })) App.goto('menu');
-      if (UI.button(this, '返回選擇樂曲', 160, 1146, 400, 64)) App.goto('songs');
+      if (UI.button(this, '登錄', BX - 30, lay(1060, 476), 220, 70, { c1: '#8dff8a', c2: '#2fc46a' })) this.submit();
+      if (UI.button(this, '略過', BX + 210, lay(1060, 476), 220, 70, { back: true })) App.goto('menu');
+      if (UI.button(this, '返回選擇樂曲', BX, lay(1146, 566), 400, 64)) App.goto('songs');
     } else {
       this.input.style.display = 'none';
-      if (UI.button(this, '再玩一次', 160, 872, 400, 64, { lacquer: true })) App.goto('game', { song: this.song });
-      if (UI.button(this, '返回選擇樂曲', 160, 946, 400, 64)) App.goto('songs');
-      if (UI.button(this, '排行榜', 160, 1020, 400, 64)) App.goto('ranking', { song: this.song.id });
-      if (UI.button(this, '回主選單', 160, 1094, 400, 64, { back: true })) App.goto('menu');
+      if (UI.button(this, '再玩一次', BX, BY(0), 400, 64, { lacquer: true })) App.goto('game', { song: this.song });
+      if (UI.button(this, '返回選擇樂曲', BX, BY(1), 400, 64)) App.goto('songs');
+      if (UI.button(this, '排行榜', BX, BY(2), 400, 64)) App.goto('ranking', { song: this.song.id });
+      if (UI.button(this, '回主選單', BX, BY(3), 400, 64, { back: true })) App.goto('menu');
     }
     UI.nav(this);
   }

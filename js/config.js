@@ -1,10 +1,29 @@
 'use strict';
 
 // ===== 全域參數（調整難度、計分、版面改這裡） =====
-const W = 720, H = 1280;          // 9:16 直式邏輯解析度
 const FONT = "'Mochiy Pop One','Microsoft JhengHei','PingFang TC',sans-serif";
 const QS = new URLSearchParams(location.search);
 const FAST = QS.has('fast');      // 網址加 ?fast：每段只有 3 小節，方便測試結算與排行榜
+
+// ---- 版面：手機直式 9:16（720x1280）／PC 橫式 16:9（1920x1080） ----
+// 桌面版（Electron，preload 會放 window.desktop）一律橫式；網頁版：觸控裝置直式、電腦視窗較寬時橫式。
+// 網址加 ?layout=landscape 或 ?layout=portrait 可強制指定（測試用）。啟動時決定，之後不再切換。
+const DESKTOP_APP = !!window.desktop;
+const LAND = (() => {
+  const q = QS.get('layout');
+  if (q) return q === 'landscape';
+  if (DESKTOP_APP) return true;
+  const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+  return !coarse && window.innerWidth > window.innerHeight;
+})();
+const lay = (portrait, landscape) => (LAND ? landscape : portrait);   // 依版面取值
+const W = lay(720, 1920), H = lay(1280, 1080);   // 畫面（UI）邏輯解析度
+// 攤位場景（背景、主角、鐵板、食材）一律用直式的世界座標 720x1280；橫式時整個場景等比縮小、置中，兩側是延伸的街景
+const SW = 720, SH = 1280;
+const Cam = { k: H / SH, x: (W - SW * H / SH) / 2 };      // 世界 → 畫面：sx = Cam.x + wx × k、sy = wy × k
+const VIEW = { x0: -Cam.x / Cam.k, x1: (W - Cam.x) / Cam.k };   // 畫面看得到的世界範圍（橫式時比 0～720 寬）
+function worldBegin() { ctx.save(); ctx.translate(Cam.x, 0); ctx.scale(Cam.k, Cam.k); }
+const toWorld = (sx, sy) => [(sx - Cam.x) / Cam.k, sy / Cam.k];
 
 const cv = document.getElementById('game');
 const ctx = cv.getContext('2d');
@@ -22,7 +41,7 @@ const RES_MAX = () => (ECO() ? 1 : 2);
 const ZONE = { x: 360, y: 920, w: 240, h: 92 };   // 判定框（鐵板中央）
 const GRIDDLE_Y = 860;
 const BTN_RED = [117, 262], BTN_Y = 1212;         // 按鈕圖中紅色按鈕的中心（原圖 425x334）；畫面上落在下方正中央
-const PAUSE_BTN = { x: 676, y: 210, r: 28 };      // 遊戲中右上角的暫停鈕
+const PAUSE_BTN = lay({ x: 676, y: 210, r: 28 }, { x: W - 66, y: 64, r: 34 });   // 遊戲中右上角的暫停鈕（畫面座標）
 
 // ---- 判定與計分 ----
 const LEAD_BEATS = 2;                                            // 食材在落點前 2 拍被丟出
@@ -41,7 +60,8 @@ const RATINGS = [
   { min: 0,    stamp: '修行', color: '#7a6aa8', title: '鐵板上的災難',   desc: '客人默默轉身去吃章魚燒了……明天再來練練吧！' },
 ];
 const ratingFor = ratio => RATINGS.findIndex(r => ratio >= r.min);
-const OKO_FX_Y = 430;                                            // 「廣島燒完成！」演出的中心高度（在主角頭頂上方，不擋臉）
+const OKO_HUD = lay({ x: 612, y: 43, w: 84 }, { x: 1580, y: 959, w: 180 });   // HUD 上廣島燒成品圖（畫面座標；橫式在右下，不擋右邊飛進來的食材）
+const OKO_FX_Y = 430;                                           // 「廣島燒完成！」演出的中心高度（在主角頭頂上方，不擋臉）
 
 // ---- 食材 ----
 const TYPES = ['noodles', 'cabbage', 'crepe', 'bacon'];

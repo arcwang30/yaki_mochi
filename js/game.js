@@ -47,7 +47,7 @@ const Fx = {
     this.particles = this.particles.filter(p => p.life > 0);
     for (const p of this.popups) { p.y -= 60 * dt; p.life -= dt; }
     this.popups = this.popups.filter(p => p.life > 0);
-    if (!ECO() && Math.random() < dt * 14) this.embers.push({ x: rand(0, W), y: rand(H * 0.35, H * 0.7), vy: rand(-40, -15), vx: rand(-8, 8), life: rand(2, 4), max: 4, size: rand(1.5, 3.5), hue: rand(25, 50) });
+    if (!ECO() && Math.random() < dt * 14) this.embers.push({ x: rand(VIEW.x0, VIEW.x1), y: rand(SH * 0.35, SH * 0.7), vy: rand(-40, -15), vx: rand(-8, 8), life: rand(2, 4), max: 4, size: rand(1.5, 3.5), hue: rand(25, 50) });
     for (const e of this.embers) { e.x += e.vx * dt + Math.sin(Game.time * 2 + e.y * 0.02) * 0.3; e.y += e.vy * dt; e.life -= dt; }
     this.embers = this.embers.filter(e => e.life > 0);
   },
@@ -74,19 +74,27 @@ const Scene = {
     this.griddle();
   },
   // lit(i)：第 i 盞燈籠的亮度 0～1（開場用來一盞一盞點亮；省略 = 全亮）
-  background(pulse, lit) {
+  // sky = false：橫式不畫夜空層（開場時夜空另外畫，野台升起時只有街景移動）
+  background(pulse, lit, sky = true) {
     const img = IMG.bg_stall;
     if (img) {
-      const s = Math.max(W / img.width, H / img.height); this.bg = { s, x: (W - img.width * s) / 2, y: (H - img.height * s) / 2 };
-      // 背景先依畫布解析度縮放好存起來，之後每幀 1:1 貼上（省下每幀縮放大圖的運算）
+      const s = Math.max(SW / img.width, SH / img.height); this.bg = { s, x: (SW - img.width * s) / 2, y: (SH - img.height * s) / 2 };
+      // 背景先依畫布解析度縮放好存起來（畫面大小），之後每幀 1:1 貼上（省下每幀縮放大圖的運算）
+      // 橫式：兩側先畫延伸的夜市街景（js/street.js），攤位原圖疊在中間、左右邊緣淡入街景
       if (!this.bgCache || this.bgCache.res !== RES) {
         const c = document.createElement('canvas'); c.width = Math.round(W * RES); c.height = Math.round(H * RES);
-        const g = c.getContext('2d'); g.imageSmoothingQuality = 'high';
-        g.drawImage(img, this.bg.x * RES, this.bg.y * RES, img.width * s * RES, img.height * s * RES);
+        const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.scale(RES, RES);
+        const k = Cam.k, rect = [Cam.x + this.bg.x * k, this.bg.y * k, img.width * s * k, img.height * s * k];
+        if (LAND) { Street.paint(g, rect); g.drawImage(Street.feather(img, rect[2], rect[3]), rect[0], rect[1], rect[2], rect[3]); }
+        else g.drawImage(img, ...rect);
         this.bgCache = { c, res: RES };
       }
-      ctx.drawImage(this.bgCache.c, 0, 0, W, H);
-    } else { ctx.fillStyle = '#1a1f3a'; ctx.fillRect(0, 0, W, H); }
+      if (LAND && sky) {
+        if (!this.skyCache || this.skyCache.res !== RES) this.skyCache = { c: Street.skyCanvas(), res: RES };
+        ctx.drawImage(this.skyCache.c, VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH);
+      }
+      ctx.drawImage(this.bgCache.c, VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH);
+    } else { ctx.fillStyle = '#1a1f3a'; ctx.fillRect(VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH); }
     // 燈籠光暈：隨節拍一起閃
     const B = this.bg;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -152,7 +160,7 @@ const Scene = {
   griddle() {
     if (!IMG.griddle) return;
     const img = this.griddleImg();
-    ctx.drawImage(img, 0, GRIDDLE_Y, W, W * img.height / img.width);
+    ctx.drawImage(img, 0, GRIDDLE_Y, SW, SW * img.height / img.width);
   },
   // 選單用的節拍脈動（跟著選單音樂的速度）
   idlePulse() { const p = Sound.bgmPulse(); if (p !== null) return p; const ph = Game.time * 92 / 60; return Math.exp(-(ph % 1) * 5); },
@@ -439,17 +447,23 @@ const Game = {
   // ---------- 繪製 ----------
   draw() {
     const s = this.s, st = this.songTime(), pulse = s.paused ? 0 : this.pulse();
+    worldBegin();   // 場景與演出：世界座標
     Scene.draw(pulse);
     this.drawZone(pulse, st);
     this.drawNotes(st);
     Fx.draw();
     this.drawGrade();
     this.drawComboFx();
-    this.drawOkoAnims();
-    this.drawHUD(pulse, st);
+    this.drawPopups();
     this.drawBanner(st);
     this.drawButton(pulse);
+    ctx.restore();
+    this.drawHUD(pulse, st);   // HUD：畫面座標（橫式放在左右兩側）
+    worldBegin(); this.drawOkoAnims(); ctx.restore();   // 廣島燒飛進右上角的成品欄（蓋在 HUD 上）
     this.drawPauseBtn();
+  },
+  drawPopups() {
+    for (const p of Fx.popups) txt(p.text, p.x, p.y, 26, `rgba(255,240,140,${clamp(p.life * 2, 0, 1)})`, { stroke: 'rgba(80,30,0,.8)', lw: 7 });
   },
   drawZone(pulse, st) {
     const w = ZONE.w * (1 + pulse * 0.06), h = ZONE.h * (1 + pulse * 0.06);
@@ -482,7 +496,7 @@ const Game = {
         const p = (st - n.throwT) / (n.t - n.throwT);
         if (p < 0) continue;
         if (p <= 1) {
-          const x0 = n.side < 0 ? -140 : W + 140, y0 = 700;
+          const x0 = n.side < 0 ? VIEW.x0 - 140 : VIEW.x1 + 140, y0 = 700;
           const x = x0 + (ZONE.x - x0) * p, y = y0 + (landY - y0) * p - Math.sin(Math.PI * p) * 300;
           drawImgW(IMG[ing.raw], x, y - 30, ing.rawW * (0.75 + 0.25 * p), (1 - p) * n.side * -5.5);
         } else {
@@ -566,6 +580,7 @@ const Game = {
     drawGradeText(fx.g, ZONE.x, y, s, a);
   },
   drawHUD(pulse, st) {
+    if (LAND) return this.drawHUDLand(pulse, st);
     const s = this.s;
     // 左上：SCORE / HISCORE（窄版，避開招牌）
     pill(8, 8, 162, 50); txt('SCORE', 26, 27, 12, '#ffd25a', { align: 'left' }); txt(pad(s.score, 7), 156, 50, 22, '#fff', { align: 'right' });
@@ -597,13 +612,56 @@ const Game = {
       txt(String(s.combo), 0, 0, 48, '#ffe066', { stroke: '#7a2a00', lw: 10 }); txt('COMBO', 0, 28, 18, '#fff', { stroke: '#7a2a00', lw: 6 });
       ctx.restore();
     }
-    for (const p of Fx.popups) txt(p.text, p.x, p.y, 26, `rgba(255,240,140,${clamp(p.life * 2, 0, 1)})`, { stroke: 'rgba(80,30,0,.8)', lw: 7 });
+  },
+  // 橫式 HUD：左側 = 分數、速度、進度、連擊；右側 = 廣島燒成品＋四種食材（攤位兩側的街景上）
+  drawHUDLand(pulse, st) {
+    const s = this.s, m = this.measureAt(st), ch = s.chart;
+    // 兩側街景壓暗，HUD 比較清楚（攤位本身不壓）
+    for (const [x0, x1] of [[0, Cam.x], [W, W - Cam.x]]) {
+      const gr = ctx.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, 'rgba(6,8,26,.72)'); gr.addColorStop(1, 'rgba(6,8,26,.3)');
+      ctx.fillStyle = gr; ctx.fillRect(Math.min(x0, x1), 0, Cam.x, H);
+    }
+    UI.panel(40, 36, 420, 112, 30, 'rgba(16,22,52,.8)');
+    txt('SCORE', 72, 76, 24, '#ffd25a', { align: 'left' }); txt(pad(s.score, 7), 432, 132, 56, '#fff', { align: 'right' });
+    if (!s.tut) {
+      UI.panel(40, 160, 420, 66, 24, 'rgba(16,22,52,.72)');
+      txt('HISCORE', 72, 203, 18, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(this.song.id), s.score), 7), 432, 207, 32, '#fff', { align: 'right' });
+    }
+    const y0 = s.tut ? 196 : 272;
+    txt('TEMPO ' + m.bpm, 44, y0 + 14, 28, '#fff', { align: 'left', stroke: '#101634', lw: 8 });
+    const prog = clamp((st - ch.measures[0].start) / (ch.end - ch.measures[0].start), 0, 1);
+    if (!s.tut) {
+      ctx.fillStyle = 'rgba(16,22,52,.7)'; rrect(44, y0 + 32, 416, 14, 7); ctx.fill();
+      ctx.fillStyle = '#ffb84a'; rrect(44, y0 + 32, Math.max(14, 416 * prog), 14, 7); ctx.fill();
+    }
+    txt('♪ ' + this.song.title, 44, y0 + 88, 28, this.song.color, { align: 'left', stroke: '#101634', lw: 8 });
+    if (s.combo >= 3) {
+      const k = 1 + pulse * 0.08;
+      ctx.save(); ctx.translate(270, 640); ctx.scale(k, k);
+      txt(String(s.combo), 0, 0, 120, '#ffe066', { stroke: '#7a2a00', lw: 20 }); txt('COMBO', 0, 60, 40, '#fff', { stroke: '#7a2a00', lw: 10 });
+      ctx.restore();
+    }
+    // 右下：四種食材 2×2，下面是廣島燒成品（大）。放在下方，不擋從右邊飛進來的食材（食材從畫面中段往上飛）
+    const ob = s.bump.oko ? Math.max(0, 1 - Math.abs(this.time - s.bump.oko) * 4) : 0;
+    ctx.fillStyle = 'rgba(16,22,52,.82)'; rrect(1480, OKO_HUD.y - 75, 400, 150, 34); ctx.fill(); ctx.strokeStyle = '#ff9a3c'; ctx.lineWidth = 5; ctx.stroke();
+    drawImgW(IMG.okonomiyaki, OKO_HUD.x, OKO_HUD.y, OKO_HUD.w * (1 + ob * 0.3), 0);
+    txt('×' + s.oko, 1858, OKO_HUD.y + 43, 72 + ob * 20, '#fff', { align: 'right', stroke: '#c43a1a', lw: 14 });
+    TYPES.forEach((k, i) => {
+      const x = 1578 + (i % 2) * 204, y = OKO_HUD.y - 259 + Math.floor(i / 2) * 104;
+      const b = s.bump[k] ? Math.max(0, 1 - (this.time - s.bump[k]) * 4) : 0;
+      ctx.fillStyle = 'rgba(16,22,52,.72)'; rrect(x - 86, y - 44, 186, 88, 24); ctx.fill();
+      drawImgW(IMG[ING[k].done], x - 14, y, 104 * (1 + b * 0.35));
+      txt(String(s.stock[k]), x + 88, y + 30, 44, s.stock[k] ? '#fff' : '#8a8fae', { align: 'right', stroke: '#101634', lw: 10 });
+    });
   },
   drawOkoAnims() {
     for (const a of this.s.okoAnims) {
       let x, y, w;
       if (a.t < 0.55) { const k = ease(Math.min(1, a.t / 0.25)); x = ZONE.x; y = OKO_FX_Y; w = 330 * k * (1 + 0.08 * Math.sin(a.t * 30) * (1 - a.t / 0.55)); }
-      else { const k = ease((a.t - 0.55) / 0.4); x = ZONE.x + (612 - ZONE.x) * k; y = OKO_FX_Y + (43 - OKO_FX_Y) * k; w = 330 + (84 - 330) * k; }
+      else {   // 飛進 HUD 的成品欄（畫面座標換成世界座標）
+        const k = ease((a.t - 0.55) / 0.4), [tx, ty] = toWorld(OKO_HUD.x, OKO_HUD.y), tw = OKO_HUD.w / Cam.k;
+        x = ZONE.x + (tx - ZONE.x) * k; y = OKO_FX_Y + (ty - OKO_FX_Y) * k; w = 330 + (tw - 330) * k;
+      }
       if (a.t >= 0.95) continue;
       if (a.t < 0.55) {
         ctx.save(); ctx.globalCompositeOperation = 'lighter';

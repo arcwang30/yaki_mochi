@@ -53,7 +53,7 @@
   function loop(now) {
     // 幀率上限：60（120Hz 螢幕不會跑到 120）；省電模式 30。判定用事件時間戳記與音訊時鐘，不受幀率影響
     if (now - last < 1000 / FPS_MAX() - 1.5) { requestAnimationFrame(loop); return; }
-    const landscape = coarse && window.innerWidth > window.innerHeight * 1.1;
+    const landscape = !LAND && coarse && window.innerWidth > window.innerHeight * 1.1;   // 直式版面才需要提示轉回直立
     if (landscape) { rotate.style.display = 'flex'; pauseGame(); }
     else if (rotate.style.display !== 'none') rotate.style.display = 'none';
     const dt = Math.min((now - last) / 1000, 0.05);
