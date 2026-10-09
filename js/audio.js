@@ -101,6 +101,38 @@ const SND = {
   chipHat(t, v = 1, dest = A.music) { nz(t, 0.025, 0.18 * v, dest, { type: 'highpass', f: 9000 }); },
   // 鼓打貝斯的 Reese 低音（兩把略為走音的鋸齒波）
   reese(t, n, dur, v = 1, dest = A.music) { [-18, 18].forEach(d => voice('sawtooth', m2f(n), t, 0.08, 0.13 * v, dest, { att: 0.01, hold: Math.max(0, dur - 0.08), detune: d, lp: 520, q: 3 })); },
+  // ---- VOL.2 新曲用 ----
+  bell(t, n, v = 1, dest = A.music) {   // 音樂盒的金屬簧片：基音長餘韻＋高頻泛音
+    const f = m2f(n);
+    voice('sine', f, t, 1.3, 0.11 * v, dest, { att: 0.002 });
+    voice('sine', f * 3, t, 0.22, 0.03 * v, dest, { att: 0.001 });
+    voice('triangle', f * 2, t, 0.45, 0.018 * v, dest, { att: 0.002 });
+  },
+  melodica(t, n, dur, v = 1, dest = A.music) { voice('sawtooth', m2f(n), t, 0.08, 0.06 * v, dest, { att: 0.03, hold: Math.max(0, dur - 0.06), lp: 1700, q: 1.5, vib: 0.005, vibDelay: 0.15 }); },
+  epiano(t, notes, v = 1, dest = A.music, dur = 0.9) {   // 電鋼琴：圓潤＋一點金屬敲擊感
+    notes.forEach(n => { const f = m2f(n);
+      voice('sine', f, t, dur, 0.06 * v, dest, { att: 0.003 }); voice('sine', f * 2, t, dur * 0.35, 0.022 * v, dest, { att: 0.002 });
+      voice('triangle', f * 4, t, 0.05, 0.01 * v, dest, { att: 0.001 }); });
+  },
+  sax(t, n, dur, v = 1, dest = A.music) { voice('sawtooth', m2f(n), t, 0.1, 0.075 * v, dest, { att: 0.03, hold: Math.max(0, dur - 0.08), lp: 2400, lpTo: 1600, lpT: Math.max(0.1, dur), q: 2.5, vib: 0.012, vibDelay: 0.12 }); },
+  surdo(t, v = 1, dest = A.music) { osc('sine', 98, t, 0.45, 0.8 * v, dest, { to: 58, bend: 0.25 }); nz(t, 0.03, 0.2 * v, dest, { type: 'lowpass', f: 320 }); },
+  agogo(t, hi, v = 1, dest = A.music) { const f = hi ? 1180 : 880; osc('square', f, t, 0.08, 0.045 * v, dest); osc('sine', f * 2.7, t, 0.05, 0.03 * v, dest); },
+  marimba(t, n, v = 1, dest = A.music) { const f = m2f(n); voice('sine', f, t, 0.35, 0.16 * v, dest, { att: 0.002 }); voice('sine', f * 4, t, 0.05, 0.04 * v, dest, { att: 0.001 }); },
+  twang(t, n, dur, v = 1, dest = A.music) {   // 衝浪吉他：彈簧殘響（延遲一次的回音）
+    const o = { att: 0.003, hold: Math.min(dur, 0.3), lp: 3200, lpTo: 1100, lpT: 0.25, q: 3, vib: 0.006 };
+    voice('sawtooth', m2f(n), t, 0.45, 0.06 * v, dest, o);
+    voice('sawtooth', m2f(n), t + 0.16, 0.4, 0.022 * v, dest, o);
+  },
+  strings(t, n, dur, v = 1, dest = A.music) { [-8, 8].forEach(d => voice('sawtooth', m2f(n), t, 0.25, 0.035 * v, dest, { att: 0.06, hold: Math.max(0, dur - 0.1), lp: 2600, detune: d, vib: 0.004, vibDelay: 0.2 })); },
+  guitar(t, r, dur, v = 1, dest = A.music) {   // 破音強力和弦（根音＋五度＋八度，兩把略為走音）
+    [r, r + 7, r + 12].forEach(n => [-10, 10].forEach(d => voice('sawtooth', m2f(n), t, 0.06, 0.03 * v, dest, { att: 0.003, hold: dur, lp: 1900, lpTo: 900, lpT: Math.max(0.05, dur), q: 1.2, detune: d })));
+  },
+  glead(t, n, dur, v = 1, dest = A.music) {   // 主奏吉他：明亮＋大顫音
+    voice('sawtooth', m2f(n), t, 0.15, 0.055 * v, dest, { att: 0.01, hold: Math.max(0, dur - 0.1), lp: 3000, q: 2, vib: 0.014, vibDelay: 0.15 });
+    voice('square', m2f(n), t, 0.15, 0.022 * v, dest, { att: 0.01, hold: Math.max(0, dur - 0.1), lp: 2600, detune: 7 });
+  },
+  banjo(t, n, v = 1, dest = A.music) { const f = m2f(n); voice('square', f, t, 0.2, 0.045 * v, dest, { att: 0.001, lp: 4200, lpTo: 1300, lpT: 0.14 }); voice('triangle', f * 2, t, 0.1, 0.025 * v, dest, { att: 0.001 }); },
+  fiddle(t, n, dur, v = 1, dest = A.music) { voice('sawtooth', m2f(n), t, 0.1, 0.065 * v, dest, { att: 0.025, hold: Math.max(0, dur - 0.08), lp: 3200, q: 2, vib: 0.01, vibRate: 6, vibDelay: 0.08 }); },
   don(t, v = 1, dest = A.music) { osc('sine', 150, t, 0.34, 0.9 * v, dest, { to: 58, bend: 0.2 }); osc('sine', 88, t, 0.5, 0.3 * v, dest); nz(t, 0.05, 0.5 * v, dest, { type: 'lowpass', f: 500 }); },
   ka(t, v = 1, dest = A.music) { nz(t, 0.045, 0.45 * v, dest, { f: 3300, q: 4 }); osc('square', 1150, t, 0.02, 0.06 * v, dest); },
   kane(t, v = 1, dest = A.music) { [1, 2.41, 3.93].forEach((r, i) => osc('sine', 1750 * r, t, 0.13, 0.06 * v / (i + 1), dest)); },

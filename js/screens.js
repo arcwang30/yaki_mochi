@@ -342,7 +342,7 @@ Screens.menu = {
 Screens.songs = {
   sel: 0, previewIdx: -1, previewT: 0, bs: { sel: -1, n: 0 },
   CARD: lay({ x: 40, y0: 192, w: 640, h: 140, gap: 10 }, { x: 100, y0: 176, w: 840, h: 136, gap: 10 }),
-  PER: 5,   // 每頁 5 首（VOL.1、VOL.2 各一套 1～5 星）
+  PER: 5,   // 每頁 5 首；每集（VOL）10 首 = 2 頁（← → 依序翻：VOL.1 前半、後半、VOL.2 前半、後半）
   pages() { return Math.ceil(SONGS.length / this.PER); },
   setPage(p) {
     const P = this.pages(), row = this.sel % this.PER;
@@ -377,8 +377,9 @@ Screens.songs = {
     if (P > 1) {
       const py = lay(978, 944), cx = C.x + C.w / 2;
       UI.wood(cx - 160, py - 26, 320, 52, { r: 26, seed: 'page-bar' });
-      UI.text('VOL.' + (page + 1), cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
-      for (let p = 0; p < P; p++) { ctx.fillStyle = p === page ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 40 + p * 24, py, 8, 0, 7); ctx.fill(); }
+      const vol = SONGS[page * this.PER].vol, half = page % (VOL_SIZE / this.PER), HP = VOL_SIZE / this.PER;   // 這一集的第幾頁
+      UI.text('VOL.' + vol, cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
+      for (let p = 0; p < HP; p++) { ctx.fillStyle = p === half ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 50 + p * 24, py, 8, 0, 7); ctx.fill(); }
       UI.text('◀', cx - 200, py, 40, { fill: '#ffd23f' }); UI.text('▶', cx + 200, py, 40, { fill: '#ffd23f' });
       if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 110, 80)) this.setPage(page - 1);
       if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80)) this.setPage(page + 1);
@@ -431,7 +432,7 @@ Screens.songs = {
     const bx = x + 54, by = y + h / 2;
     ctx.fillStyle = song.color; ctx.beginPath(); ctx.arc(bx, by, 34, 0, 7); ctx.fill();
     ctx.lineWidth = 4; ctx.strokeStyle = '#3e2210'; ctx.stroke();
-    UI.text(String(i + 1), bx, by + 2, 34, { fill: '#fff', stroke: '#3e2210', sw: 6, raw: true });
+    UI.text(String(song.no), bx, by + 2, 34, { fill: '#fff', stroke: '#3e2210', sw: 6, raw: true });   // 這一集裡的編號 1～10
     const ink = on ? '#9a1a08' : '#3a1d0a', soft = on ? '#8a3a10' : '#6a3c18';
     UI.text(song.title, x + 104, y + 40, 32, { align: 'left', fill: ink, stroke: null, raw: true, maxW: w - 320 });
     UI.text(loc(song.sub) + '・' + loc(song.genre), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: w - 310 });
@@ -453,7 +454,7 @@ Screens.songs = {
     UI.panel(x, y, w, h, 28, 'rgba(16,22,52,.86)');
     ctx.fillStyle = song.color; ctx.beginPath(); ctx.arc(x + 84, y + 92, 52, 0, 7); ctx.fill();
     ctx.lineWidth = 5; ctx.strokeStyle = '#fff3d8'; ctx.stroke();
-    UI.text(String(this.sel + 1), x + 84, y + 95, 52, { fill: '#fff', stroke: '#3e2210', sw: 8, raw: true });
+    UI.text(String(song.no), x + 84, y + 95, 52, { fill: '#fff', stroke: '#3e2210', sw: 8, raw: true });
     UI.text(song.title, x + 160, y + 72, 52, { align: 'left', fill: '#fff', raw: true, maxW: w - 190, sw: 8 });
     UI.text(loc(song.sub) + '・' + loc(song.genre), x + 162, y + 132, 24, { align: 'left', fill: '#ffe8b0', stroke: null, raw: true, maxW: w - 190 });
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 180, w - 80, 2);
@@ -761,7 +762,7 @@ Screens.howto = {
     [(x, y) => drawButtonImg(x - 14, y + 20, 92), '跟著節拍按按鈕', '食材會從左右兩邊丟到鐵板中央的金色框裡，落下的瞬間按下按鈕！'],
     [(x, y) => drawImgW(IMG.cabbage_raw, x, y, 96), '先聽，再按', '食材丟出時會發出「咻～啵」提示音，2 拍之後落下。跟著音樂的節拍就對了。'],
     [(x, y) => drawImgW(IMG.okonomiyaki, x, y, 110), '湊齊四種食材', '炒麵、高麗菜、煎餅、培根各處理好 1 個，就會自動合成一份廣島燒，加 1000 分！'],
-    ['⏩', '越來越快', '每 8 小節節奏加快一次。共 10 首樂曲（2 集），每集 1～5 星，星越多越快、越難。'],
+    ['⏩', '越來越快', '每 8 小節節奏加快一次。共 20 首樂曲（2 集，每集 10 首），每種星級各 2 首，星越多越快、越難。'],
     ['🏆', '排行榜', '遊戲結束時，分數進入前 20 名就能登錄姓名。'],
   ],
   p1() { this.RULES.forEach(([ic, t, d], i) => this.row(222 + i * 164, ic, t, d)); },
@@ -1165,6 +1166,7 @@ Screens.ranking = {
     UI.wood(W / 2 - 300, 182, 600, 66, { r: 14, seed: 'rank-bar' });
     UI.text(song.title, W / 2, 205, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 420 });
     drawStars(W / 2, 233, song.stars, 16);
+    UI.text('VOL.' + song.vol, W / 2 - 200, 233, 15, { fill: '#8a3a10', stroke: null, raw: true });
     UI.text('◀', W / 2 - 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 }); UI.text('▶', W / 2 + 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 });
     if (Input.was('left') || UI.tapIn(W / 2 - 320, 176, 120, 80)) this.move(-1);
     if (Input.was('right') || UI.tapIn(W / 2 + 200, 176, 120, 80)) this.move(1);
