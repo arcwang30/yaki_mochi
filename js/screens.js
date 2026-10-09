@@ -384,7 +384,7 @@ Screens.songs = {
     const de = Input.dragEnd;
     if (de && this.dragFrom !== null) {
       const v = de.dy / de.ms;   // px / ms（往上甩為負）
-      this.selectRow(Math.round(this.dragFrom - de.dy / slot - v * 160 / slot));
+      this.selectRow(Math.round(this.dragFrom - de.dy / slot - clamp(v * 160 / slot, -4, 4)));   // 甩動最多多轉 4 首
       this.dragFrom = null;
     } else if (!drag) this.dragFrom = null;
     if (this.dragFrom === null) this.pos += (this.row() - this.pos) * Math.min(1, dt * 14);   // 平滑轉到選中的那首
@@ -392,7 +392,8 @@ Screens.songs = {
     const view = clamp(this.pos - 2, 0, VOL_SIZE - this.SLOTS);
     const vol = this.vol(), list = SONGS.filter(s => s.vol === vol);
     this.volT = Math.min(1, (this.volT === undefined ? 1 : this.volT) + dt / 0.25);
-    const slide = (1 - ease(this.volT)) * (this.volDir || 1) * 120;   // 切換 VOL 時整排從側邊滑進來
+    // 切換 VOL 時整排從側邊滑進來；手指左右拖曳時清單跟著手指橫移
+    const slide = (1 - ease(this.volT)) * (this.volDir || 1) * 120 + Input.dragX() * 0.5;
     ctx.save(); ctx.beginPath(); ctx.rect(C.x - 30, top - 14, C.w + 60, bottom - top + 28); ctx.clip();
     list.forEach((song, r) => {
       const d = r - this.pos, y = top + (r - view) * slot;
@@ -416,6 +417,9 @@ Screens.songs = {
     UI.text('VOL.' + vol, cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
     for (let v = 1; v <= NV; v++) { ctx.fillStyle = v === vol ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 50 + (v - 1) * 24, py, 8, 0, 7); ctx.fill(); }
     UI.text('◀', cx - 200, py, 40, { fill: '#ffd23f' }); UI.text('▶', cx + 200, py, 40, { fill: '#ffd23f' });
+    // 手機：左右滑動切換 VOL（手指往左 = 下一集）
+    if (Input.swipe === 'left') this.setVol(vol + 1);
+    if (Input.swipe === 'right') this.setVol(vol - 1);
     if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 110, 80)) this.setVol(vol - 1);
     if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80) || UI.tapIn(cx - 150, py - 26, 300, 52)) this.setVol(vol + 1);
     // 鍵盤 / 手把 / 滑鼠滾輪：↑↓ 一首一首選（第 1 首再按 ↑ → 焦點移到右上角的「新手教學」，↓ 回到曲目）；T 鍵 / 手把 Y 直接開教學
