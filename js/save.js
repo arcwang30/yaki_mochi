@@ -3,7 +3,7 @@
 // ===== 本機存檔：設定與本機排行榜（localStorage；每首歌一個排行榜） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, eco: false, lang: null, res: '1920x1080', tutorialDone: false, name: '', lastSong: null, boards: null,
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, voice: true, eco: false, lang: null, res: '1920x1080', tutorialDone: false, name: '', lastSong: null, boards: null,
     history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
     totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次
     diff: 1,       // 選曲畫面選的難度（0 簡單、1 普通、2 困難）

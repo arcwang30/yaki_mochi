@@ -1006,12 +1006,12 @@ Screens.howto = {
 Screens.settings = {
   sel: 0, n: 0, from: 'menu',
   // 各列（上下鍵的順序）：直式 = 手機；橫式 = PC（全螢幕、解析度）；桌面版沒有「安裝到主畫面」
-  KEYS: LAND ? ['music', 'sfx', 'offset', 'backup', 'full', 'res', 'eco', 'lang', ...(DESKTOP_APP ? [] : ['install'])]
-    : ['music', 'sfx', 'offset', 'vibrate', 'eco', 'lang', 'install', 'backup'],
-  // 各列的位置 [x, y]：直式一欄；橫式兩欄（左：音量、判定校正；右：全螢幕、解析度、省電、語言、安裝）
-  POS: lay({ music: [50, 176], sfx: [50, 298], offset: [50, 420], vibrate: [50, 572], eco: [50, 668], lang: [50, 764], install: [50, 884], backup: [50, 980] },
-    { music: [300, 200], sfx: [300, 326], offset: [300, 452], backup: [300, 610], full: [1000, 200], res: [1000, 300], eco: [1000, 424], lang: [1000, 524], install: [1000, 648] }),
-  BACK: lay([230, 1078], [W / 2 - 130, 800]),
+  KEYS: LAND ? ['music', 'sfx', 'offset', 'voice', 'backup', 'full', 'res', 'eco', 'lang', ...(DESKTOP_APP ? [] : ['install'])]
+    : ['music', 'sfx', 'offset', 'voice', 'vibrate', 'eco', 'lang', 'install', 'backup'],
+  // 各列的位置 [x, y]：直式一欄；橫式兩欄（左：音量、判定校正、語音反應、備份；右：全螢幕、解析度、省電、語言、安裝）
+  POS: lay({ music: [50, 176], sfx: [50, 298], offset: [50, 420], voice: [50, 572], vibrate: [50, 668], eco: [50, 764], lang: [50, 860], install: [50, 980], backup: [50, 1076] },
+    { music: [300, 200], sfx: [300, 326], offset: [300, 452], voice: [300, 610], backup: [300, 706], full: [1000, 200], res: [1000, 300], eco: [1000, 424], lang: [1000, 524], install: [1000, 648] }),
+  BACK: lay([230, 1176], [W / 2 - 130, 830]),
   get ROWS() { return this.KEYS.length + 1; },   // 最後一列 = 返回
   idx(k) { return this.KEYS.indexOf(k); },
   enter(arg) {
@@ -1140,6 +1140,12 @@ Screens.settings = {
       if (r && r.hits >= 5) UI.text(tr('上一局平均：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), X + 310, y2 + 124, 17, { fill: '#8dff8a', stroke: null, maxW: 580, raw: true });
       else UI.text('用藍牙耳機會有延遲：按「自動校正」量一次就好', X + 310, y2 + 124, 17, { fill: '#cfd8ff', stroke: null, maxW: 580 }); }
 
+    // 語音反應：主角在遊戲中的吆喝（打開時播一句試聽）
+    this.toggle('voice', 90, '語音反應', '遊戲中主角的吆喝（いいね！、おっと！…）', Save.data.voice !== false, () => {
+      Save.data.voice = Save.data.voice === false; Save.store(); Sound.play('confirm');
+      if (Save.data.voice && A.ctx) { Sound.sayState.end = 0; Sound.sayState.last = {}; Sound.sayState.any = -99; Sound.say('combo', A.ui, A.ctx.currentTime + 0.15); }
+    });
+
     // 震動（手機）／全螢幕＋解析度（PC）、省電模式
     if (LAND) {
       this.toggle('full', 90, '全螢幕', 'F11 也可以切換', Display.fullscreen(), () => { Display.setFullscreen(!Display.fullscreen()); Sound.play('confirm'); });
@@ -1181,7 +1187,7 @@ Screens.settings = {
       } }
     // 匯出／匯入的結果訊息
     if (this.toast && Game.time - this.toast.t < 3) {
-      const a = clamp(3 - (Game.time - this.toast.t), 0, 1), ty = lay(1050, 1000);
+      const a = clamp(3 - (Game.time - this.toast.t), 0, 1), ty = lay(1020, 1000);
       ctx.save(); ctx.globalAlpha = a; UI.panel(W / 2 - 330, ty - 30, 660, 60, 30, 'rgba(16,22,52,.94)', '#8dff8a');
       UI.text(this.toast.text, W / 2, ty + 1, 20, { fill: '#fff', stroke: null, raw: true, maxW: 620 }); ctx.restore();
     }

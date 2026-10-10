@@ -289,7 +289,7 @@ const Sound = {
   sayState: { end: 0, prio: 0, last: {}, prevKey: '', src: null, any: -99 },
   say(type, dest = A.ui, t) {
     const S = this.SAY[type], st = this.sayState;
-    if (!A.ctx || !S) return false;
+    if (!A.ctx || !S || Save.data.voice === false) return false;   // 設定的「語音反應」關掉時不講（選單的招呼語音不受影響）
     const at = t || A.ctx.currentTime;
     if (at < st.end && S.prio <= st.prio) return false;           // 正在講話，而且這句沒有比較重要
     if (at - (st.last[type] || -99) < S.cd) return false;         // 同一類還在冷卻
