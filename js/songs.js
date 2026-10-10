@@ -1252,6 +1252,9 @@ const DIFFS = [
   { key: 'hard', name: '困難', color: '#c8321e', card: '#d9a196', delta: 1, suffix: '_hard', seed: 1.25 },
 ];
 const curDiff = () => clamp(Save.data.diff === undefined ? 1 : Save.data.diff, 0, DIFFS.length - 1);
+// 選曲畫面的歌名與小標（依語言）：中文 = 中文歌名＋英文小標；日文 = 原本的日文歌名＋日文小標；英文 = 英文歌名＋英文曲風
+const songName = song => Save.data.lang === 'zh' ? song.sub.zh : Save.data.lang === 'en' ? song.sub.en : song.title;
+const songSub = song => Save.data.lang === 'zh' ? song.sub.en + '・' + song.genre.en : Save.data.lang === 'en' ? song.genre.en : song.sub.ja + '・' + song.genre.ja;
 const recId = (song, d = curDiff()) => song.id + DIFFS[d].suffix;
 // 5 星歌選困難 = 6 星（第 6 顆是紅的）；1 星歌選簡單 = 0 星（空心，跟普通的 1 星分得出來）
 const diffStars = (song, d = curDiff()) => clamp(song.stars + DIFFS[d].delta, 0, 6);

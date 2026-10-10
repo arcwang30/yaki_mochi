@@ -611,10 +611,10 @@ Screens.songs = {
       const tx = x + 60 + Math.floor(k / 5) * 370, ty = y + 222 + (k % 5) * 52, on = SONGS.indexOf(s) === this.sel;
       ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(tx + 14, ty, 14, 0, 7); ctx.fill();
       UI.text(String(s.no), tx + 14, ty + 1, 16, { fill: '#fff', stroke: '#3e2210', sw: 4, raw: true });
-      UI.text(s.title, tx + 40, ty, 24, { align: 'left', fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: 310 });
+      UI.text(songName(s), tx + 40, ty, 24, { align: 'left', fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: 310 });
     });
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 476, w - 80, 2);
-    UI.text(this.previewIdx === this.sel ? '♪ ' + tr('試聽中') + '：' + SONGS[this.sel].title : tr('選歌就可以先試聽'), cx, y + 512, 22, { fill: '#cfd8ff', stroke: null, raw: true, maxW: w - 80 });
+    UI.text(this.previewIdx === this.sel ? '♪ ' + tr('試聽中') + '：' + songName(SONGS[this.sel]) : tr('選歌就可以先試聽'), cx, y + 512, 22, { fill: '#cfd8ff', stroke: null, raw: true, maxW: w - 80 });
     UI.text(Shop.price(vol), cx, y + 566, 44, { fill: '#fff', raw: true, sw: 7 });
     // 購買鈕（朱漆）＋恢復購買
     const bx = cx - 230, by = y + 600, bw = 460, bh = 72, hover = UI.inside(Input.ptr.x, Input.ptr.y, bx, by, bw, bh);
@@ -624,7 +624,6 @@ Screens.songs = {
     this.restoreBtn(cx - 100, y + 684 - 8, 200, 40);
   },
   card(song, i, x, y, w, h, on) {
-    const loc = o => o[Save.data.lang] || o.zh;
     ctx.save();
     if (on) {
       const s = 1.02 + Math.sin(Game.time * 6) * 0.004;
@@ -642,8 +641,8 @@ Screens.songs = {
     ctx.lineWidth = 4; ctx.strokeStyle = '#3e2210'; ctx.stroke();
     UI.text(String(song.no), bx, by + 2, 34, { fill: '#fff', stroke: '#3e2210', sw: 6, raw: true });   // 這一集裡的編號 1～10
     const ink = on ? '#9a1a08' : '#3a1d0a', soft = on ? '#8a3a10' : '#6a3c18';
-    UI.text(song.title, x + 104, y + 40, 32, { align: 'left', fill: ink, stroke: null, raw: true, maxW: w - 320 });
-    UI.text(loc(song.sub) + '・' + loc(song.genre), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: w - 340 });
+    UI.text(songName(song), x + 104, y + 40, 32, { align: 'left', fill: ink, stroke: null, raw: true, maxW: w - 320 });
+    UI.text(songSub(song), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: w - 340 });
     const S = song.sections;
     UI.text(`BPM ${S[0].bpm}–${S[S.length - 1].bpm}`, x + 104, y + 116, 17, { align: 'left', fill: soft, stroke: null, raw: true });
     if (on && this.previewIdx === i) {
@@ -664,13 +663,13 @@ Screens.songs = {
   },
   // 橫式右側：選中樂曲的詳細資料（大字歌名、星級、各段速度圖、HISCORE）
   detail(song) {
-    const loc = o => o[Save.data.lang] || o.zh, x = 1000, y = 176, w = 820, h = 720, cx = x + w / 2;
+    const x = 1000, y = 176, w = 820, h = 720, cx = x + w / 2;
     UI.panel(x, y, w, h, 28, 'rgba(16,22,52,.86)');
     ctx.fillStyle = song.color; ctx.beginPath(); ctx.arc(x + 84, y + 92, 52, 0, 7); ctx.fill();
     ctx.lineWidth = 5; ctx.strokeStyle = '#fff3d8'; ctx.stroke();
     UI.text(String(song.no), x + 84, y + 95, 52, { fill: '#fff', stroke: '#3e2210', sw: 8, raw: true });
-    UI.text(song.title, x + 160, y + 72, 52, { align: 'left', fill: '#fff', raw: true, maxW: w - 190, sw: 8 });
-    UI.text(loc(song.sub) + '・' + loc(song.genre), x + 162, y + 132, 24, { align: 'left', fill: '#ffe8b0', stroke: null, raw: true, maxW: w - 190 });
+    UI.text(songName(song), x + 160, y + 72, 52, { align: 'left', fill: '#fff', raw: true, maxW: w - 190, sw: 8 });
+    UI.text(songSub(song), x + 162, y + 132, 24, { align: 'left', fill: '#ffe8b0', stroke: null, raw: true, maxW: w - 190 });
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 180, w - 80, 2);
     drawStars(cx, y + 236, diffStars(song), 48);
     { const D = DIFFS[curDiff()]; UI.panel(x + 40, y + 216, 120, 40, 20, D.color, '#fff'); UI.text(D.name, x + 100, y + 237, 22, { fill: '#fff', stroke: 'rgba(0,0,0,.35)', sw: 4 }); }   // 目前難度
