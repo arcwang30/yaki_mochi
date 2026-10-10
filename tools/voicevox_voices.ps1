@@ -21,6 +21,8 @@ foreach ($f in $lines.Keys) {
   $q = $utf8.GetString((Invoke-WebRequest -UseBasicParsing -Method Post "$Engine/audio_query?speaker=$speaker&text=$([Uri]::EscapeDataString($lines[$f]))").RawContentStream.ToArray()) | ConvertFrom-Json
   $q.prePhonemeLength = 0.02    # 開頭幾乎不留空白：遊戲裡語音和畫面同時出現
   $q.postPhonemeLength = 0.1
+  $q.speedScale = 0.88          # 預設 1.0 太快、像電腦念稿：稍微放慢
+  $q.intonationScale = 1.4      # 抑揚加強，語尾有起伏，比較像攤販在吆喝
   $body = $utf8.GetBytes(($q | ConvertTo-Json -Depth 20 -Compress))
   Invoke-WebRequest -UseBasicParsing -Method Post -ContentType 'application/json; charset=utf-8' -Body $body -OutFile (Join-Path $root "assets\audio\$f") "$Engine/synthesis?speaker=$speaker"
   Write-Host "$f  $($lines[$f])"

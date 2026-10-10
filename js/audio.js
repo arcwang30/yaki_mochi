@@ -262,18 +262,18 @@ const Sound = {
 
   // ---- 語音（錄音檔）：走音效音量（設定的「音效」可調、可靜音）；offset 跳過錄音開頭的靜音 ----
   VOICES: {
-    irasshaimase: { url: 'assets/audio/voice_irasshaimase.wav', gain: 1.05, offset: 0 },   // VOICEVOX:玄野武宏（喜び）。音量調到和舊版語音聽起來一樣大（比當下音樂清楚、但不搶戲）
-    selectSong: { url: 'assets/audio/voice_select_song.wav', gain: 1.1, offset: 0 },          // 選曲畫面的語音「曲を選んでや！」（同一個聲音；略大聲一點，聽起來和上面一樣大）
+    irasshaimase: { url: 'assets/audio/voice_irasshaimase.wav', gain: 1, offset: 0 },   // VOICEVOX:玄野武宏（喜び）。語速 0.88、抑揚 1.4（見 tools/voicevox_voices.ps1）；音量比當下音樂清楚、但不搶戲
+    selectSong: { url: 'assets/audio/voice_select_song.wav', gain: 1, offset: 0 },          // 選曲畫面的語音「曲を選んでや！」（同一個聲音，音量和上面一樣大）
     // 主角語音反應（同一個聲音）：開場、連擊、廣島燒完成、斷連擊、結算。gain 依每句的實際音量拉齊；
     // 遊戲中的走「音效」通道（比選單語音大一點，壓得過音樂；暫停時跟著靜音），結算的「おおきに！」走介面通道
     ikude: { url: 'assets/audio/voice_ikude.wav', gain: 1.15, offset: 0 },
-    iine: { url: 'assets/audio/voice_iine.wav', gain: 1.3, offset: 0 },
-    eeyan: { url: 'assets/audio/voice_eeyan.wav', gain: 0.65, offset: 0 },
+    iine: { url: 'assets/audio/voice_iine.wav', gain: 1.65, offset: 0 },
+    eeyan: { url: 'assets/audio/voice_eeyan.wav', gain: 0.75, offset: 0 },
     sonochoushi: { url: 'assets/audio/voice_sonochoushi.wav', gain: 0.85, offset: 0 },
-    omachi: { url: 'assets/audio/voice_omachi.wav', gain: 1.1, offset: 0 },
+    omachi: { url: 'assets/audio/voice_omachi.wav', gain: 0.95, offset: 0 },
     dekiagari: { url: 'assets/audio/voice_dekiagari.wav', gain: 0.8, offset: 0 },
-    otto: { url: 'assets/audio/voice_otto.wav', gain: 1.1, offset: 0 },
-    ookini: { url: 'assets/audio/voice_ookini.wav', gain: 1, offset: 0 },
+    otto: { url: 'assets/audio/voice_otto.wav', gain: 1.15, offset: 0 },
+    ookini: { url: 'assets/audio/voice_ookini.wav', gain: 0.85, offset: 0 },
   },
   // 遊戲中的語音反應：同一時間只講一句（講話中只有更重要的才插話），同一類有冷卻，避免一直講話很吵
   SAY: {
