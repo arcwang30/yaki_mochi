@@ -1,7 +1,7 @@
 ﻿# 素材前處理用的臨時伺服器（只在本機使用）：靜態檔案 + POST /__save?name=xxx.png 寫入 assets/images
-param([int]$Port = 5174)
+param([int]$Port = 5174, [string]$Out = 'assets\images')
 $root = Split-Path -Parent $PSScriptRoot
-$out = Join-Path $root 'assets\images'
+$out = Join-Path $root $Out; New-Item -ItemType Directory -Force $out | Out-Null
 $types = @{ '.html' = 'text/html; charset=utf-8'; '.js' = 'text/javascript'; '.webp' = 'image/webp'; '.png' = 'image/png'; '.jpg' = 'image/jpeg' }
 $l = [System.Net.HttpListener]::new(); $l.Prefixes.Add("http://localhost:$Port/"); $l.Start()
 Write-Host "prep server http://localhost:$Port/"

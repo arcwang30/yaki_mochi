@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>Icon maker</title>
+<style>
+  body{margin:0;padding:24px;background:#e9e4dc;font:14px system-ui,sans-serif;color:#222}
+  h1{font-size:18px;margin:0 0 16px}
+  .row{display:flex;flex-wrap:wrap;gap:28px}
+  .card{display:flex;flex-direction:column;align-items:center;gap:8px}
+  .card canvas{width:220px;height:220px}
+  .ios{border-radius:22.37%}
+  .and{border-radius:50%}
+  .sizes{display:flex;gap:10px;align-items:flex-end}
+  #status{margin-top:16px;color:#666}
+</style></head><body>
+<h1>大王焼き リズム屋台 — App icon 候選（1024×1024，滿版不透明）</h1>
+<div class="row" id="row"></div>
+<div id="status"></div>
+<script>
+// 開啟方式：powershell -ExecutionPolicy Bypass -File tools\prep_server.ps1 -Out promo\icons → http://localhost:5174/tools/icon_maker.html
+// 載入後自動輸出 icon_X_1024.png / icon_X_512.png 與總覽 icons_preview.png 到 promo/icons
+const S = 1024;
+const IMG = {};
+const NAMES = ['chef_idle','chef_spatula','chef_great','chef_wave','chef_cheer','okonomiyaki','great_text','griddle'];
+const load = n => new Promise((ok, ng) => { const i = new Image(); i.onload = () => { IMG[n] = i; ok(); }; i.onerror = ng; i.src = '../assets/images/' + n + '.png'; });
+
+function mk(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h || w; return c; }
+
+// 圖片裁切後加白邊（貼紙感）＋陰影，回傳新 canvas
+function sticker(img, sx, sy, sw, sh, w, stroke, shadow) {
+  const h = Math.round(w * sh / sw), pad = stroke + (shadow ? 40 : 0);
+  const base = mk(w, h); base.getContext('2d').drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+  const white = mk(w, h), wx = white.getContext('2d');
+  wx.drawImage(base, 0, 0); wx.globalCompositeOperation = 'source-in'; wx.fillStyle = '#fff'; wx.fillRect(0, 0, w, h);
+  const out = mk(w + pad * 2, h + pad * 2), o = out.getContext('2d');
+  if (shadow) { o.save(); o.shadowColor = 'rgba(0,0,0,.35)'; o.shadowBlur = 30; o.shadowOffsetY = 14; o.drawImage(white, pad, pad); o.restore(); }
+  for (let a = 0; a < 32; a++) { const t = a / 32 * Math.PI * 2; o.drawImage(white, pad + Math.cos(t) * stroke, pad + Math.sin(t) * stroke); }
+  o.drawImage(base, pad, pad);
+  out.pad = pad; return out;
+}
+// 以中心點放置 sticker
+function place(ctx, st, cx, cy, rot) {
+  ctx.save(); ctx.translate(cx, cy); if (rot) ctx.rotate(rot); ctx.drawImage(st, -st.width / 2, -st.height / 2); ctx.restore();
+}
+
+function radialBg(ctx, c1, c2, cx = S / 2, cy = S / 2) {
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, S * 0.8); g.addColorStop(0, c1); g.addColorStop(1, c2);
+  ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+}
+function rays(ctx, cx, cy, n, color, rot = 0) {
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.fillStyle = color;
+  for (let i = 0; i < n; i++) { ctx.beginPath(); ctx.moveTo(0, 0); ctx.arc(0, 0, S * 1.5, i * 2 * Math.PI / n, (i + 0.5) * 2 * Math.PI / n); ctx.closePath(); ctx.fill(); }
+  ctx.restore();
+}
+// 青海波
+function seigaiha(ctx, r, color, lw) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = lw;
+  for (let row = -1, y = 0; y < S + r * 2; row++, y = row * r * 0.5) {
+    const off = (row & 1) ? r : 0;
+    for (let x = -r * 2 + off; x < S + r * 2; x += r * 2)
+      for (let k = 1; k <= 3; k++) { ctx.beginPath(); ctx.arc(x, y + r, r * k / 3, Math.PI, 0); ctx.stroke(); }
+  }
+  ctx.restore();
+}
+// 八分音符 / 連桁音符
+function note(ctx, x, y, size, fill, rot = 0, beamed = false) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot); const s = size / 100;
+  ctx.scale(s, s); ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const path = () => {
+    const p = new Path2D();
+    const head = (hx, hy) => { p.ellipse(hx, hy, 24, 17, -0.45, 0, Math.PI * 2); };
+    if (beamed) {
+      head(-30, 40); head(42, 26);
+      p.rect(-10, -60, 10, 100); p.rect(62, -74, 10, 100);
+      p.moveTo(-10, -60); p.lineTo(72, -74); p.lineTo(72, -50); p.lineTo(-10, -36); p.closePath();
+    } else {
+      head(0, 40); p.rect(18, -62, 10, 100);
+      p.moveTo(18, -62); p.bezierCurveTo(30, -30, 72, -26, 58, 22); p.bezierCurveTo(56, -6, 40, -18, 28, -22); p.lineTo(28, -62); p.closePath();
+    }
+    return p;
+  };
+  const p = path();
+  ctx.lineWidth = 22; ctx.strokeStyle = '#fff'; ctx.stroke(p);
+  ctx.lineWidth = 10; ctx.strokeStyle = '#2a1a12'; ctx.stroke(p);
+  ctx.fillStyle = fill; ctx.fill(p);
+  ctx.restore();
+}
+function sparkle(ctx, x, y, r, color) {
+  ctx.save(); ctx.translate(x, y); ctx.fillStyle = color; ctx.beginPath();
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 2; ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r); ctx.lineTo(Math.cos(a + Math.PI / 4) * r * 0.28, Math.sin(a + Math.PI / 4) * r * 0.28); }
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function rings(ctx, cx, cy, radii, color, lw) {
+  ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = lw;
+  for (const r of radii) { ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke(); }
+  ctx.restore();
+}
+
+// 主角頭像裁切（560×526 原圖座標）
+const BUST = {
+  chef_idle: [180, 8, 250, 250],
+  chef_spatula: [175, 10, 255, 255],
+  chef_great: [210, 28, 230, 230],
+  chef_wave: [104, 8, 336, 336],
+};
+const OKO = [0, 0, 423, 225];
+
+const ICONS = {
+  // A 鐵板正拍：暖橘放射光＋節拍同心圓，主角微笑探頭、廣島燒在前
+  A(ctx) {
+    radialBg(ctx, '#ffb347', '#d9381e', S / 2, S * 0.42);
+    rays(ctx, S / 2, S * 0.42, 18, 'rgba(255,240,200,.16)');
+    rings(ctx, S / 2, S * 0.40, [250, 330, 410], 'rgba(255,248,230,.55)', 14);
+    place(ctx, sticker(IMG.chef_idle, ...BUST.chef_idle, 600, 14, true), S / 2, S * 0.38);
+    place(ctx, sticker(IMG.okonomiyaki, ...OKO, 860, 14, true), S / 2, S * 0.76);
+    note(ctx, 175, 230, 150, '#ffe14d', -0.25);
+    note(ctx, 845, 200, 140, '#ffe14d', 0.2, true);
+  },
+  // B 夜祭節拍環：深藍青海波，金色節拍刻度環＋認真臉主角
+  B(ctx) {
+    radialBg(ctx, '#27407a', '#0d1733');
+    seigaiha(ctx, 70, 'rgba(255,255,255,.07)', 5);
+    const cx = S / 2, cy = S * 0.42, R = 360;
+    ctx.save(); ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(255,214,90,.35)'; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+    for (let i = 0; i < 16; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 8, big = i % 4 === 0;
+      ctx.strokeStyle = i === 0 ? '#fff6c8' : '#ffd65a'; ctx.lineWidth = big ? 22 : 10;
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * (R - (big ? 42 : 24)), cy + Math.sin(a) * (R - (big ? 42 : 24)));
+      ctx.lineTo(cx + Math.cos(a) * (R + (big ? 30 : 16)), cy + Math.sin(a) * (R + (big ? 30 : 16))); ctx.stroke();
+    }
+    ctx.shadowColor = '#fff3a0'; ctx.shadowBlur = 40; ctx.fillStyle = '#fff6c8';
+    ctx.beginPath(); ctx.arc(cx, cy - R, 34, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    place(ctx, sticker(IMG.chef_spatula, ...BUST.chef_spatula, 560, 14, true), cx, cy + 10);
+    place(ctx, sticker(IMG.okonomiyaki, ...OKO, 820, 14, true), S / 2, S * 0.78);
+    note(ctx, 160, 760, 120, '#ffd65a', -0.2);
+    note(ctx, 870, 740, 120, '#ffd65a', 0.2, true);
+  },
+  // C GREAT!!：黃綠放射光，跳起握拳的主角＋傾斜的廣島燒
+  C(ctx) {
+    radialBg(ctx, '#fff27a', '#5fbf3a', S * 0.6, S * 0.35);
+    rays(ctx, S * 0.6, S * 0.35, 20, 'rgba(255,255,255,.28)', 0.1);
+    place(ctx, sticker(IMG.chef_great, ...BUST.chef_great, 620, 14, true), S * 0.6, S * 0.36);
+    place(ctx, sticker(IMG.okonomiyaki, ...OKO, 820, 14, true), S * 0.45, S * 0.77, -0.1);
+    place(ctx, sticker(IMG.great_text, 0, 0, 425, 132, 470, 10, true), S * 0.31, S * 0.13, -0.12);
+    sparkle(ctx, 140, 380, 60, '#fff'); sparkle(ctx, 905, 610, 46, '#fff'); sparkle(ctx, 210, 560, 30, '#fffbd0');
+    note(ctx, 880, 150, 120, '#ff6a3d', 0.25);
+  },
+  // D 耳機主角：藍綠漸層，戴紅色耳機的大頭＋音波弧
+  D(ctx) {
+    const g = ctx.createLinearGradient(0, 0, S, S); g.addColorStop(0, '#22c1c3'); g.addColorStop(1, '#2156b8');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+    // 均衡器背景條
+    ctx.save(); ctx.fillStyle = 'rgba(255,255,255,.13)';
+    const hs = [0.35, 0.55, 0.8, 0.5, 0.95, 0.65, 0.4, 0.75, 0.5, 0.3];
+    hs.forEach((h, i) => { const w = 70, x = 22 + i * (w + 30), bh = h * 560; ctx.beginPath(); ctx.roundRect(x, S * 0.62 - bh, w, bh, 20); ctx.fill(); });
+    ctx.restore();
+    // 大頭（只裁頭部）
+    const st = sticker(IMG.chef_idle, 190, 12, 230, 250, 700, 14, true);
+    const cx = S / 2, cy = S * 0.40, k = 700 / 230; // k：原圖→畫面比例
+    const P = (x, y) => [cx - st.width / 2 + st.pad + (x - 190) * k, cy - st.height / 2 + st.pad + (y - 12) * k];
+    // 音波
+    const [lx, ly] = P(212, 150), [rx, ry] = P(372, 150);
+    ctx.save(); ctx.strokeStyle = '#fff'; ctx.lineCap = 'round';
+    for (let i = 1; i <= 3; i++) {
+      ctx.lineWidth = 22 - i * 4; ctx.globalAlpha = 1 - i * 0.22;
+      ctx.beginPath(); ctx.arc(lx, ly, 70 + i * 55, Math.PI * 0.72, Math.PI * 1.28); ctx.stroke();
+      ctx.beginPath(); ctx.arc(rx, ry, 70 + i * 55, -Math.PI * 0.28, Math.PI * 0.28); ctx.stroke();
+    }
+    ctx.restore();
+    place(ctx, st, cx, cy);
+    // 耳機：頭帶＋耳罩
+    const [tx, ty] = P(292, 30);
+    ctx.save(); ctx.lineCap = 'round';
+    const band = () => { ctx.beginPath(); ctx.moveTo(lx, ly - 20); ctx.bezierCurveTo(lx - 30, ty - 40, rx + 30, ty - 40, rx, ry - 20); ctx.stroke(); };
+    ctx.strokeStyle = '#2a1a12'; ctx.lineWidth = 64; band();
+    ctx.strokeStyle = '#e8343a'; ctx.lineWidth = 44; band();
+    ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = 10; ctx.beginPath();
+    ctx.moveTo(lx + 30, ty + 30); ctx.bezierCurveTo(lx + 40, ty - 10, cx - 60, ty - 22, cx, ty - 22); ctx.stroke();
+    for (const [x, y] of [[lx, ly], [rx, ry]]) {
+      ctx.fillStyle = '#2a1a12'; ctx.beginPath(); ctx.roundRect(x - 62, y - 92, 124, 184, 50); ctx.fill();
+      ctx.fillStyle = '#e8343a'; ctx.beginPath(); ctx.roundRect(x - 50, y - 80, 100, 160, 42); ctx.fill();
+      ctx.fillStyle = '#ffd65a'; ctx.beginPath(); ctx.arc(x, y, 26, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    place(ctx, sticker(IMG.okonomiyaki, ...OKO, 820, 14, true), S / 2, S * 0.79);
+    note(ctx, 150, 800, 110, '#ffd65a', -0.2, true);
+    note(ctx, 880, 820, 110, '#ffd65a', 0.2);
+  },
+  // E 祭典屋台：紅色燈籠散景，揮手主角＋鐵板上的廣島燒＋節奏譜面軌道
+  E(ctx) {
+    radialBg(ctx, '#ff5a4a', '#8e1220', S / 2, S * 0.4);
+    ctx.save();
+    const bokeh = [[120, 140, 70], [300, 90, 45], [720, 110, 60], [900, 230, 80], [90, 470, 50], [930, 520, 46], [230, 300, 30], [800, 380, 34]];
+    for (const [x, y, r] of bokeh) {
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, 'rgba(255,230,150,.55)'); g.addColorStop(1, 'rgba(255,200,120,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+    place(ctx, sticker(IMG.chef_wave, ...BUST.chef_wave, 700, 14, true), S * 0.5, S * 0.33);
+    place(ctx, sticker(IMG.okonomiyaki, ...OKO, 760, 14, true), S / 2, S * 0.68);
+    // 譜面軌道
+    const y = S * 0.885, x0 = 110, x1 = S - 110;
+    ctx.save();
+    ctx.fillStyle = '#2a1a12'; ctx.beginPath(); ctx.roundRect(x0 - 16, y - 46, x1 - x0 + 32, 92, 46); ctx.fill();
+    ctx.fillStyle = '#fff4dc'; ctx.beginPath(); ctx.roundRect(x0, y - 30, x1 - x0, 60, 30); ctx.fill();
+    const hitX = x1 - 80;
+    ctx.fillStyle = 'rgba(232,52,58,.25)'; ctx.beginPath(); ctx.arc(hitX, y, 62, 0, Math.PI * 2); ctx.fill();
+    ctx.lineWidth = 10; ctx.strokeStyle = '#e8343a'; ctx.beginPath(); ctx.arc(hitX, y, 46, 0, Math.PI * 2); ctx.stroke();
+    [x0 + 60, x0 + 240, x0 + 420, x0 + 600].forEach((x, i) => {
+      ctx.fillStyle = ['#7fc54b', '#ffb347', '#e8b880', '#e8343a'][i];
+      ctx.strokeStyle = '#2a1a12'; ctx.lineWidth = 8; ctx.beginPath(); ctx.arc(x, y, 24, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    });
+    ctx.restore();
+    note(ctx, 150, 640, 110, '#ffd65a', -0.2);
+    note(ctx, 870, 640, 110, '#ffd65a', 0.2, true);
+  },
+};
+
+const LABEL = { A: 'A 鐵板正拍', B: 'B 夜祭節拍環', C: 'C GREAT!!', D: 'D 耳機主角', E: 'E 祭典屋台' };
+
+async function save(canvas, name) {
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+  const r = await fetch('/__save?name=' + name, { method: 'POST', body: blob });
+  return r.ok;
+}
+
+(async () => {
+  await Promise.all(NAMES.map(load));
+  const row = document.getElementById('row'), out = {};
+  for (const k of Object.keys(ICONS)) {
+    const c = mk(S); const ctx = c.getContext('2d'); ICONS[k](ctx); out[k] = c;
+    const card = document.createElement('div'); card.className = 'card';
+    const big = mk(S); big.getContext('2d').drawImage(c, 0, 0); big.className = 'ios';
+    const sizes = document.createElement('div'); sizes.className = 'sizes';
+    for (const [px, cls] of [[96, 'ios'], [60, 'ios'], [96, 'and'], [48, 'and']]) {
+      const s = mk(px * 2); s.getContext('2d').drawImage(c, 0, 0, px * 2, px * 2); s.style.width = s.style.height = px + 'px'; s.className = cls; sizes.append(s);
+    }
+    const lab = document.createElement('b'); lab.textContent = LABEL[k];
+    card.append(big, sizes, lab); row.append(card);
+  }
+  if (location.search.includes('nosave')) return;
+  const st = document.getElementById('status'); let ok = true;
+  for (const k in out) {
+    ok &= await save(out[k], `icon_${k.toLowerCase()}_1024.png`);
+    const h = mk(512); h.getContext('2d').drawImage(out[k], 0, 0, 512, 512); ok &= await save(h, `icon_${k.toLowerCase()}_512.png`);
+  }
+  // 總覽圖：5 張圓角 icon 並排
+  const W = 5 * 360 + 6 * 40, sheet = mk(W, 480), sx = sheet.getContext('2d');
+  sx.fillStyle = '#efe9df'; sx.fillRect(0, 0, W, 480); sx.font = 'bold 34px system-ui,sans-serif'; sx.textAlign = 'center'; sx.fillStyle = '#333';
+  Object.keys(out).forEach((k, i) => {
+    const x = 40 + i * 400; sx.save(); sx.beginPath(); sx.roundRect(x, 40, 360, 360, 80); sx.clip(); sx.drawImage(out[k], x, 40, 360, 360); sx.restore();
+    sx.fillText(LABEL[k], x + 180, 450);
+  });
+  ok &= await save(sheet, 'icons_preview.png');
+  st.textContent = ok ? '已輸出到 promo/icons' : '輸出失敗（請用 prep_server.ps1 -Out promo\\icons 開啟）';
+})();
+</script>
+</body></html>

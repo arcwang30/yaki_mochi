@@ -6,6 +6,12 @@
       "runtimeExecutable": "powershell",
       "runtimeArgs": ["-ExecutionPolicy", "Bypass", "-File", "tools/serve.ps1"],
       "port": 5173
+    },
+    {
+      "name": "icons",
+      "runtimeExecutable": "powershell",
+      "runtimeArgs": ["-ExecutionPolicy", "Bypass", "-File", "tools/prep_server.ps1", "-Out", "promo\\icons"],
+      "port": 5174
     }
   ]
 }
