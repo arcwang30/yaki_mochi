@@ -113,6 +113,9 @@ const I18N = {
     '請將手機直立握持': 'スマホを縦に持ってください',
     // PC 版（橫式）
     '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
+    // 付費 VOL
+    '購買': '購入', '購買 {0}': '{0} を購入', '恢復購買': '購入を復元', '已解鎖 {0}！': '{0} を解放しました！', '已取消購買': '購入をキャンセルしました', '購買失敗，請稍後再試': '購入に失敗しました。しばらくしてからお試しください',
+    '已恢復購買': '購入を復元しました', '沒有可恢復的購買': '復元できる購入はありません', '恢復購買失敗': '購入の復元に失敗しました', '處理中…': '処理中…', '追加樂曲 {0} 首': '追加楽曲 {0} 曲', '選歌就可以先試聽': '曲を選ぶと試聴できます',
     '滑鼠': 'マウス', '左鍵點擊\n畫面任何地方': '画面のどこでも\n左クリック', '移動游標': 'カーソルを移動', '左鍵點擊按鈕': 'ボタンを左クリック',
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': '打つボタンはどれでも OK。マウスなら画面のどこをクリックしても OK（右上のポーズボタンを除く）。ポーズから再開すると 3 拍カウントしてから元のリズムに戻ります。',
   },
@@ -210,6 +213,9 @@ const I18N = {
     '請將手機直立握持': 'Please hold your phone upright',
     // PC version (landscape)
     '結束遊戲': 'QUIT GAME', '語音': 'Voice', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
+    // Paid volumes
+    '購買': 'BUY', '購買 {0}': 'BUY {0}', '恢復購買': 'Restore Purchases', '已解鎖 {0}！': '{0} unlocked!', '已取消購買': 'Purchase canceled', '購買失敗，請稍後再試': 'Purchase failed. Please try again later.',
+    '已恢復購買': 'Purchases restored', '沒有可恢復的購買': 'No purchases to restore', '恢復購買失敗': 'Could not restore purchases', '處理中…': 'Processing…', '追加樂曲 {0} 首': '{0} more songs', '選歌就可以先試聽': 'Select a song to hear a preview',
     '滑鼠': 'Mouse', '左鍵點擊\n畫面任何地方': 'Left-click\nanywhere', '移動游標': 'Move cursor', '左鍵點擊按鈕': 'Click button',
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': 'Any hit button works. With a mouse, click anywhere on the screen (except the pause button at top right). After a pause, RESUME counts 3 beats and then rejoins the rhythm.',
   },
