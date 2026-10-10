@@ -633,10 +633,9 @@ Screens.songs = {
     }
     rrect(x + 4, y + 7, w, h, 16); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
     UI.wood(x, y, w, h, { r: 16, seed: 'song' + i, light: on });
-    // 木板依難度換木頭色（簡單 = 原木、普通 = 胡桃木、困難 = 紅木），外框用難度色（淡一點，不搶眼）
+    // 木板依難度換木頭色（簡單 = 原木、普通 = 胡桃木、困難 = 紅木）
     const D = DIFFS[curDiff()];
     if (D.card) { ctx.save(); rrect(x, y, w, h, 16); ctx.clip(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = D.card; ctx.fillRect(x, y, w, h); ctx.restore(); }
-    rrect(x + 2, y + 2, w - 4, h - 4, 14); ctx.lineWidth = 3; ctx.strokeStyle = hexA(D.color, 0.7); ctx.stroke();
     // 編號圓牌（樂曲代表色）
     const bx = x + 54, by = y + h / 2;
     ctx.fillStyle = song.color; ctx.beginPath(); ctx.arc(bx, by, 34, 0, 7); ctx.fill();
