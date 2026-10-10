@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="zh-Hant"><head><meta charset="utf-8"><title>Background prep</title>
+<style>
+  body{margin:0;padding:16px;background:#222;color:#eee;font:13px system-ui,sans-serif}
+  .row{display:flex;flex-wrap:wrap;gap:12px}
+  .card{display:flex;flex-direction:column;gap:4px;align-items:center}
+  canvas{width:212px;height:316px;background:#000}
+</style></head><body>
+<div id="log"></div>
+<div class="row" id="row"></div>
+<script>
+// 換背景用：把 assets/source/bg_*.jpg（任意尺寸）對齊到原本攤位圖 bg_stall（848×1264）的構圖後輸出 assets/images/bg_*.jpg
+// 遊戲裡的主角、鐵板、燈籠光暈都以 bg_stall 的座標擺放，所以新背景要先對齊：
+// 用邊緣的直行／橫列分布（1D）分別找出水平與垂直的縮放＋位移，再檢查有沒有蓋滿畫面。
+// 開啟：powershell -ExecutionPolicy Bypass -File tools\prep_server.ps1 → http://localhost:5174/tools/bg_prep.html（加 ?nosave 只預覽）
+const NAMES = ['rock', 'animal', 'zombie', 'pixel', 'shiba', 'arcade', 'metal'];
+const RW = 848, RH = 1264, K = 4;   // 參考圖尺寸、分析時縮小倍數
+const load = src => new Promise((ok, ng) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ng; i.src = src; });
+const log = s => { document.getElementById('log').innerHTML += s + '<br>'; };
+
+// 縮小後的灰階 → 水平邊緣（|dI/dy|，給橫列分布）與垂直邊緣（|dI/dx|，給直行分布）
+function profiles(img, w, h) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d'); g.drawImage(img, 0, 0, w, h);
+  const d = g.getImageData(0, 0, w, h).data, L = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) L[i] = 0.3 * d[i * 4] + 0.59 * d[i * 4 + 1] + 0.11 * d[i * 4 + 2];
+  const col = new Float32Array(w), row = new Float32Array(h);
+  for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+    const i = y * w + x;
+    col[x] += Math.abs(L[i + 1] - L[i - 1]);
+    row[y] += Math.abs(L[i + w] - L[i - w]);
+  }
+  return { col, row };
+}
+// 在 ref 上找最佳 (s, t)：cand 的座標 u 對應到 ref 的 s*u + t（單位：參考圖縮小後的像素）
+function fit1d(ref, cand, sMin, sMax) {
+  const norm = a => { const m = a.reduce((p, v) => p + v, 0) / a.length; let sd = 0; for (const v of a) sd += (v - m) ** 2; sd = Math.sqrt(sd / a.length) || 1; return a.map(v => (v - m) / sd); };
+  const R = norm(Array.from(ref)), C = norm(Array.from(cand));
+  let best = { score: -1e9 };
+  for (let s = sMin; s <= sMax + 1e-9; s += 0.0025) {
+    for (let t = -40; t <= 40; t += 0.5) {
+      let sum = 0, n = 0;
+      for (let x = 0; x < R.length; x++) {
+        const u = (x - t) / s, u0 = Math.floor(u);
+        if (u0 < 0 || u0 + 1 >= C.length) continue;
+        const v = C[u0] + (C[u0 + 1] - C[u0]) * (u - u0);
+        sum += R[x] * v; n++;
+      }
+      if (n < R.length * 0.8) continue;
+      const score = sum / n;
+      if (score > best.score) best = { s, t, score };
+    }
+  }
+  return best;
+}
+
+async function save(canvas, name) {
+  const blob = await new Promise(r => canvas.toBlob(r, 'image/jpeg', 0.88));
+  const r = await fetch('/__save?name=' + name, { method: 'POST', body: blob });
+  return r.ok;
+}
+
+(async () => {
+  const ref = await load('../assets/images/bg_stall.jpg');
+  const P = profiles(ref, RW / K, RH / K);
+  const out = {};
+  for (const n of NAMES) {
+    const img = await load(`../assets/source/bg_${n}.jpg`);
+    const cw = img.width / K, ch = img.height / K;
+    const Q = profiles(img, Math.round(cw), Math.round(ch));
+    const fx = fit1d(P.col, Q.col, 0.85, 1.2), fy = fit1d(P.row, Q.row, 0.9, 1.25);
+    // 換回原尺寸：cand 像素 (u, v) → ref 像素 (sx*u + tx, sy*v + ty)
+    const sx = fx.s, sy = fy.s, tx = fx.t * K, ty = fy.t * K;
+    const dw = img.width * sx, dh = img.height * sy;
+    const gaps = { left: tx, right: RW - (tx + dw), top: ty, bottom: RH - (ty + dh) };
+    out[n] = { sx: +sx.toFixed(4), sy: +sy.toFixed(4), tx: Math.round(tx), ty: Math.round(ty), score: [+fx.score.toFixed(3), +fy.score.toFixed(3)], gaps: Object.fromEntries(Object.entries(gaps).map(([k, v]) => [k, Math.round(v)])) };
+    // 有空隙就等比放大蓋滿（以參考圖中心為基準）
+    let X = tx, Y = ty, DW = dw, DH = dh;
+    if (X > 0 || Y > 0 || X + DW < RW || Y + DH < RH) {
+      const cx = RW / 2, cy = RH / 2;
+      let f = 1;
+      for (let i = 0; i < 200; i++) {
+        const x0 = cx + (X - cx) * f, y0 = cy + (Y - cy) * f;
+        if (x0 <= 0 && y0 <= 0 && x0 + DW * f >= RW && y0 + DH * f >= RH) break;
+        f += 0.002;
+      }
+      X = cx + (X - cx) * f; Y = cy + (Y - cy) * f; DW *= f; DH *= f; out[n].cover = +f.toFixed(3);
+    }
+    const c = document.createElement('canvas'); c.width = RW; c.height = RH;
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, X, Y, DW, DH);
+    // 預覽：輸出圖、與 bg_stall 的半透明疊圖
+    const card = document.createElement('div'); card.className = 'card';
+    const ov = document.createElement('canvas'); ov.width = RW; ov.height = RH; const o = ov.getContext('2d');
+    o.drawImage(c, 0, 0); o.globalAlpha = 0.5; o.drawImage(ref, 0, 0);
+    card.append(c, ov, Object.assign(document.createElement('div'), { textContent: n + ' ' + JSON.stringify(out[n]) }));
+    document.getElementById('row').append(card);
+    if (!location.search.includes('nosave')) out[n].saved = await save(c, `bg_${n}.jpg`);
+  }
+  window.RESULT = out;
+  log('done');
+})();
+</script>
+</body></html>

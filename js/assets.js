@@ -9,6 +9,8 @@ const Assets = {
   loaded: 0,
   ready: null,
   load() {
+    // 店面背景：開機時只多載入目前選的那張，其他的在選背景畫面才載入（Assets.bg）
+    if (Save.data.bg !== 'stall') this.names.push('bg_' + Save.data.bg + '.jpg');
     this.ready = Promise.all(this.names.map(n => new Promise(res => {
       const im = new Image(), key = n.replace(/\.\w+$/, '');
       im.onload = () => { IMG[key] = im; this.loaded++; res(); };
@@ -16,6 +18,18 @@ const Assets = {
       im.src = 'assets/images/' + (n.includes('.') ? n : n + '.png');
     })));
     return this.ready;
+  },
+  // 店面背景圖：已載入就回傳，沒有的話開始載入並先回傳 null
+  bgLoading: {},
+  bg(id) {
+    const key = 'bg_' + id;
+    if (IMG[key] || this.bgLoading[key]) return IMG[key] || null;
+    this.bgLoading[key] = true;
+    const im = new Image();
+    im.onload = () => { IMG[key] = im; };
+    im.onerror = () => { delete this.bgLoading[key]; };
+    im.src = 'assets/images/' + key + '.jpg';
+    return null;
   },
 };
 

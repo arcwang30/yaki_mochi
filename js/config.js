@@ -109,6 +109,43 @@ const LANTERNS = [
   [838, 470, '#ff7a30'], [812, 510, '#ff7a30'], [786, 548, '#ff7a30'], [700, 615, '#ff7a30'], [650, 650, '#ff7a30'],
 ];
 
+// ---- 店面背景（主選單 → 商店 → 店面背景）----
+// 圖檔 assets/images/bg_<id>.jpg，都已對齊 bg_stall 的構圖（tools/bg_prep.html），主角與鐵板的位置不用改。
+// lanterns：燈籠光暈 [x, y, 顏色, 半徑（省略 = 前 10 盞 70、其他 42）]，座標同 LANTERNS
+// price：遊戲幣價格（COIN_SHOP 打開後才生效；0 = 免費）
+// street：橫式兩側街景（js/street.js）的主題，省略的項目用 STREET_BASE
+//   booths 左右兩間隔壁屋台 [招牌字, [遮陽棚條紋兩色], 暖簾色]；cols 燈籠串顏色；cage 鐵籠燈；win 窗戶燈色；dark 壓暗；slime 綠色黏液；pixel 像素風
+const STREET_BASE = {
+  booths: [['たこ焼', ['#c8321e', '#fff6e8'], '#24356e'], ['かき氷', ['#2a6fd6', '#f2f8ff'], '#7a1e2a']],
+  cols: ['#ff6a30', '#ff7a30', '#ffd040', '#ff6a30', '#ff70d0', '#ff7a30'], cage: false, win: '#ffaa5a', dark: 0.28, slime: null, pixel: false,
+};
+const LANTERN_SIDE = LANTERNS.slice(10);   // 兩側的燈籠串（多數背景同位置）
+const lanternRow = (cols, y = 395) => cols.map((c, i) => [[72, 145, 220, 300, 385, 465, 545, 628, 702, 772][i], y, c]);
+const BACKGROUNDS = [
+  { id: 'stall', name: '夜市屋台', desc: '經典的祭典夜市攤位', price: 0, lanterns: LANTERNS },
+  { id: 'rock', name: '鋼鐵搖滾', desc: '鐵皮、鎖鏈和音箱牆的搖滾攤', price: 500, lanterns: [
+    ...[142, 222, 302, 383, 464, 545, 625, 705].map(x => [x, 395, '#ffc070']), [48, 200, '#ffc070', 46], [798, 200, '#ffc070', 46]],
+    street: { booths: [['LIVE', ['#1c1c22', '#b0201a'], '#2a2a2e'], ['BEER', ['#1c1c22', '#d89a20'], '#3a2a10']], cols: ['#ffc070'], cage: true, win: '#ffb860', dark: 0.36 } },
+  { id: 'animal', name: '動物燈籠', desc: '狐狸、貓咪、狸貓燈籠的可愛攤', price: 500, lanterns: [
+    [75, 400, '#60ff70'], [187, 400, '#ff9a40'], [305, 395, '#c090ff'], [425, 400, '#ff6a30'], [548, 400, '#ffb060'], [662, 395, '#ff80e0'], [772, 400, '#ff7a30'], ...LANTERN_SIDE],
+    street: { booths: [['たいやき', ['#ff7aa8', '#fff2f6'], '#5a8a3a'], ['わたあめ', ['#7ac8ff', '#f2fbff'], '#a0508a']], cols: ['#60ff70', '#ff9a40', '#c090ff', '#ff80e0', '#ffd040'], win: '#ffc890', dark: 0.24 } },
+  { id: 'zombie', name: '喪屍夜市', desc: '本店保證不含喪屍肉……大概', price: 800, lanterns: [
+    ...lanternRow(['#ff7a30', '#ff7a30', '#ff7a30', '#ffe0b0', '#ffe0b0', '#ffe0b0', '#ffd040', '#ff7a30', '#ff7a30', '#ff7a30']), ...LANTERN_SIDE],
+    street: { booths: [['お化け', ['#4e5a44', '#b8b8a0'], '#2a3a24'], ['墓場', ['#5a2a2a', '#b8b0a0'], '#1e2a1e']], cols: ['#ff7a30', '#ffe0b0', '#9aff60', '#ff7a30'], win: '#9aff70', dark: 0.44, slime: '#7dff3a' } },
+  { id: 'pixel', name: '像素復古', desc: '8-bit 風格的 RPG 小店', price: 500, lanterns: LANTERNS,
+    street: { booths: [['やくそう', ['#2a6fd6', '#f2f8ff'], '#24356e'], ['セーブ', ['#2a9a3a', '#f0fff0'], '#7a1e2a']], pixel: true } },
+  { id: 'shiba', name: '柴犬暖簾', desc: '柴犬老闆坐鎮的浪人攤', price: 500, lanterns: LANTERNS,
+    street: { booths: [['だんご', ['#e8902a', '#fff6e8'], '#1e2e5a'], ['おでん', ['#c8321e', '#fff6e8'], '#24356e']] } },
+  { id: 'arcade', name: '電玩城分店', desc: '大型機台和傳送門的電玩分店', price: 800, lanterns: [
+    ...lanternRow(['#ff7a30', '#ff7a30', '#ff7a30', '#ffd040', '#60ff70', '#c070ff', '#ffd040', '#ff7a30', '#ff7a30', '#ff7a30']), ...LANTERN_SIDE],
+    street: { booths: [['ゲーム', ['#7a2ad6', '#2ad6e6'], '#1a1040'], ['UFO', ['#e62a9a', '#ffe02a'], '#102040']], cols: ['#ff3ad0', '#3ae0ff', '#ffe03a', '#7aff3a', '#a05aff'], win: '#60e0ff', dark: 0.3 } },
+  { id: 'metal', name: '暗黑金屬', desc: '尖刺與魔法燈籠的金屬攤', price: 800, lanterns: [
+    ...lanternRow(['#ff5a30', '#ff8040', '#c060ff', '#e060ff', '#4080ff', '#40d0ff', '#40ff60', '#60ff70', '#ffb040', '#ff5a30'], 410), ...LANTERN_SIDE],
+    street: { booths: [['ドクロ', ['#18181c', '#6a1010'], '#101014'], ['メタル', ['#18181c', '#4a1a7a'], '#101014']], cols: ['#ff5a30', '#c060ff', '#4080ff', '#40ff60', '#ffb040'], cage: true, win: '#c070ff', dark: 0.42 } },
+];
+// 遊戲幣商店：false = 還沒有遊戲幣，商店裡的東西全部免費可裝備；做好賺遊戲幣的機制後改成 true，就會照 price 收費
+const COIN_SHOP = false;
+
 // ---- 製作名單 ----
 // 每個職稱可列多位
 const CREDITS = [

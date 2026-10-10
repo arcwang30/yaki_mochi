@@ -218,9 +218,9 @@ Screens.intro = {
       shake = Math.max(0, 1 - (t - T.rise) / 0.35) * Math.sin(t * 70) * 7;
     }
     // 2. 燈籠一盞一盞亮起
-    const litStart = T.rise, per = T.lights / LANTERNS.length;
+    const LS = Scene.theme().lanterns, litStart = T.rise, per = T.lights / LS.length;
     const lit = i => clamp((t - litStart - i * per) / 0.15, 0, 1);
-    LANTERNS.forEach((_, i) => { if (t >= litStart + i * per && i % 3 === 0) this.once('l' + i, () => { if (this.bus) osc('sine', 700 + (i % 5) * 90, A.ctx.currentTime, 0.08, 0.12, this.bus); }); });
+    LS.forEach((_, i) => { if (t >= litStart + i * per && i % 3 === 0) this.once('l' + i, () => { if (this.bus) osc('sine', 700 + (i % 5) * 90, A.ctx.currentTime, 0.08, 0.12, this.bus); }); });
 
     const riseW = rise / Cam.k;   // 世界座標的升起距離
     worldBegin();
@@ -303,6 +303,7 @@ Screens.menu = {
     this.TAGS.forEach(([label, sub, dest], k) => {
       if (UI.button(this, label, 24 + k * 136, 1122, 128, 94, { tag: true, sub, size: 25, ropeH: 24 })) App.goto(dest);   // 5 塊木札
     });
+    this.shopButton(14, 14, 150, 72);
     this.nav();
     UI.navHint();
     UI.copyright();
@@ -322,18 +323,95 @@ Screens.menu = {
       if (UI.button(this, label, 1430, top + 150 + k * 100, 380, 84, { sub, size: 32 })) App.goto(dest);
     });
     if (DESKTOP_APP && UI.button(this, '結束遊戲', 1430, top + 150 + this.TAGS.length * 100, 380, 84, { sub: 'sub.quit', size: 32, back: true })) window.desktop.quit();
+    this.shopButton(36, 32, 230, 90);
     UI.nav(this);
     UI.navHint();
     UI.copyright();
   },
-  // 兩排的方向鍵移動：0 = 開始遊戲；1~5 = 下排木札
+  // 左上角獨立的「商店」木牌（直式、橫式都排在最後一個：直式 = 6、橫式在 UI.nav 的最後）
+  shopButton(x, y, w, h) {
+    if (UI.button(this, '商店', x, y, w, h, { sub: 'sub.shop', size: lay(30, 34) })) App.goto('shop');
+  },
+  // 兩排的方向鍵移動：0 = 開始遊戲；1~5 = 下排木札；6 = 左上角的商店
   nav() {
-    const s = this.sel, go = v => { if (v !== this.sel) { this.sel = v; Sound.play('select'); } };
+    const s = this.sel, SHOP = this.TAGS.length + 1, go = v => { if (v !== this.sel) { this.sel = v; Sound.play('select'); } };
+    if (s === SHOP) { if (Input.was('down') || Input.was('right')) go(0); return; }
+    if (Input.was('up') && s === 0) go(SHOP);
     if (Input.was('down') && s === 0) go(this.lastTag);
     if (Input.was('up') && s > 0) { this.lastTag = s; go(0); }
     if (Input.was('left') && s > 1) go(s - 1);
     if (Input.was('right') && s >= 1 && s < this.TAGS.length) go(s + 1);
     if (Input.was('right') && s === 0) go(this.lastTag);
+  }
+};
+
+// ---------- 商店：目前只有「店面背景」（之後可在 CATS 加種類）----------
+// 瀏覽時整個畫面直接換成那款背景預覽（Scene.preview，主角、鐵板照常）；擁有的按「裝備」套用，沒有的用遊戲幣購買。
+// 遊戲幣先預留（js/shop.js 的 CoinShop、js/config.js 的 COIN_SHOP / price）：COIN_SHOP = false 時全部免費
+Screens.shop = {
+  sel: 0, n: 0, idx: 0,
+  CATS: [['店面背景', 'bg']],
+  enter() {
+    this.sel = 0; this.toast = null;
+    this.idx = Math.max(0, BACKGROUNDS.findIndex(b => b.id === Save.data.bg));
+    BACKGROUNDS.forEach(b => Assets.bg(b.id));   // 其他背景這時才載入
+    Scene.preview = BACKGROUNDS[this.idx].id;
+    Sound.startBgm();
+  },
+  leave() { Scene.preview = null; },
+  back() { App.goto('menu'); },
+  go(d) {
+    const N = BACKGROUNDS.length;
+    this.idx = (this.idx + d + N) % N; Scene.preview = BACKGROUNDS[this.idx].id; Sound.play('select');
+  },
+  say(text) { this.toast = { text: tr(text), t: Game.time }; },
+  // 裝備（沒有的先買）
+  act(item) {
+    if (!CoinShop.owned('bg', item)) {
+      if (CoinShop.buy('bg', item) !== 'ok') { this.say('遊戲幣不足'); return; }
+      this.say('購買成功！');
+    }
+    if (Save.data.bg !== item.id) { Save.data.bg = item.id; Save.store(); this.say('已裝備！'); }
+  },
+  frame() {
+    menuBackdrop(0);
+    const N = BACKGROUNDS.length, item = BACKGROUNDS[this.idx], owned = CoinShop.owned('bg', item), on = Save.data.bg === item.id;
+    // 左上：商店名牌；右上：遊戲幣（COIN_SHOP 打開才顯示）
+    const tx = lay(18, 36);
+    UI.panel(tx, 18, 200, 64, 32, 'rgba(16,22,52,.88)', '#e8b64a');
+    UI.text('商店', tx + 100, 51, 32, { fill: '#ffd23f' });
+    if (COIN_SHOP) {
+      UI.panel(W - tx - 220, 18, 220, 64, 32, 'rgba(16,22,52,.88)', '#e8b64a');
+      UI.text(tr('遊戲幣 {0}', CoinShop.coins()), W - tx - 110, 51, 26, { fill: '#fff27a', raw: true, maxW: 196 });
+    }
+    // 下方面板：種類・編號、名稱、說明、狀態（裝備中／已擁有／價格）、頁碼點點；◀ ▶ 在兩側
+    const [px, py, pw, ph] = lay([30, 944, 660, 216], [W / 2 - 440, 776, 880, 200]);
+    UI.panel(px, py, pw, ph, 26, 'rgba(16,22,52,.9)', '#e8b64a');
+    UI.text(tr(this.CATS[0][0]) + `　${this.idx + 1} / ${N}`, px + pw / 2, py + 28, 18, { fill: '#e8b64a', stroke: null, raw: true });
+    UI.text(item.name, px + pw / 2, py + 70, 36, { fill: '#ffd23f', maxW: pw - 220 });
+    UI.text(IMG['bg_' + item.id] ? item.desc : '載入中…', px + pw / 2, py + 112, 19, { fill: '#cfd8ff', stroke: null, maxW: pw - 220 });
+    const status = on ? '✓ 裝備中' : owned ? '已擁有' : tr('{0} 遊戲幣', item.price);
+    UI.text(status, px + pw / 2, py + 150, 22, { fill: on ? '#8dff8a' : owned ? '#fff' : '#fff27a', stroke: null, raw: !on && !owned });
+    for (let k = 0; k < N; k++) {
+      ctx.fillStyle = k === this.idx ? '#ffd23f' : 'rgba(255,255,255,.3)';
+      ctx.beginPath(); ctx.arc(px + pw / 2 + (k - (N - 1) / 2) * 24, py + ph - 24, k === this.idx ? 7 : 5, 0, 7); ctx.fill();
+    }
+    UI.text('◀', px + 56, py + ph / 2, 52, { fill: '#ffd23f' }); UI.text('▶', px + pw - 56, py + ph / 2, 52, { fill: '#ffd23f' });
+    // 瀏覽：← → / 點 ◀ ▶ / 手機左右滑動（手指往左 = 下一個）
+    if (Input.was('left') || UI.tapIn(px, py, 112, ph) || Input.swipe === 'right') this.go(-1);
+    if (Input.was('right') || UI.tapIn(px + pw - 112, py, 112, ph) || Input.swipe === 'left') this.go(1);
+    // 按鈕：裝備／購買、返回（↑↓ 切換）
+    UI.begin(this);
+    const by = lay(1174, 994), label = on ? '裝備中' : owned ? '裝備' : '購買';
+    if (UI.button(this, label, W / 2 - 250, by, 240, 66, { lacquer: !on, size: 30 }) && !on) this.act(item);
+    if (UI.button(this, '返回', W / 2 + 10, by, 240, 66, { back: true }) || Input.was('back')) this.back();
+    UI.nav(this);
+    if (this.toast && Game.time - this.toast.t < 2) {
+      const a = clamp(2 - (Game.time - this.toast.t), 0, 1), ty = py - 50;
+      ctx.save(); ctx.globalAlpha = a; UI.panel(W / 2 - 200, ty - 28, 400, 56, 28, 'rgba(16,22,52,.94)', '#8dff8a');
+      UI.text(this.toast.text, W / 2, ty + 1, 24, { fill: '#fff', stroke: null, raw: true, maxW: 370 }); ctx.restore();
+    }
+    UI.hint('← → 瀏覽　↑↓ 選擇　ENTER 決定');
   }
 };
 

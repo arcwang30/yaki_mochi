@@ -6,26 +6,28 @@
 // 夜空（sky）和街景（paint）分兩層：開場野台升起時，只有街景跟著升起，夜空留在原地。
 const Street = {
   HZ: 655,   // 地平線（和原圖中央看出去的街道同高）
-  // 街景（天空透明）。rect = 攤位原圖在畫面上的位置 [x, y, w, h]
-  paint(g, rect) {
+  // 街景（天空透明）。rect = 攤位原圖在畫面上的位置 [x, y, w, h]；st = 店面背景的街景主題（js/config.js 的 STREET_BASE）
+  paint(g, rect, st = STREET_BASE) {
     const [sx, , sw] = rect, HZ = this.HZ;
     // 先畫在另一張畫布上，整體微微模糊＋壓暗（景深：焦點留在中間的攤位），燈火光暈最後再疊上去（保持清楚）
     const c = document.createElement('canvas'); c.width = W; c.height = H;
     const b = c.getContext('2d');
     const glows = [];
-    this.town(b, HZ, 0, sx + 40, 11, glows);
-    this.town(b, HZ, sx + sw - 40, W, 23, glows);
-    this.ground(b, HZ);
-    this.strings(b, sx, sw, glows);
-    this.booth(b, 300, 'たこ焼', ['#c8321e', '#fff6e8'], '#24356e', 3, glows);
-    this.booth(b, W - 300, 'かき氷', ['#2a6fd6', '#f2f8ff'], '#7a1e2a', 7, glows);
+    this.town(b, HZ, 0, sx + 40, 11, glows, st.win);
+    this.town(b, HZ, sx + sw - 40, W, 23, glows, st.win);
+    this.ground(b, HZ, st.win);
+    this.strings(b, sx, sw, glows, st);
+    st.booths.forEach(([sign, stripe, noren], k) => this.booth(b, k ? W - 300 : 300, sign, stripe, noren, k ? 7 : 3, glows, st.slime));
     g.save();
-    g.filter = 'blur(1.6px)';
-    g.drawImage(c, 0, 0);
+    if (st.pixel) {   // 像素風：縮小再用最近鄰放大，變成一格一格的點陣
+      const P = 5, p = document.createElement('canvas'); p.width = W / P; p.height = H / P;
+      p.getContext('2d').drawImage(c, 0, 0, p.width, p.height);
+      g.imageSmoothingEnabled = false; g.drawImage(p, 0, 0, W, H);
+    } else { g.filter = 'blur(1.6px)'; g.drawImage(c, 0, 0); }
     g.restore();
     // 壓暗、邊緣暗角只套在畫出來的街景上（source-atop：透明的天空不受影響）
     g.save(); g.globalCompositeOperation = 'source-atop';
-    g.fillStyle = 'rgba(8,10,34,.28)'; g.fillRect(0, 0, W, H);
+    g.fillStyle = `rgba(8,10,34,${st.dark})`; g.fillRect(0, 0, W, H);
     for (const [x0, x1] of [[0, 260], [W, W - 260]]) {   // 兩側邊緣壓暗（視線集中到中間）
       const gr = g.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, 'rgba(4,5,18,.55)'); gr.addColorStop(1, 'rgba(4,5,18,0)');
       g.fillStyle = gr; g.fillRect(Math.min(x0, x1), 0, 260, H);
@@ -75,7 +77,7 @@ const Street = {
   },
 
   // 遠方的町家屋頂剪影（亮著的窗）＋樹
-  town(g, HZ, x0, x1, seed, glows) {
+  town(g, HZ, x0, x1, seed, glows, win = '#ffaa5a') {
     const R = mulberry(seed);
     g.save(); g.beginPath(); g.rect(x0, 0, x1 - x0, H); g.clip();
     // 樹的剪影
@@ -92,9 +94,9 @@ const Street = {
         for (let k = 0; k < 3; k++) {
           if (R() < 0.45) continue;
           const wx = x + 20 + k * (w - 40) / 3, wy = top + 22 + R() * 20, ww = (w - 60) / 3.5, wh = 22 + R() * 10;
-          g.fillStyle = `rgba(255,${170 + R() * 50 | 0},90,${0.55 * lit})`; g.fillRect(wx, wy, ww, wh);
+          g.fillStyle = hexA(win, (0.4 + R() * 0.25) * lit); g.fillRect(wx, wy, ww, wh);
           g.strokeStyle = 'rgba(30,18,10,.7)'; g.lineWidth = 2; g.beginPath(); g.moveTo(wx + ww / 2, wy); g.lineTo(wx + ww / 2, wy + wh); g.stroke();
-          if (lit > 0.9) glows.push([wx + ww / 2, wy + wh / 2, 40, '#ff9a3c', 0.18]);
+          if (lit > 0.9) glows.push([wx + ww / 2, wy + wh / 2, 40, win, 0.18]);
         }
         x += w + 6 + R() * 20;
       }
@@ -103,7 +105,7 @@ const Street = {
   },
 
   // 石板路（透視：往地平線變密）
-  ground(g, HZ) {
+  ground(g, HZ, spot = '#ffb060') {
     const gr = g.createLinearGradient(0, HZ, 0, H);
     gr.addColorStop(0, '#2a2438'); gr.addColorStop(0.4, '#3a3040'); gr.addColorStop(1, '#241c28');
     g.fillStyle = gr; g.fillRect(0, HZ, W, H - HZ);
@@ -118,13 +120,13 @@ const Street = {
     }
     // 屋台燈光照在地上的暖色光斑
     for (const x of [300, W - 300]) {
-      g.save(); g.globalAlpha = 0.35; g.drawImage(Scene.glowSprite('#ffb060'), x - 320, 860 - 90, 640, 180); g.restore();
+      g.save(); g.globalAlpha = 0.35; g.drawImage(Scene.glowSprite(spot), x - 320, 860 - 90, 640, 180); g.restore();
     }
   },
 
   // 燈籠串（從攤位往兩側拉出去的垂墜曲線）
-  strings(g, sx, sw, glows) {
-    const cols = ['#ff6a30', '#ff7a30', '#ffd040', '#ff6a30', '#ff70d0', '#ff7a30'];
+  strings(g, sx, sw, glows, st = STREET_BASE) {
+    const cols = st.cols;
     const lines = [
       [sx + 30, 300, -60, 210, 150], [sx + 30, 470, -60, 400, 110], [sx + 20, 600, -40, 560, 60],
       [sx + sw - 30, 300, W + 60, 210, 150], [sx + sw - 30, 470, W + 60, 400, 110], [sx + sw - 20, 600, W + 40, 560, 60],
@@ -137,10 +139,21 @@ const Street = {
       for (let i = 1; i < n; i++) {
         const u = i / n, x = (1 - u) * (1 - u) * ax + 2 * u * (1 - u) * mx + u * u * bx, y = (1 - u) * (1 - u) * ay + 2 * u * (1 - u) * my + u * u * by;
         const col = cols[(i + li) % cols.length];
-        this.lantern(g, x, y + 20 * sc, sc, col);
+        (st.cage ? this.cageLamp : this.lantern).call(this, g, x, y + 20 * sc, sc, col);
         glows.push([x, y + 20 * sc, 46 * sc, col, 0.45]);
       }
     });
+  },
+  // 鐵籠燈（搖滾、金屬主題）：發光的燈罩外面一圈鐵條
+  cageLamp(g, x, y, s, col) {
+    g.save(); g.translate(x, y); g.scale(s, s);
+    g.fillStyle = '#1a1a1e'; g.fillRect(-1.5, -26, 3, 10); g.fillRect(-9, -18, 18, 5); g.fillRect(-9, 15, 18, 5);
+    g.fillStyle = col; g.beginPath(); g.ellipse(0, 0, 11, 15, 0, 0, 7); g.fill();
+    g.fillStyle = 'rgba(255,250,220,.55)'; g.beginPath(); g.ellipse(0, -2, 4, 8, 0, 0, 7); g.fill();
+    g.strokeStyle = '#2a2a30'; g.lineWidth = 2.2;
+    for (const xx of [-8, 0, 8]) { g.beginPath(); g.moveTo(xx * 0.7, -15); g.quadraticCurveTo(xx * 1.6, 0, xx * 0.7, 15); g.stroke(); }
+    g.beginPath(); g.moveTo(-13, 0); g.lineTo(13, 0); g.stroke();
+    g.restore();
   },
   lantern(g, x, y, s, col) {
     g.save(); g.translate(x, y); g.scale(s, s);
@@ -154,7 +167,7 @@ const Street = {
   },
 
   // 隔壁的屋台：條紋遮陽棚、招牌、暖簾、亮著的櫃台
-  booth(g, cx, sign, stripe, norenCol, seed, glows) {
+  booth(g, cx, sign, stripe, norenCol, seed, glows, slime) {
     const R = mulberry(seed), w = 420, x = cx - w / 2, top = 330, floor = 905;
     const ink = '#1c0f08';
     g.save(); g.lineJoin = 'round';
@@ -215,6 +228,14 @@ const Street = {
     g.fillStyle = '#1c1008'; g.font = `50px ${FONT}`; g.fillText(sign, cx, top - 72);
     // 棚子兩角的紅燈籠
     for (const lx of [aL + 16, aR - 16]) { this.lantern(g, lx, aw + ah + 50, 1.3, '#ff5a2a'); glows.push([lx, aw + ah + 50, 70, '#ff7a30', 0.55]); }
+    // 喪屍主題：招牌和遮陽棚往下滴的綠色黏液
+    if (slime) {
+      g.fillStyle = slime;
+      const drip = (x0, y0, len, wd) => { g.beginPath(); g.moveTo(x0 - wd, y0); g.lineTo(x0 + wd, y0); g.lineTo(x0 + wd * 0.5, y0 + len); g.arc(x0, y0 + len, wd * 0.6, 0, Math.PI); g.closePath(); g.fill(); };
+      for (let i = 0; i < 9; i++) drip(aL + 30 + R() * (aR - aL - 60), aw + ah + 8, 18 + R() * 60, 5 + R() * 6);
+      for (let i = 0; i < 4; i++) drip(cx - 110 + R() * 220, top - 38, 10 + R() * 34, 4 + R() * 4);
+      for (let i = 0; i < 4; i++) glows.push([aL + 40 + R() * (aR - aL - 80), aw + ah + 30, 50, slime, 0.25]);
+    }
     g.restore();
   },
 };

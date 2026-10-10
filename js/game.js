@@ -68,6 +68,13 @@ const Fx = {
 // ---------- 場景（背景、燈籠光暈、主角、鐵板）：選單與遊戲共用 ----------
 const Scene = {
   bg: { s: 1, x: 0, y: 0 },
+  // 目前的店面背景圖、燈籠光暈位置、兩側街景主題（選的圖還沒載入完，先用原本的攤位）
+  // preview：商店裡正在看的背景（還沒裝備），離開商店時清掉
+  preview: null,
+  theme() {
+    const id = this.preview || Save.data.bg, t = BACKGROUNDS.find(b => b.id === id) || BACKGROUNDS[0], img = IMG['bg_' + t.id] || Assets.bg(t.id);
+    return img ? { img, lanterns: t.lanterns, street: { ...STREET_BASE, ...t.street } } : { img: IMG.bg_stall, lanterns: LANTERNS, street: STREET_BASE };
+  },
   draw(pulse) {
     this.background(pulse);
     this.chef(pulse);
@@ -76,18 +83,18 @@ const Scene = {
   // lit(i)：第 i 盞燈籠的亮度 0～1（開場用來一盞一盞點亮；省略 = 全亮）
   // sky = false：橫式不畫夜空層（開場時夜空另外畫，野台升起時只有街景移動）
   background(pulse, lit, sky = true) {
-    const img = IMG.bg_stall;
+    const { img, lanterns, street } = this.theme();
     if (img) {
       const s = Math.max(SW / img.width, SH / img.height); this.bg = { s, x: (SW - img.width * s) / 2, y: (SH - img.height * s) / 2 };
       // 背景先依畫布解析度縮放好存起來（畫面大小），之後每幀 1:1 貼上（省下每幀縮放大圖的運算）
       // 橫式：兩側先畫延伸的夜市街景（js/street.js），攤位原圖疊在中間、左右邊緣淡入街景
-      if (!this.bgCache || this.bgCache.res !== RES) {
+      if (!this.bgCache || this.bgCache.res !== RES || this.bgCache.img !== img) {
         const c = document.createElement('canvas'); c.width = Math.round(W * RES); c.height = Math.round(H * RES);
         const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.scale(RES, RES);
         const k = Cam.k, rect = [Cam.x + this.bg.x * k, this.bg.y * k, img.width * s * k, img.height * s * k];
-        if (LAND) { Street.paint(g, rect); g.drawImage(Street.feather(img, rect[2], rect[3]), rect[0], rect[1], rect[2], rect[3]); }
+        if (LAND) { Street.paint(g, rect, street); g.drawImage(Street.feather(img, rect[2], rect[3]), rect[0], rect[1], rect[2], rect[3]); }
         else g.drawImage(img, ...rect);
-        this.bgCache = { c, res: RES };
+        this.bgCache = { c, res: RES, img };
       }
       if (LAND && sky) {
         if (!this.skyCache || this.skyCache.res !== RES) this.skyCache = { c: Street.skyCanvas(), res: RES };
@@ -99,11 +106,11 @@ const Scene = {
     const B = this.bg;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     // 光暈用預先畫好的圖（每種顏色一張）貼上，不再每幀建立 28 個漸層（最耗電的部分）
-    LANTERNS.forEach(([lx, ly, c], i) => {
+    lanterns.forEach(([lx, ly, c, r0], i) => {
       const on = lit ? lit(i) : 1; if (on <= 0) return;
       const x = B.x + lx * B.s, y = B.y + ly * B.s;
       const flick = 0.75 + 0.25 * Math.sin(Game.time * 7 + i * 1.7) * Math.sin(Game.time * 3.1 + i);
-      const r = (i < 10 ? 70 : 42) * (1 + pulse * 0.25);
+      const r = (r0 || (i < 10 ? 70 : 42)) * (1 + pulse * 0.25);
       ctx.globalAlpha = clamp(0.42 * on * flick * (0.7 + pulse * 0.5), 0, 1);
       ctx.drawImage(this.glowSprite(c), x - r, y - r, r * 2, r * 2);
     });

@@ -7,10 +7,10 @@ const LANGS = [['zh', '中文'], ['ja', '日本語'], ['en', 'English']];
 
 const I18N = {
   zh: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM', 'sub.shop': 'SHOP',
   },
   ja: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM', 'sub.shop': 'SHOP',
     // 開始 / 主選單
     '節奏熱炒遊戲': 'リズム鉄板ゲーム', '開始遊戲': 'ゲーム開始', '操作說明': 'あそびかた', '排行榜': 'ランキング', '設定': 'せってい', 'CREDIT': 'クレジット',
     '十字鍵 選擇　A 決定　B 返回': '十字キー 選択　A 決定　B 戻る', '點選按鈕': 'ボタンをタップ', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ 選択　ENTER 決定　ESC 戻る',
@@ -113,6 +113,13 @@ const I18N = {
     '請將手機直立握持': 'スマホを縦に持ってください',
     // PC 版（橫式）
     '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
+    // 商店・店面背景
+    '商店': 'ショップ', '店面背景': '屋台の背景', '裝備': '装備', '裝備中': '装備中', '✓ 裝備中': '✓ 装備中', '已擁有': '所持済み', '購買': '購入', '{0} 遊戲幣': '{0} コイン', '遊戲幣 {0}': 'コイン {0}',
+    '遊戲幣不足': 'コインが足りません', '購買成功！': '購入しました！', '已裝備！': '装備しました！', '載入中…': '読み込み中…', '← → 瀏覽　↑↓ 選擇　ENTER 決定': '← → 見る　↑↓ 選択　ENTER 決定',
+    '夜市屋台': '夜市の屋台', '經典的祭典夜市攤位': 'おなじみのお祭り屋台', '鋼鐵搖滾': 'メタル・ロック', '鐵皮、鎖鏈和音箱牆的搖滾攤': '鉄板と鎖とアンプの壁、ロックな屋台',
+    '動物燈籠': 'どうぶつ提灯', '狐狸、貓咪、狸貓燈籠的可愛攤': 'キツネ・ネコ・タヌキ提灯のかわいい屋台', '喪屍夜市': 'ゾンビ夜市', '本店保證不含喪屍肉……大概': 'ゾンビ肉は使っていません……たぶん',
+    '像素復古': 'ドット絵レトロ', '8-bit 風格的 RPG 小店': '8 ビット風 RPG のお店', '柴犬暖簾': '柴犬のれん', '柴犬老闆坐鎮的浪人攤': '柴犬が見守る浪人の屋台',
+    '電玩城分店': 'ゲーセン支店', '大型機台和傳送門的電玩分店': 'アーケード筐体とワープゲートの支店', '暗黑金屬': 'ダーク・メタル', '尖刺與魔法燈籠的金屬攤': 'トゲと魔法ランタンのメタル屋台',
     // 付費 VOL
     '購買': '購入', '購買 {0}': '{0} を購入', '恢復購買': '購入を復元', '已解鎖 {0}！': '{0} を解放しました！', '已取消購買': '購入をキャンセルしました', '購買失敗，請稍後再試': '購入に失敗しました。しばらくしてからお試しください',
     '已恢復購買': '購入を復元しました', '沒有可恢復的購買': '復元できる購入はありません', '恢復購買失敗': '購入の復元に失敗しました', '處理中…': '処理中…', '追加樂曲 {0} 首': '追加楽曲 {0} 曲', '選歌就可以先試聽': '曲を選ぶと試聴できます',
@@ -120,7 +127,7 @@ const I18N = {
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': '打つボタンはどれでも OK。マウスなら画面のどこをクリックしても OK（右上のポーズボタンを除く）。ポーズから再開すると 3 拍カウントしてから元のリズムに戻ります。',
   },
   en: {
-    'sub.start': 'はじめる', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう', 'sub.quit': 'おわる', 'sub.rhythm': 'おんかん',
+    'sub.start': 'はじめる', 'sub.shop': 'みせ', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう', 'sub.quit': 'おわる', 'sub.rhythm': 'おんかん',
     '節奏熱炒遊戲': 'Rhythm Teppan Game', '開始遊戲': 'PLAY', '操作說明': 'HOW TO', '排行榜': 'RANKING', '設定': 'SETTINGS', 'CREDIT': 'CREDITS',
     '十字鍵 選擇　A 決定　B 返回': 'D-pad: select   A: OK   B: back', '點選按鈕': 'Tap a button', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ select   ENTER: OK   ESC: back',
     '繼續遊戲': 'RESUME', '重新開始': 'RESTART', '回主選單': 'MAIN MENU', '返回選擇樂曲': 'SONG SELECT', '繼續後會先倒數 3 拍，再接回原本的節拍': 'Resuming counts in 3 beats, then picks up the beat',
@@ -213,6 +220,13 @@ const I18N = {
     '請將手機直立握持': 'Please hold your phone upright',
     // PC version (landscape)
     '結束遊戲': 'QUIT GAME', '語音': 'Voice', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
+    // Shop / stall style
+    '商店': 'SHOP', '店面背景': 'Stall Style', '裝備': 'EQUIP', '裝備中': 'EQUIPPED', '✓ 裝備中': '✓ Equipped', '已擁有': 'Owned', '購買': 'BUY', '{0} 遊戲幣': '{0} coins', '遊戲幣 {0}': 'Coins {0}',
+    '遊戲幣不足': 'Not enough coins', '購買成功！': 'Purchased!', '已裝備！': 'Equipped!', '載入中…': 'Loading…', '← → 瀏覽　↑↓ 選擇　ENTER 決定': '← → Browse　↑↓ Select　ENTER OK',
+    '夜市屋台': 'Night Market', '經典的祭典夜市攤位': 'The classic festival stall', '鋼鐵搖滾': 'Steel Rock', '鐵皮、鎖鏈和音箱牆的搖滾攤': 'Steel, chains and a wall of amps',
+    '動物燈籠': 'Animal Lanterns', '狐狸、貓咪、狸貓燈籠的可愛攤': 'Cute fox, cat and tanuki lanterns', '喪屍夜市': 'Zombie Market', '本店保證不含喪屍肉……大概': 'Guaranteed zombie-free meat… probably',
+    '像素復古': 'Pixel Retro', '8-bit 風格的 RPG 小店': 'An 8-bit RPG shop', '柴犬暖簾': 'Shiba Noren', '柴犬老闆坐鎮的浪人攤': 'A ronin stall watched over by a shiba',
+    '電玩城分店': 'Arcade Branch', '大型機台和傳送門的電玩分店': 'Arcade cabinets and a warp gate', '暗黑金屬': 'Dark Metal', '尖刺與魔法燈籠的金屬攤': 'Spikes and magic lanterns',
     // Paid volumes
     '購買': 'BUY', '購買 {0}': 'BUY {0}', '恢復購買': 'Restore Purchases', '已解鎖 {0}！': '{0} unlocked!', '已取消購買': 'Purchase canceled', '購買失敗，請稍後再試': 'Purchase failed. Please try again later.',
     '已恢復購買': 'Purchases restored', '沒有可恢復的購買': 'No purchases to restore', '恢復購買失敗': 'Could not restore purchases', '處理中…': 'Processing…', '追加樂曲 {0} 首': '{0} more songs', '選歌就可以先試聽': 'Select a song to hear a preview',

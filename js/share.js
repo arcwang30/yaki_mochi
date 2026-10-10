@@ -39,7 +39,7 @@ const Share = {
       g.fillStyle = o.fill || '#fff'; g.fillText(s, x, y); g.restore();
     };
     // 背景：攤位圖（填滿）＋上下壓暗
-    const bg = IMG.bg_stall;
+    const bg = Scene.theme().img;
     if (bg) { const s = Math.max(W / bg.width, H / bg.height); g.drawImage(bg, (W - bg.width * s) / 2, (H - bg.height * s) / 2, bg.width * s, bg.height * s); }
     const dk = g.createLinearGradient(0, 0, 0, H); dk.addColorStop(0, 'rgba(10,12,40,.82)'); dk.addColorStop(0.5, 'rgba(10,12,40,.45)'); dk.addColorStop(1, 'rgba(10,12,40,.9)');
     g.fillStyle = dk; g.fillRect(0, 0, W, H);

@@ -115,6 +115,15 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 4. 背景招牌的 LOGO 也在這一步合成：以 `logo_flag.jpg` 的布紋為底，把 `logo_daio.jpg` 的骷髏（左）與「大王焼」字（右）去背橫排，加上光影後逐列貼進招牌內框（內框是上寬下窄的梯形，四角座標見 `tools/prep.html` 的 `SIGN`）
 5. **換了圖片要發佈時，記得把 `sw.js` 的 `VERSION` 加 1**（圖片走快取優先，不改版本號玩家會一直看到舊圖）
 
+### 店面背景（主選單 → 商店 → 店面背景）
+
+1. 新背景要以原本的 `bg_stall` 為底生成（攤位結構、吧台位置相同），放進 `assets/source/bg_<id>.jpg`，尺寸不限
+2. 在 `tools/bg_prep.html` 的 `NAMES` 加上 id，開 prep server 後打開 http://localhost:5174/tools/bg_prep.html：自動對齊 `bg_stall` 的構圖（水平／垂直各自縮放＋位移）並輸出 848×1264 的 `assets/images/bg_<id>.jpg`；網址加 `?nosave` 只預覽
+3. 在 `js/config.js` 的 `BACKGROUNDS` 加一筆（名稱、說明、價格、燈籠光暈位置、橫式兩側街景主題 `street`），並在 `js/i18n.js` 補名稱與說明的翻譯
+4. 主角、鐵板會蓋住吧台一帶，放在吧台上的字或道具在遊戲裡看不到
+
+遊戲幣：價格（`price`）與購買流程（`js/shop.js` 的 `CoinShop`、存檔的 `coins` / `owned`）已預留。目前 `js/config.js` 的 `COIN_SHOP = false`，商店裡全部免費裝備；做好賺遊戲幣的方式（例如結算時 `CoinShop.add(n)`）後改成 `true`，商店就會顯示遊戲幣、照價格收費。
+
 主角跳躍姿勢（`chef_great`、`chef_cheer`）原圖人物較小，遊戲內以 `js/config.js` 的 `POSE_ADJ` 放大對齊；換成大小一致的圖時把對應設定刪掉。
 
 ## 效能與省電
