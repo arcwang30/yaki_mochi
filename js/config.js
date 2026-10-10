@@ -36,6 +36,8 @@ const blur = v => (ECO() ? 0 : v);              // 模糊陰影在手機上很�
 const SMOOTH_SCREENS = ['game', 'tutorial', 'intro'];
 const FPS_MAX = () => (ECO() ? 30 : SMOOTH_SCREENS.includes(App.name) ? 60 : 30);
 const RES_MAX = () => (ECO() ? 1 : 2);
+// PC 版（橫式）可選的解析度：畫布實際繪製的大小（4:3 的 1024x768 會上下留黑邊）；桌面版視窗模式時也是視窗大小
+const RESOLUTIONS = ['1920x1080', '1280x720', '1024x768'];
 
 // ---- 版面 ----
 const ZONE = { x: 360, y: 920, w: 240, h: 92 };   // 判定框（鐵板中央）

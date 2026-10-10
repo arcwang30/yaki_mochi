@@ -3,7 +3,7 @@
 // ===== 本機存檔：設定與本機排行榜（localStorage；每首歌一個排行榜） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, eco: false, lang: null, tutorialDone: false, name: '', lastSong: null, boards: null,
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, eco: false, lang: null, res: '1920x1080', tutorialDone: false, name: '', lastSong: null, boards: null,
     history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
     totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次
   },
@@ -24,6 +24,7 @@ const Save = {
     if (!d.totals || typeof d.totals !== 'object') d.totals = { plays: 0, oko: 0, maxCombo: 0, songs: {} };
     // 舊版只有一首歌的排行榜：搬到「屋台ばやし」
     if (Array.isArray(d.board)) { if (d.board.length && !d.boards.yatai) d.boards.yatai = d.board; delete d.board; }
+    if (!RESOLUTIONS.includes(d.res)) d.res = RESOLUTIONS[0];
     if (!d.lang) {   // 第一次：依瀏覽器語言
       const l = (navigator.language || 'zh').toLowerCase();
       d.lang = l.startsWith('ja') ? 'ja' : l.startsWith('zh') ? 'zh' : 'en';

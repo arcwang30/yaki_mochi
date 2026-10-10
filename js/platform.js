@@ -15,4 +15,17 @@ const Display = {
     if (on && d.documentElement.requestFullscreen) d.documentElement.requestFullscreen().catch(() => {});
     else if (!on && d.fullscreenElement) d.exitFullscreen().catch(() => {});
   },
+  // 解析度（PC 版）：'1920x1080' → [1920, 1080]
+  resolution() { return Save.data.res.split('x').map(Number); },
+  // 畫布的解析度倍率：把 16:9 畫面放進選的解析度（1024x768 → 1024x576，上下黑邊）
+  renderScale() { const [rw, rh] = this.resolution(); return Math.min(rw / W, rh / H); },
+  setResolution(r) {
+    Save.data.res = r; Save.store();
+    this.applyWindow();
+    if (window.applyPowerMode) window.applyPowerMode();   // 重新計算畫布大小
+  },
+  // 桌面版視窗模式：視窗內容大小 = 解析度（全螢幕時不動視窗，只改繪製解析度）
+  applyWindow() {
+    if (DESKTOP_APP && !this.fullscreen() && window.desktop.setWindowSize) window.desktop.setWindowSize(...this.resolution());
+  },
 };

@@ -14,6 +14,7 @@
     stage.style.width = cv.style.width; stage.style.height = cv.style.height;
     const natural = scale * (window.devicePixelRatio || 1);
     RES = clamp(Math.max(natural * quality, Math.min(1, natural)), 0.5, RES_MAX());   // 省電模式最高 1 倍；quality = 自動降畫質的倍率（不低於 1 倍）
+    if (LAND) RES = Math.min(Display.renderScale(), RES_MAX());   // PC 版：依設定的解析度繪製，再縮放到視窗大小
     cv.width = Math.round(W * RES);
     cv.height = Math.round(H * RES);
     nameInput.style.fontSize = Math.round(34 * scale) + 'px';
@@ -22,6 +23,7 @@
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', () => setTimeout(resize, 200));
   resize();
+  Display.applyWindow();   // 桌面版：視窗大小套用上次選的解析度
 
   Online.init();
   Input.init(cv);
