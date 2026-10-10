@@ -203,8 +203,15 @@ Screens.intro = {
     if (this.skipLock <= 0 && (Input.was('anykey') || Input.taps.length)) { this.finish(); return; }
 
     // 1. 野台由下往上緩緩升起；夜空的月亮、燈籠串跟著往上移（鏡頭往下帶的感覺）
-    const p = clamp(t / T.rise, 0, 1), rise = (1 - (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)) * H;
-    drawNightSky(H - rise);
+    // 修飾（不像一張圖被推上來）：只升 68% 的高度＋一開始從暗處淡入、從 1.06 倍慢慢縮回原尺寸（鏡頭感）、
+    // 上緣漸層融進夜空、上緣跟著一條煙霧帶；落地後上緣恢復原圖、煙霧往兩側散開
+    const p = clamp(t / T.rise, 0, 1), e = p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2;
+    const rise = (1 - e) * H * 0.68, zoom = 1 + 0.06 * Math.pow(1 - p, 2), appear = clamp(t / 0.6, 0, 1);
+    const landed = clamp((t - T.rise) / 0.6, 0, 1), smokeOut = clamp((t - T.rise) / 1.1, 0, 1);
+    // 由暗到亮：升起時是暗的剪影、慢慢變亮（落地時約一半），燈籠一盞盞點亮時其餘的暗也跟著退掉
+    const dark = Math.max(0, 0.82 - 0.37 * e - 0.45 * clamp((t - T.rise) / T.lights, 0, 1));
+    const stage = () => { ctx.translate(SW / 2, SH); ctx.scale(zoom, zoom); ctx.translate(-SW / 2, -SH); };   // 以畫面下緣中央為基準縮放
+    drawNightSky(H * e);
     // 0. 野台升起的同時，夜空施放煙火（畫在野台後面，野台升上來就自然被擋住）
     Fireworks.update(dt, t, this.bus);
     Fireworks.draw();
@@ -224,8 +231,8 @@ Screens.intro = {
 
     const riseW = rise / Cam.k;   // 世界座標的升起距離
     worldBegin();
-    ctx.save(); ctx.translate(shake * 0.4, riseW + shake);
-    Scene.background(0.3, lit, false);
+    ctx.save(); ctx.translate(shake * 0.4, riseW + shake); stage(); ctx.globalAlpha = appear;
+    Scene.background(0.3, lit, false, 1 - landed, false);   // 燈籠光暈等鐵板、壓暗之後再畫
     ctx.restore();
     // 3. 主角從右邊一蹦一跳走進來（在吧台後面）
     if (t >= T.walk0) {
@@ -246,7 +253,9 @@ Screens.intro = {
       }
       Scene.chef(0, dx, hop, rot);
     }
-    ctx.save(); ctx.translate(shake * 0.4, riseW + shake); Scene.griddle(); ctx.restore();
+    ctx.save(); ctx.translate(shake * 0.4, riseW + shake); stage(); ctx.globalAlpha = appear;
+    Scene.griddle(); Scene.darkness(dark); Scene.lanternGlow(0.3, lit); Scene.edgeSmoke(Scene.bg.y, smokeOut);
+    ctx.restore();
     Fx.draw();
     // 4. 歡迎光臨！
     if (t >= T.walk1 && t < T.end) {

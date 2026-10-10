@@ -82,7 +82,9 @@ const Scene = {
   },
   // lit(i)：第 i 盞燈籠的亮度 0～1（開場用來一盞一盞點亮；省略 = 全亮）
   // sky = false：橫式不畫夜空層（開場時夜空另外畫，野台升起時只有街景移動）
-  background(pulse, lit, sky = true) {
+  // feather（0～1）：開場用，背景上緣漸層透明的程度（屋台升起時融進夜空，沒有硬切線）
+  // glow = false：不畫燈籠光暈（開場要在背景和光暈之間壓暗，另外呼叫 lanternGlow）
+  background(pulse, lit, sky = true, feather = 0, glow = true) {
     const { img, lanterns, street } = this.theme();
     if (img) {
       const s = Math.max(SW / img.width, SH / img.height); this.bg = { s, x: (SW - img.width * s) / 2, y: (SH - img.height * s) / 2 };
@@ -100,9 +102,15 @@ const Scene = {
         if (!this.skyCache || this.skyCache.res !== RES) this.skyCache = { c: Street.skyCanvas(), res: RES };
         ctx.drawImage(this.skyCache.c, VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH);
       }
-      ctx.drawImage(this.bgCache.c, VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH);
+      if (feather > 0) {   // 上緣透明的版本墊底，原圖依 1 - feather 疊回去（落地後慢慢變回原圖，接主選單不會跳）
+        ctx.drawImage(this.featherTop(), VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH);
+        if (feather < 1) { ctx.save(); ctx.globalAlpha *= 1 - feather; ctx.drawImage(this.bgCache.c, VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH); ctx.restore(); }
+      } else ctx.drawImage(this.bgCache.c, VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH);
     } else { ctx.fillStyle = '#1a1f3a'; ctx.fillRect(VIEW.x0, 0, VIEW.x1 - VIEW.x0, SH); }
-    // 燈籠光暈：隨節拍一起閃
+    if (glow) this.lanternGlow(pulse, lit, lanterns);
+  },
+  // 燈籠光暈：隨節拍一起閃（lit(i)：第 i 盞的亮度 0～1）
+  lanternGlow(pulse, lit, lanterns = this.theme().lanterns) {
     const B = this.bg;
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     // 光暈用預先畫好的圖（每種顏色一張）貼上，不再每幀建立 28 個漸層（最耗電的部分）
@@ -118,6 +126,53 @@ const Scene = {
     if (!ECO()) for (const e of Fx.embers) {
       const a = clamp(e.life / e.max, 0, 1) * (0.6 + 0.4 * Math.sin(Game.time * 9 + e.x));
       ctx.fillStyle = `hsla(${e.hue},100%,65%,${a})`; ctx.beginPath(); ctx.arc(e.x, e.y, e.size, 0, 7); ctx.fill();
+    }
+    ctx.restore();
+  },
+  // 開場：屋台壓暗成剪影（a = 0～1）。上緣跟著 FEATHER 漸層，夜空不受影響；整個屋台以下（含鐵板）都蓋到
+  darkness(a) {
+    if (a <= 0) return;
+    const y0 = this.bg.y, gr = ctx.createLinearGradient(0, y0, 0, y0 + this.FEATHER);
+    gr.addColorStop(0, 'rgba(6,8,28,0)'); gr.addColorStop(1, `rgba(6,8,28,${a})`);
+    ctx.fillStyle = gr; ctx.fillRect(VIEW.x0, y0, VIEW.x1 - VIEW.x0, SH - y0 + 300);
+  },
+  // 背景快取的上緣做成漸層透明（從圖的上緣往下 FEATHER 像素）；背景快取換了才重做
+  FEATHER: 170,
+  featherTop() {
+    const src = this.bgCache.c;
+    if (this.topFeather && this.topFeather.src === src) return this.topFeather.c;
+    const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
+    const g = c.getContext('2d'); g.drawImage(src, 0, 0);
+    const k = src.height / SH, y0 = this.bg.y * k, y1 = (this.bg.y + this.FEATHER) * k;   // 世界座標 → 快取像素
+    const gr = g.createLinearGradient(0, y0, 0, y1);
+    gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(0.35, 'rgba(0,0,0,.22)'); gr.addColorStop(0.7, 'rgba(0,0,0,.72)'); gr.addColorStop(1, 'rgba(0,0,0,1)');
+    g.globalCompositeOperation = 'destination-in'; g.fillStyle = gr; g.fillRect(0, 0, c.width, c.height);
+    this.topFeather = { src, c };
+    return c;
+  },
+  // 開場：屋台上緣的煙霧帶（y = 世界座標的上緣；out = 落地後散開的進度 0～1）。蓋住接縫，落地後往兩側散開、淡出
+  edgeSmoke(y, out) {
+    if (out >= 1) return;
+    if (!this.smokeImg) {
+      const c = document.createElement('canvas'); c.width = c.height = 128;
+      const g = c.getContext('2d'), gr = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+      gr.addColorStop(0, 'rgba(214,204,228,.62)'); gr.addColorStop(0.5, 'rgba(176,166,200,.28)'); gr.addColorStop(1, 'rgba(150,140,180,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, 128, 128); this.smokeImg = c;
+    }
+    const t = Game.time, R = mulberry(5), n = ECO() ? 8 : 16, x0 = VIEW.x0, x1 = VIEW.x1, fade = 1 - out;
+    ctx.save();
+    for (let i = 0; i < n; i++) {
+      const u = (i + 0.5) / n, r = 110 + R() * 90, ph = R() * 6.3;
+      const x = x0 + u * (x1 - x0) + Math.sin(t * 0.7 + ph) * 30 + (u - 0.5) * out * 320;
+      const yy = y + 18 - R() * 50 + Math.sin(t * 0.9 + ph * 2) * 12 - out * 40;
+      ctx.globalAlpha = (0.78 + 0.22 * Math.sin(t * 1.3 + ph)) * fade;
+      ctx.drawImage(this.smokeImg, x - r, yy - r * 0.55, r * 2, r * 1.1);
+    }
+    // 燈籠的暖光照在煙上
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 5; i++) {
+      const x = x0 + (i + 0.5) / 5 * (x1 - x0) + Math.sin(t * 0.5 + i) * 40, r = 150;
+      ctx.globalAlpha = 0.16 * fade; ctx.drawImage(this.glowSprite('#ff9a4a'), x - r, y + 40 - r * 0.5, r * 2, r);
     }
     ctx.restore();
   },
