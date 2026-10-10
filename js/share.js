@@ -11,7 +11,7 @@ const Share = {
     const c = this.card(r, song);
     const url = c.toDataURL('image/png'), name = `daioyaki-${song.id}-${r.score}.png`;
     const R = RATINGS[r.rating];
-    const text = tr('我在《大王焼き リズム屋台》的「{0}」拿到 {1} 分！評價：{2}', song.title, r.score, tr(R.title))
+    const text = tr('我在《大王焼き リズム屋台》的「{0}」拿到 {1} 分！評價：{2}', songName(song), r.score, tr(R.title))
       + (/^https?:/.test(location.href) ? ' ' + location.origin + location.pathname : '');
     let file = null;
     try {
@@ -51,7 +51,7 @@ const Share = {
     g.save(); g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 30; g.shadowOffsetY = 12; rr(px, py, pw, ph, 36); g.fillStyle = 'rgba(255,250,238,.97)'; g.fill(); g.restore();
     rr(px, py, pw, ph, 36); g.strokeStyle = '#1f2a5a'; g.lineWidth = 8; g.stroke();
     // 樂曲名＋星級
-    text(song.title, cx, py + 70, 52, { fill: '#1f2a5a', maxW: pw - 80 });
+    text(songName(song), cx, py + 70, 52, { fill: '#1f2a5a', maxW: pw - 80 });
     const d = Game.diff === undefined ? 1 : Game.diff, ns = diffStars(song, d);
     const st = '★'.repeat(Math.min(ns, 5)) + '☆'.repeat(Math.max(0, 5 - ns)) + (ns > 5 ? '★' : '');
     text('VOL.' + song.vol + '　' + st + '　' + tr(DIFFS[d].name), cx, py + 128, 30, { fill: DIFFS[d].color, maxW: pw - 80 });

@@ -528,7 +528,7 @@ const Game = {
     App.goto('result');
   },
   // HUD 的歌名（簡單／困難時加上難度）
-  songLabel() { return '♪ ' + this.song.title + (this.diff !== 1 && !this.s.tut ? '［' + tr(DIFFS[this.diff].name) + '］' : ''); },
+  songLabel() { return '♪ ' + songName(this.song) + (this.diff !== 1 && !this.s.tut ? '［' + tr(DIFFS[this.diff].name) + '］' : ''); },
 
   // ---------- 繪製 ----------
   draw() {

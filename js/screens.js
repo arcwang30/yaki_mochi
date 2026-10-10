@@ -1451,7 +1451,7 @@ Screens.ranking = {
     // 樂曲切換列
     const song = SONGS[this.idx];
     UI.wood(W / 2 - 300, 182, 600, 66, { r: 14, seed: 'rank-bar' });
-    UI.text(song.title, W / 2, 205, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 420 });
+    UI.text(songName(song), W / 2, 205, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 420 });
     drawStars(W / 2, 233, diffStars(song, this.diff), 16);
     // 右側：難度（點一下或 Q／E、手把 LB／RB 切換）
     { const D = DIFFS[this.diff]; UI.panel(W / 2 + 78, 219, 104, 28, 14, D.color, '#fff'); UI.text(D.name, W / 2 + 130, 234, 17, { fill: '#fff', stroke: null });
@@ -1666,7 +1666,7 @@ Screens.rhythm = {
       UI.text(tr(l), cx + tw / 2, cy + th * 0.3, RFS(14), { fill: '#cfd8ff', stroke: null, raw: true, maxW: tw - 10 });
       UI.text(v, cx + tw / 2, cy + th * 0.68, lay(26, 32), { fill: '#fff', stroke: null, raw: true, maxW: tw - 10 });
     });
-    if (T.fav) UI.text(tr('最常玩') + '：' + T.fav.title, tx + half / 2 - 12, y + h - 22, RFS(15), { fill: '#ffe8b0', stroke: null, raw: true, maxW: half - 30 });
+    if (T.fav) UI.text(tr('最常玩') + '：' + songName(T.fav), tx + half / 2 - 12, y + h - 22, RFS(15), { fill: '#ffe8b0', stroke: null, raw: true, maxW: half - 30 });
   },
 };
 
