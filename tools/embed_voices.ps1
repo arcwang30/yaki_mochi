@@ -2,7 +2,11 @@
 # 原因：桌面版（Electron）與直接雙擊 index.html 時是 file:// 開啟，瀏覽器不允許 fetch 讀檔，語音會讀不到；
 # 內嵌在 JS 裡就不受影響。換了語音檔後執行一次：powershell -ExecutionPolicy Bypass -File tools\embed_voices.ps1
 $root = Split-Path -Parent $PSScriptRoot
-$map = [ordered]@{ irasshaimase = 'voice_irasshaimase.wav'; selectSong = 'voice_select_song.wav' }
+$map = [ordered]@{
+  irasshaimase = 'voice_irasshaimase.wav'; selectSong = 'voice_select_song.wav'
+  ikude = 'voice_ikude.wav'; iine = 'voice_iine.wav'; eeyan = 'voice_eeyan.wav'; sonochoushi = 'voice_sonochoushi.wav'
+  omachi = 'voice_omachi.wav'; dekiagari = 'voice_dekiagari.wav'; otto = 'voice_otto.wav'; ookini = 'voice_ookini.wav'
+}
 $sb = New-Object System.Text.StringBuilder
 [void]$sb.AppendLine("'use strict';")
 [void]$sb.AppendLine('')

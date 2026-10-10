@@ -210,7 +210,11 @@ function buildChart(song, t0, diff = 1) {   // diff：難度（0 簡單、1 普�
   // 樂曲事件：倒數木魚 → 各小節由樂曲編曲 → 結尾
   const add = (tt, f) => events.push({ t: tt, f });
   for (const ms of measures) {
-    if (ms.kind === 'count') { for (let b = 0; b < 4; b++) add(ms.start + b * ms.bd, (x, d) => SND.wood(x, b === 0, d)); continue; }
+    if (ms.kind === 'count') {
+      for (let b = 0; b < 4; b++) add(ms.start + b * ms.bd, (x, d) => SND.wood(x, b === 0, d));
+      add(ms.start + 3 * ms.bd, x => Sound.say('go', A.sfx, x));   // 「GO!」的拍點：主角喊「いくで！」
+      continue;
+    }
     if (ms.kind === 'outro') { song.outro(ms, add); continue; }
     song.arrange(ms, add);
     if (ms.kind === 'rest' && ms.sec < SEC.length - 1) add(ms.start + 2 * ms.bd, x => SND.speedUp(x, ms.bd));
@@ -253,6 +257,7 @@ const Game = {
       stock: { noodles: 0, cabbage: 0, crepe: 0, bacon: 0 }, oko: 0, errs: [],
       bump: {}, okoAnims: [], gradeFx: null, pressT: -9,
     };
+    Object.assign(Sound.sayState, { end: 0, last: {}, src: null, any: -99 });
     Fx.clear();
     chef.queue = []; chef.idlePose = 'idle'; chef.pose = 'idle';
   },
@@ -348,7 +353,7 @@ const Game = {
     chef.idlePose = this.measureAt(st).kind === 'rest' ? 'nice' : 'idle';
     for (const n of s.chart.notes) {
       if (n.state === 'fly' && st > n.t + WIN.BAD) {
-        n.state = 'miss'; n.endT = st; s.grades.BAD++; s.combo = 0; this.showGrade('BAD');
+        n.state = 'miss'; n.endT = st; s.grades.BAD++; this.breakCombo(); this.showGrade('BAD');
         setPoses([{ pose: 'bad', dur: 0.6 }]); SND.bad();
       } else if (n.state === 'hit' && !n.stocked && st - n.hitT > 0.55) { n.stocked = true; this.addStock(n.type); }
     }
@@ -400,7 +405,7 @@ const Game = {
     this.showGrade(grade);
     if (grade === 'BAD') {
       n.state = 'bad'; n.endT = this.songTime(); n.dir = n.side * -1;
-      s.combo = 0; SND.bad(); Sound.vibrate(40);
+      this.breakCombo(); SND.bad(); Sound.vibrate(40);
       setPoses([{ pose: 'bad', dur: 0.6 }]);
       return;
     }
@@ -422,10 +427,17 @@ const Game = {
       poses.push({ pose: 'great', dur: 0.5 });
       s.comboFx = { n: s.combo, t: 0 };
       SND.kane(A.ctx.currentTime + 0.05, 1.6, A.sfx);
+      Sound.say('combo', A.sfx, A.ctx.currentTime + 0.12);   // 「いいね！」「ええやん！」「その調子や！」（有冷卻，不會每 10 連擊都講）
     }
     setPoses(poses);
   },
   showGrade(g) { this.s.gradeFx = { g, t: 0 }; },
+  // 斷連擊：連擊數夠多（10 以上）才喊「おっと！」
+  breakCombo() {
+    const s = this.s;
+    if (s.combo >= COMBO_STEP) Sound.say('oops', A.sfx);
+    s.combo = 0;
+  },
   addStock(type) {
     const s = this.s;
     s.stock[type]++; s.bump[type] = this.time;
@@ -434,6 +446,7 @@ const Game = {
       s.oko++; s.score += OKO_BONUS; s.bump.oko = this.time + 0.9;
       s.okoAnims.push({ t: 0 });
       SND.fanfare(A.ctx.currentTime);
+      Sound.say('oko', A.sfx, A.ctx.currentTime + 0.15);   // 「へい、お待ち！」「できあがりや！」
       setPoses([{ pose: 'cheer', dur: 0.8 }]);
     }
   },

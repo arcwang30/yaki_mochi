@@ -264,6 +264,45 @@ const Sound = {
   VOICES: {
     irasshaimase: { url: 'assets/audio/voice_irasshaimase.wav', gain: 1.05, offset: 0 },   // VOICEVOX:玄野武宏（喜び）。音量調到和舊版語音聽起來一樣大（比當下音樂清楚、但不搶戲）
     selectSong: { url: 'assets/audio/voice_select_song.wav', gain: 1.1, offset: 0 },          // 選曲畫面的語音「曲を選んでや！」（同一個聲音；略大聲一點，聽起來和上面一樣大）
+    // 主角語音反應（同一個聲音）：開場、連擊、廣島燒完成、斷連擊、結算。gain 依每句的實際音量拉齊；
+    // 遊戲中的走「音效」通道（比選單語音大一點，壓得過音樂；暫停時跟著靜音），結算的「おおきに！」走介面通道
+    ikude: { url: 'assets/audio/voice_ikude.wav', gain: 1.15, offset: 0 },
+    iine: { url: 'assets/audio/voice_iine.wav', gain: 1.3, offset: 0 },
+    eeyan: { url: 'assets/audio/voice_eeyan.wav', gain: 0.65, offset: 0 },
+    sonochoushi: { url: 'assets/audio/voice_sonochoushi.wav', gain: 0.85, offset: 0 },
+    omachi: { url: 'assets/audio/voice_omachi.wav', gain: 1.1, offset: 0 },
+    dekiagari: { url: 'assets/audio/voice_dekiagari.wav', gain: 0.8, offset: 0 },
+    otto: { url: 'assets/audio/voice_otto.wav', gain: 1.1, offset: 0 },
+    ookini: { url: 'assets/audio/voice_ookini.wav', gain: 1, offset: 0 },
+  },
+  // 遊戲中的語音反應：同一時間只講一句（講話中只有更重要的才插話），同一類有冷卻，避免一直講話很吵
+  SAY: {
+    // prio：講話中只有更重要的能插話（舊的那句立刻停）；cd：同一類的冷卻秒數
+    // 廣島燒大約每 4 顆就完成一個，所以冷卻最長；連擊（每 10）比較難得，優先
+    go: { keys: ['ikude'], prio: 3, cd: 0 },
+    combo: { keys: ['iine', 'eeyan', 'sonochoushi'], prio: 2, cd: 8 },
+    oko: { keys: ['omachi', 'dekiagari'], prio: 1, cd: 15 },
+    oops: { keys: ['otto'], prio: 1, cd: 8 },
+    thanks: { keys: ['ookini'], prio: 3, cd: 0 },
+  },
+  SAY_GAP: 3.5,   // 任兩句反應之間至少隔幾秒（開場、結算不受限）
+  sayState: { end: 0, prio: 0, last: {}, prevKey: '', src: null, any: -99 },
+  say(type, dest = A.ui, t) {
+    const S = this.SAY[type], st = this.sayState;
+    if (!A.ctx || !S) return false;
+    const at = t || A.ctx.currentTime;
+    if (at < st.end && S.prio <= st.prio) return false;           // 正在講話，而且這句沒有比較重要
+    if (at - (st.last[type] || -99) < S.cd) return false;         // 同一類還在冷卻
+    if (S.prio < 3 && at - st.any < this.SAY_GAP) return false;   // 剛講完，不要連珠炮
+    const ks = S.keys.filter(k => k !== st.prevKey && this.voices[k] instanceof AudioBuffer);
+    const k = ks.length ? ks[Math.floor(Math.random() * ks.length)] : S.keys[0];
+    const buf = this.voices[k];
+    if (!(buf instanceof AudioBuffer)) return false;
+    if (st.src && at < st.end) { try { st.src.stop(at); } catch (e) { /* 已經停了 */ } }   // 插話：前一句停掉
+    st.src = this.playVoice(k, dest, at);
+    st.end = at + buf.duration; st.prio = S.prio; st.last[type] = at; st.prevKey = k;
+    if (S.prio < 3) st.any = at;
+    return true;
   },
   voices: {},
   loadVoices() {
@@ -284,6 +323,7 @@ const Sound = {
     s.buffer = buf; g.gain.value = v.gain;
     s.connect(g); g.connect(dest); s.start(t || A.ctx.currentTime, v.offset);
     release(s, g);
+    return s;
   },
 
   // 輸出延遲（秒）：畫面與判定都扣掉，讓「聽到的拍子」和判定一致

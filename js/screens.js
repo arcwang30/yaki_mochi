@@ -1637,7 +1637,13 @@ Screens.result = {
   drawRating(r, x, y, w, t) {
     const R = RATINGS[r.rating], k = clamp((t - 1.45) / 0.22, 0, 1);
     if (k <= 0) return;
-    if (!this.stamped) { this.stamped = true; if (A.ctx) { SND.don(A.ctx.currentTime, 0.9, A.ui); nz(A.ctx.currentTime, 0.06, 0.3, A.ui, { type: 'lowpass', f: 600 }); } }
+    if (!this.stamped) {
+      this.stamped = true;
+      if (A.ctx) {
+        SND.don(A.ctx.currentTime, 0.9, A.ui); nz(A.ctx.currentTime, 0.06, 0.3, A.ui, { type: 'lowpass', f: 600 });
+        Sound.say('thanks', A.ui, A.ctx.currentTime + 0.35);   // 蓋章後主角道謝「おおきに！」
+      }
+    }
     // 底框（和紙色帶）
     ctx.fillStyle = 'rgba(200,50,30,.07)'; rrect(x + 20, y, w - 40, 90, 14); ctx.fill();
     ctx.strokeStyle = 'rgba(200,50,30,.35)'; ctx.lineWidth = 2; rrect(x + 20, y, w - 40, 90, 14); ctx.stroke();

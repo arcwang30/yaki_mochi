@@ -6,7 +6,15 @@
 #   powershell -ExecutionPolicy Bypass -File tools\voicevox_voices.ps1
 $ErrorActionPreference = 'Stop'
 $speaker = 39
-$lines = [ordered]@{ 'voice_irasshaimase.wav' = 'いらっしゃいませ！'; 'voice_select_song.wav' = '曲を選んでや！' }
+$lines = [ordered]@{
+  'voice_irasshaimase.wav' = 'いらっしゃいませ！'; 'voice_select_song.wav' = '曲を選んでや！'
+  # 主角語音反應（遊戲中）
+  'voice_ikude.wav' = 'いくで！'
+  'voice_iine.wav' = 'いいね！'; 'voice_eeyan.wav' = 'ええやん！'; 'voice_sonochoushi.wav' = 'その調子や！'
+  'voice_omachi.wav' = 'へい、お待ち！'; 'voice_dekiagari.wav' = 'できあがりや！'
+  'voice_otto.wav' = 'おっと！'
+  'voice_ookini.wav' = 'おおきに！'
+}
 $root = Split-Path -Parent $PSScriptRoot
 $utf8 = New-Object Text.UTF8Encoding $false
 foreach ($f in $lines.Keys) {
