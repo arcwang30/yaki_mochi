@@ -182,7 +182,7 @@ function burntImg(name) {
 let bag = [];
 function nextType() { if (!bag.length) bag = TYPES.slice().sort(() => Math.random() - 0.5); return bag.pop(); }
 
-function buildChart(song, t0) {
+function buildChart(song, t0, diff = 1) {   // diff：難度（0 簡單、1 普通、2 困難）
   const SEC = song.sections, measures = [], notes = [], events = [];
   let t = t0;
   measures.push(measureInfo(song, { kind: 'count', bpm: SEC[0].bpm, start: t, sec: 0, idx: -1 }));
@@ -194,7 +194,7 @@ function buildChart(song, t0) {
       measures.push(ms);
       if (ms.kind === 'play') {
         // 節奏型：樂曲可以有自己的一套（song.patterns[lv]，例如金屬的馳騁節奏、電音的反拍），沒有就用通用的 PATTERNS
-        if (m % 2 === 0) { const lv = s.lv[(Math.random() * s.lv.length) | 0], pl = (song.patterns && song.patterns[lv]) || PATTERNS[lv]; pat = pl[(Math.random() * pl.length) | 0]; }
+        if (m % 2 === 0) { const lv = s.lv[(Math.random() * s.lv.length) | 0]; pat = diffPattern(song, lv, diff, ms.bd); }   // 依難度調整（js/songs.js）
         for (const b of pat) {
           // 反拍（.5）依樂曲的搖擺比例落點，跟著音樂的「晃」
           const nt = ms.at(Math.floor(b) * 2 + (b % 1 ? 1 : 0));
@@ -241,11 +241,13 @@ const Game = {
   newRun(song, tut = false) {
     Sound.init(); Sound.stopBgm(); Sound.duck(false);
     this.song = song || this.song || SONGS[0];
+    this.diff = tut ? 1 : curDiff();   // 難度：選曲畫面選的（新手教學一律普通）
+    this.rid = recId(this.song, this.diff);   // 這一局的紀錄 id（HISCORE、排行榜、獎章）
     if (!tut) { Save.data.lastSong = this.song.id; Save.store(); }
     bag = [];
     const t0 = A.ctx.currentTime + 0.6;
     this.s = {
-      chart: tut ? tutChart(this.song, t0) : buildChart(this.song, t0), tut: tut ? { pat: null, sec: 0 } : null,
+      chart: tut ? tutChart(this.song, t0) : buildChart(this.song, t0, this.diff), tut: tut ? { pat: null, sec: 0 } : null,
       off: 0, paused: false, pauseAt: 0, resumeT: 0, ended: false,
       score: 0, combo: 0, maxCombo: 0, grades: { GREAT: 0, NICE: 0, GOOD: 0, BAD: 0 },
       stock: { noodles: 0, cabbage: 0, crepe: 0, bacon: 0 }, oko: 0, errs: [],
@@ -443,13 +445,15 @@ const Game = {
     this.result = { song: this.song.id, score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length,
       ratio, rating: ratingFor(ratio) };
     // 曲目獎章：最佳評價、全連擊（沒有 BAD／漏接）、全 GREAT
-    const R = this.result, n = s.chart.notes.length, md = Save.data.medals[this.song.id] || {};
+    const R = this.result, n = s.chart.notes.length, md = Save.data.medals[this.rid] || {};
     R.fc = s.grades.BAD === 0 && n > 0; R.ag = s.grades.GREAT === n && n > 0;
     R.newFc = R.fc && !md.fc; R.newAg = R.ag && !md.ag;
-    Save.data.medals[this.song.id] = { r: Math.min(md.r === undefined ? 99 : md.r, R.rating), fc: !!(md.fc || R.fc), ag: !!(md.ag || R.ag) };
+    Save.data.medals[this.rid] = { r: Math.min(md.r === undefined ? 99 : md.r, R.rating), fc: !!(md.fc || R.fc), ag: !!(md.ag || R.ag) };
     Rhythm.record(this.song, s, ratio);   // 節奏分析用的遊玩紀錄（裡面會存檔）
     App.goto('result');
   },
+  // HUD 的歌名（簡單／困難時加上難度）
+  songLabel() { return '♪ ' + this.song.title + (this.diff !== 1 && !this.s.tut ? '［' + tr(DIFFS[this.diff].name) + '］' : ''); },
 
   // ---------- 繪製 ----------
   draw() {
@@ -591,7 +595,7 @@ const Game = {
     const s = this.s;
     // 左上：SCORE / HISCORE（窄版，避開招牌）
     pill(8, 8, 162, 50); txt('SCORE', 26, 27, 12, '#ffd25a', { align: 'left' }); txt(pad(s.score, 7), 156, 50, 22, '#fff', { align: 'right' });
-    if (!s.tut) { pill(8, 62, 162, 40); txt('HISCORE', 26, 78, 10, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(this.song.id), s.score), 7), 156, 96, 16, '#fff', { align: 'right' }); }
+    if (!s.tut) { pill(8, 62, 162, 40); txt('HISCORE', 26, 78, 10, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(this.rid), s.score), 7), 156, 96, 16, '#fff', { align: 'right' }); }
     // 右上：廣島燒成品（較顯眼）＋四種食材
     const ob = s.bump.oko ? Math.max(0, 1 - Math.abs(this.time - s.bump.oko) * 4) : 0;
     ctx.fillStyle = 'rgba(16,22,52,.82)'; rrect(568, 8, 144, 70, 20); ctx.fill(); ctx.strokeStyle = '#ff9a3c'; ctx.lineWidth = 4; ctx.stroke();
@@ -611,8 +615,8 @@ const Game = {
     ctx.fillStyle = 'rgba(16,22,52,.7)'; rrect(14, 136, 156, 9, 4.5); ctx.fill();
     ctx.fillStyle = '#ffb84a'; rrect(14, 136, Math.max(9, 156 * prog), 9, 4.5); ctx.fill();
     ctx.font = `15px ${FONT}`; ctx.textAlign = 'left'; ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#101634'; ctx.lineWidth = 5; ctx.strokeText('♪ ' + this.song.title, 14, 172);
-    ctx.fillStyle = this.song.color; ctx.fillText('♪ ' + this.song.title, 14, 172);
+    ctx.strokeStyle = '#101634'; ctx.lineWidth = 5; ctx.strokeText(this.songLabel(), 14, 172);
+    ctx.fillStyle = this.song.color; ctx.fillText(this.songLabel(), 14, 172);
     if (s.combo >= 3) {
       const k = 1 + pulse * 0.08;
       ctx.save(); ctx.translate(100, 300); ctx.scale(k, k);
@@ -632,7 +636,7 @@ const Game = {
     txt('SCORE', 72, 76, 24, '#ffd25a', { align: 'left' }); txt(pad(s.score, 7), 432, 132, 56, '#fff', { align: 'right' });
     if (!s.tut) {
       UI.panel(40, 160, 420, 66, 24, 'rgba(16,22,52,.72)');
-      txt('HISCORE', 72, 203, 18, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(this.song.id), s.score), 7), 432, 207, 32, '#fff', { align: 'right' });
+      txt('HISCORE', 72, 203, 18, '#ffb0a0', { align: 'left' }); txt(pad(Math.max(Save.best(this.rid), s.score), 7), 432, 207, 32, '#fff', { align: 'right' });
     }
     const y0 = s.tut ? 196 : 272;
     txt('TEMPO ' + m.bpm, 44, y0 + 14, 28, '#fff', { align: 'left', stroke: '#101634', lw: 8 });
@@ -641,7 +645,7 @@ const Game = {
       ctx.fillStyle = 'rgba(16,22,52,.7)'; rrect(44, y0 + 32, 416, 14, 7); ctx.fill();
       ctx.fillStyle = '#ffb84a'; rrect(44, y0 + 32, Math.max(14, 416 * prog), 14, 7); ctx.fill();
     }
-    txt('♪ ' + this.song.title, 44, y0 + 88, 28, this.song.color, { align: 'left', stroke: '#101634', lw: 8 });
+    txt(this.songLabel(), 44, y0 + 88, 28, this.song.color, { align: 'left', stroke: '#101634', lw: 8 });
     if (s.combo >= 3) {
       const k = 1 + pulse * 0.08;
       ctx.save(); ctx.translate(270, 640); ctx.scale(k, k);

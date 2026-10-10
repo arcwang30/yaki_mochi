@@ -52,8 +52,9 @@ const Share = {
     rr(px, py, pw, ph, 36); g.strokeStyle = '#1f2a5a'; g.lineWidth = 8; g.stroke();
     // 樂曲名＋星級
     text(song.title, cx, py + 70, 52, { fill: '#1f2a5a', maxW: pw - 80 });
-    const st = '★'.repeat(song.stars) + '☆'.repeat(5 - song.stars);
-    text('VOL.' + song.vol + '　' + st, cx, py + 128, 30, { fill: '#e0a020' });
+    const d = Game.diff === undefined ? 1 : Game.diff, ns = diffStars(song, d);
+    const st = '★'.repeat(Math.min(ns, 5)) + '☆'.repeat(Math.max(0, 5 - ns)) + (ns > 5 ? '★' : '');
+    text('VOL.' + song.vol + '　' + st + '　' + tr(DIFFS[d].name), cx, py + 128, 30, { fill: DIFFS[d].color, maxW: pw - 80 });
     // 評價印章＋稱號
     const sx = px + 150, sy = py + 280, sr = 100;
     g.save(); g.translate(sx, sy); g.rotate(-0.15);

@@ -61,6 +61,7 @@ const I18N = {
     // 自動校正
     // 節奏分析
     // 曲目獎章・分享・存檔備份
+    '簡單': 'かんたん', '普通': 'ふつう', '困難': 'むずかしい', '↑↓ 選曲　← → VOL　LB／RB 難度　A 開始　Y 教學　B 返回': '↑↓ 選曲　← → VOL　LB／RB 難易度　A スタート　Y 練習　B 戻る', '↑↓ 選曲　← → VOL　Q／E 難度　ENTER 開始　T 教學': '↑↓ 選曲　← → VOL　Q／E 難易度　ENTER スタート　T 練習',
     '還沒有通關紀錄': 'まだクリア記録なし', '分享': 'シェア', '我在《大王焼き リズム屋台》的「{0}」拿到 {1} 分！評價：{2}': '『大王焼き リズム屋台』の「{0}」で {1} 点！評価：{2}',
     '存檔備份': 'セーブのバックアップ', '換手機或資料被清掉時，用存檔碼還原': '機種変更やデータ消去のときにセーブコードで復元', '匯出': '書き出し', '匯入': '読み込み',
     '已下載存檔檔案（daioyaki-save.txt）': 'セーブファイルを保存しました（daioyaki-save.txt）', '已複製存檔碼！貼到記事本或傳給自己保存': 'セーブコードをコピーしました！メモ帳などに貼って保管してね',
@@ -159,6 +160,7 @@ const I18N = {
     // Auto calibration
     // Rhythm report
     // Medals / share / backup
+    '簡單': 'EASY', '普通': 'NORMAL', '困難': 'HARD', '↑↓ 選曲　← → VOL　LB／RB 難度　A 開始　Y 教學　B 返回': '↑↓ song  ← → VOL  LB/RB difficulty  A start  Y tutorial  B back', '↑↓ 選曲　← → VOL　Q／E 難度　ENTER 開始　T 教學': '↑↓ song  ← → VOL  Q/E difficulty  ENTER start  T tutorial',
     '還沒有通關紀錄': 'Not cleared yet', '分享': 'SHARE', '我在《大王焼き リズム屋台》的「{0}」拿到 {1} 分！評價：{2}': 'I scored {1} on "{0}" in Daio-yaki Rhythm Yatai! Rating: {2}',
     '存檔備份': 'Save Backup', '換手機或資料被清掉時，用存檔碼還原': 'Restore with a save code on a new phone or after data is cleared', '匯出': 'EXPORT', '匯入': 'IMPORT',
     '已下載存檔檔案（daioyaki-save.txt）': 'Save file downloaded (daioyaki-save.txt)', '已複製存檔碼！貼到記事本或傳給自己保存': 'Save code copied! Paste it somewhere safe',

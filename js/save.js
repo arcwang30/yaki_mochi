@@ -6,6 +6,7 @@ const Save = {
   data: { music: 4, sfx: 4, offset: 0, vibrate: true, eco: false, lang: null, res: '1920x1080', tutorialDone: false, name: '', lastSong: null, boards: null,
     history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
     totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次
+    diff: 1,       // 選曲畫面選的難度（0 簡單、1 普通、2 困難）
     medals: null,  // 曲目獎章：{ 歌曲id: { r: 最佳評價（RATINGS 的索引，越小越好）, fc: 全連擊, ag: 全 GREAT } }
   },
 
@@ -45,7 +46,8 @@ const Save = {
   seed(id) {
     const names = ['TAKOYAKI', 'RAMEN', 'ONIGIRI', 'MOCHI', 'DANGO', 'TAIYAKI', 'GYOZA', 'UDON', 'SOBA', 'TEMPURA',
       'SUSHI', 'KATSU', 'NABE', 'MISO', 'YAKITORI', 'DAIFUKU', 'MATCHA', 'KUNI', 'SAKURA', 'DARUMA'];
-    const k = this.SEED_SCALE[id] || 1;
+    // 各難度的排行榜 id = 歌曲id（普通）、歌曲id_easy、歌曲id_hard
+    const m = String(id).match(/^(.*?)(_easy|_hard)?$/), k = (this.SEED_SCALE[m[1]] || 1) * (m[2] === '_easy' ? 0.7 : m[2] === '_hard' ? 1.25 : 1);
     this.data.boards[id] = names.map((n, i) => ({ name: n, score: Math.round((52000 - i * 2400) * k / 100) * 100, oko: Math.max(1, Math.round((16 - i * 0.75) * k)), seed: true }));
     this.store();
   },

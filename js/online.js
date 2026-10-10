@@ -19,7 +19,7 @@ const Online = {
         firebase.initializeApp(FIREBASE_CONFIG);
         this.db = firebase.firestore();
         this.enabled = true;
-        SONGS.forEach(s => this.top(s.id).catch(() => {}));
+        SONGS.forEach(s => this.top(recId(s)).catch(() => {}));   // 先讀目前難度的排行榜
       })
       .catch(e => console.warn('Firebase init failed', e));
   },

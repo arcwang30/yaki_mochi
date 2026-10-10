@@ -1241,3 +1241,44 @@ const VOL_SIZE = 10;
 // 選單背景音樂用哪一首（index）
 const MENU_SONG = SONGS.findIndex(s => s.id === 'yatai');
 const songById = id => SONGS.find(s => s.id === id) || SONGS[MENU_SONG];
+
+// ---- 難度（試作）：音樂不變，只改要打的音符；普通 = 原本的譜面 ----
+// suffix：紀錄（HISCORE、排行榜、獎章）用的 id 後綴（普通沒有後綴 → 原本的紀錄都算普通）
+// seed：預設排行榜的分數倍率
+const DIFFS = [
+  { key: 'easy', name: '簡單', color: '#2e9a3e', delta: -1, suffix: '_easy', seed: 0.7 },
+  { key: 'normal', name: '普通', color: '#e07a10', delta: 0, suffix: '', seed: 1 },
+  { key: 'hard', name: '困難', color: '#c8321e', delta: 1, suffix: '_hard', seed: 1.25 },
+];
+const curDiff = () => clamp(Save.data.diff === undefined ? 1 : Save.data.diff, 0, DIFFS.length - 1);
+const recId = (song, d = curDiff()) => song.id + DIFFS[d].suffix;
+// 5 星歌選困難 = 6 星（第 6 顆是紅的）；1 星歌選簡單 = 0 星（空心，跟普通的 1 星分得出來）
+const diffStars = (song, d = curDiff()) => clamp(song.stars + DIFFS[d].delta, 0, 6);
+// 0 星（1 星歌的簡單）專用：每小節最多 2 下，只在第 1 拍或第 1、3 拍
+const ZERO_PATTERNS = [[0], [0, 2], [0], [2], [0, 2], [0]];
+// 困難：原本已經是最高級的段落，加一組更密、切分更多的「第 4 級」節奏型
+const HARD_EXTRA = [[0, 0.5, 1, 1.5, 2, 3], [0, 1, 1.5, 2, 2.5, 3.5], [0, 0.5, 1.5, 2, 3, 3.5], [0.5, 1, 1.5, 2.5, 3, 3.5]];
+// 困難的強度依原本星級遞減（高星歌本來就很密，再加就太過頭）：
+// extra = 用「第 4 級」節奏型的機率、addOff = 再補一個反拍的機率；cap = 每秒最多幾下
+const HARD_TUNE = { 1: { extra: 0.5, addOff: 0.6 }, 2: { extra: 0.5, addOff: 0.6 }, 3: { extra: 0.5, addOff: 0.6 }, 4: { extra: 0.25, addOff: 0.45 }, 5: { extra: 0, addOff: 0.3 }, cap: 4.2 };
+// 依難度調整一個小節的節奏型（lv = 這一段原本挑到的難度級、bd = 一拍幾秒）
+function diffPattern(song, lv, d, bd = 0.5) {
+  const pick = pl => pl[(Math.random() * pl.length) | 0];
+  const pl = L => (song.patterns && song.patterns[L]) || PATTERNS[L];
+  if (d === 0 && song.stars <= 1) return pick(ZERO_PATTERNS);   // 0 星
+  if (d === 0) {   // 簡單：低一級、只留正拍、每小節最多 3 下
+    const p = pick(pl(Math.max(0, lv - 1))).filter(b => b % 1 === 0).slice(0, 3);
+    return p.length ? p : [0];
+  }
+  if (d === 2) {   // 困難：高一級；已經最高級的話有機率用第 4 級；再隨機補一個反拍（強度依星級，見 HARD_TUNE）
+    const T = HARD_TUNE[clamp(song.stars, 1, 5)];
+    let p = lv >= 3 && Math.random() < T.extra ? pick(HARD_EXTRA).slice() : pick(pl(Math.min(3, lv + 1))).slice();
+    const free = p.filter(b => b % 1 === 0 && b + 0.5 < 4 && !p.includes(b + 0.5));
+    if (free.length && Math.random() < T.addOff) p = [...p, pick(free) + 0.5].sort((a, b) => a - b);
+    // 上限：每秒最多 cap 下（超過時先拿掉反拍，再從後面拿）
+    const max = Math.max(3, Math.floor(HARD_TUNE.cap * 4 * bd));
+    while (p.length > max) { const k = p.findIndex(b => b % 1 !== 0); p.splice(k >= 0 ? k : p.length - 1, 1); }
+    return p;
+  }
+  return pick(pl(lv));
+}

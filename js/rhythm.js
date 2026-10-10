@@ -36,7 +36,7 @@ const Rhythm = {
     for (const x of e) h[clamp(Math.floor((x + this.BIN * this.BINS / 2) / this.BIN), 0, this.BINS - 1)]++;
     const G = s.grades, g = [G.GREAT, G.NICE, G.GOOD, G.BAD];
     const d = Save.data;
-    d.history.push({ t: Date.now(), id: song.id, st: song.stars, g, avg: Math.round(avg), sd: Math.round(sd), h, r: Math.round(ratio * 100), mc: s.maxCombo });
+    d.history.push({ t: Date.now(), id: song.id, df: Game.diff, st: clamp(diffStars(song, Game.diff), 1, 5), g, avg: Math.round(avg), sd: Math.round(sd), h, r: Math.round(ratio * 100), mc: s.maxCombo });
     if (d.history.length > this.MAX) d.history.splice(0, d.history.length - this.MAX);
     const T = d.totals;
     T.plays++; T.oko += s.oko; T.maxCombo = Math.max(T.maxCombo, s.maxCombo); T.songs[song.id] = (T.songs[song.id] || 0) + 1;

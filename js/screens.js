@@ -341,7 +341,7 @@ Screens.menu = {
 // 卡片：編號、歌名、副標・風格、BPM、星級、HISCORE；選中的卡片會試聽（停留 0.3 秒才開始，快速捲動不會一直重播）
 Screens.songs = {
   sel: 0, previewIdx: -1, previewT: 0, bs: { sel: -1, n: 0 },
-  CARD: lay({ x: 40, y0: 192, w: 640, h: 140, gap: 10 }, { x: 100, y0: 176, w: 840, h: 136, gap: 10 }),
+  CARD: lay({ x: 40, y0: 246, w: 640, h: 130, gap: 10 }, { x: 100, y0: 226, w: 840, h: 126, gap: 10 }),   // 上方留給難度切換列
   SLOTS: 5,   // 同時看得到 5 張卡；選中的那首固定在正中間（轉盤），清單上下捲動
   pos: 0, dragFrom: null,
   vol() { return SONGS[this.sel].vol; },
@@ -363,6 +363,8 @@ Screens.songs = {
     this.previewT = 1.3;
   },
   select(i) { if (i !== this.sel) { this.sel = i; this.previewT = 0.3; Sound.play('select'); } },
+  // 切換難度（不循環：在簡單再往左、在困難再往右不動）
+  setDiff(d) { d = clamp(d, 0, DIFFS.length - 1); if (d === curDiff()) return; Save.data.diff = d; Save.store(); Sound.play('select'); },
   selectRow(r) { this.select(this.idxOf(this.vol(), clamp(r, 0, VOL_SIZE - 1))); },
   start() { Sound.play('confirm'); App.goto('game', { song: SONGS[this.sel] }); },
   frame(dt) {
@@ -373,6 +375,16 @@ Screens.songs = {
       if (this.previewT <= 0) { this.previewIdx = this.sel; const s = SONGS[this.sel]; Sound.startBgm(s, Math.min(2, s.sections.length - 1)); }
     }
     const C = this.CARD, slot = C.h + C.gap, top = C.y0, bottom = C.y0 + this.SLOTS * slot - C.gap;
+    // ---- 難度切換列（簡單｜普通｜困難）：點選、鍵盤 Q／E、手把 LB／RB；卡片的星級、HISCORE、獎章跟著換 ----
+    { const TY = lay(186, 172), th = 46, tw = (C.w - 16) / DIFFS.length, cd = curDiff();
+      DIFFS.forEach((D, d) => {
+        const tx = C.x + d * (tw + 8), on = d === cd;
+        UI.panel(tx, TY, tw, th, th / 2, on ? D.color : 'rgba(16,22,52,.82)', on ? '#fff' : 'rgba(255,255,255,.35)');
+        UI.text(D.name, tx + tw / 2, TY + th / 2 + 1, 24, { fill: on ? '#fff' : '#cfd8ff', stroke: on ? 'rgba(0,0,0,.35)' : null, sw: 5 });
+        if (UI.tapIn(tx, TY, tw, th)) this.setDiff(d);
+      });
+      if (Input.was('diffPrev')) this.setDiff(cd - 1);
+      if (Input.was('diffNext')) this.setDiff(cd + 1); }
     const inList = (x, y) => UI.inside(x, y, C.x, top, C.w, bottom - top);
     // ---- 手指上下拖曳：清單跟著手指轉，放開時對齊最近的一首（甩得快會多轉幾首） ----
     const drag = Input.dragY();
@@ -454,7 +466,7 @@ Screens.songs = {
     ctx.drawImage(Scene.glowSprite('#ffb04a'), T.x - 34, T.y - 30, T.w + 68, T.h + 64); ctx.restore();
     UI.pole(T.x - 16, 20, T.w + 30);
     if (UI.button(this.bs, '新手教學', T.x, T.y, T.w, T.h, { tag: true, sub: 'sub.tutorial', size: 22, ropeH: 20, wiggle: true })) App.goto('tutorial', { from: 'songs' });
-    UI.hint(Input.touchMode ? '上下滑動選曲・點中間的歌開始・左右切換 VOL' : Input.padConnected ? '↑↓ 選曲　← → 切換 VOL　A 開始　Y 新手教學　B 返回' : '↑↓／滾輪 選曲　← → 切換 VOL　ENTER 開始　T 新手教學');
+    UI.hint(Input.touchMode ? '上下滑動選曲・點中間的歌開始・左右切換 VOL' : Input.padConnected ? '↑↓ 選曲　← → VOL　LB／RB 難度　A 開始　Y 教學　B 返回' : '↑↓ 選曲　← → VOL　Q／E 難度　ENTER 開始　T 教學');
   },
   card(song, i, x, y, w, h, on) {
     const loc = o => o[Save.data.lang] || o.zh;
@@ -481,10 +493,10 @@ Screens.songs = {
       UI.text('♪', x + 262, y + 114 - b, 20, { fill: '#c43a1a', stroke: null, raw: true });
       UI.text(tr('試聽中'), x + 280, y + 116, 16, { align: 'left', fill: '#c43a1a', stroke: null, raw: true });
     }
-    drawStars(x + w - 118, y + 40, song.stars, 24);
-    drawSongMedal(song.id, x + w - 196, y + 84, 22);   // 曲目獎章（最佳評價＋全連擊／全 GREAT）
+    drawStars(x + w - 118, y + 40, diffStars(song), 24);   // 目前難度的星級
+    drawSongMedal(recId(song), x + w - 196, y + 84, 22);   // 曲目獎章（目前難度：最佳評價＋全連擊／全 GREAT）
     UI.text('HISCORE', x + w - 24, y + 84, 14, { align: 'right', fill: soft, stroke: null, raw: true });
-    UI.text(pad(Save.best(song.id), 7), x + w - 24, y + 114, 24, { align: 'right', fill: ink, stroke: null, raw: true });
+    UI.text(pad(Save.best(recId(song)), 7), x + w - 24, y + 114, 24, { align: 'right', fill: ink, stroke: null, raw: true });
     ctx.restore();
   },
   // 橫式右側：選中樂曲的詳細資料（大字歌名、星級、各段速度圖、HISCORE）
@@ -497,7 +509,8 @@ Screens.songs = {
     UI.text(song.title, x + 160, y + 72, 52, { align: 'left', fill: '#fff', raw: true, maxW: w - 190, sw: 8 });
     UI.text(loc(song.sub) + '・' + loc(song.genre), x + 162, y + 132, 24, { align: 'left', fill: '#ffe8b0', stroke: null, raw: true, maxW: w - 190 });
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 180, w - 80, 2);
-    drawStars(cx, y + 236, song.stars, 48);
+    drawStars(cx, y + 236, diffStars(song), 48);
+    { const D = DIFFS[curDiff()]; UI.panel(x + 40, y + 216, 120, 40, 20, D.color, '#fff'); UI.text(D.name, x + 100, y + 237, 22, { fill: '#fff', stroke: 'rgba(0,0,0,.35)', sw: 4 }); }   // 目前難度
     // 各段速度：一段一根柱子（越後面越快），正在試聽的那段亮起
     const S = song.sections, lo = S[0].bpm, hi = S[S.length - 1].bpm, gw = w - 160, bw = gw / S.length;
     UI.text('TEMPO', x + 80, y + 300, 20, { align: 'left', fill: '#7fe4ff', stroke: null, raw: true });
@@ -514,9 +527,9 @@ Screens.songs = {
     }
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 556, w - 80, 2);
     UI.text('HISCORE', x + 80, y + 604, 26, { align: 'left', fill: '#ffb0a0', stroke: null, raw: true });
-    UI.text(pad(Save.best(song.id), 7), x + w - 80, y + 606, 64, { align: 'right', fill: '#fff', raw: true, sw: 9 });
+    UI.text(pad(Save.best(recId(song)), 7), x + w - 80, y + 606, 64, { align: 'right', fill: '#fff', raw: true, sw: 9 });
     // 曲目獎章：最佳評價＋全連擊／全 GREAT
-    const md = Save.data.medals[song.id];
+    const md = Save.data.medals[recId(song)];
     if (md && md.r <= 9) {
       drawMedalStamp(md.r, x + 108, y + 674, 30);
       UI.text(tr(RATINGS[md.r].title), x + 154, y + 676, 26, { align: 'left', fill: RATINGS[md.r].color, stroke: '#fff3d8', sw: 4, raw: true, maxW: w - 420 });
@@ -1251,17 +1264,19 @@ Screens.ranking = {
     this.hl = arg && arg.entry; this.hlId = arg && arg.entryId; this.sel = 0;
     const id = (arg && arg.song) || Save.data.lastSong;
     this.idx = Math.max(0, SONGS.findIndex(s => s.id === id));
+    this.diff = arg && arg.diff !== undefined ? arg.diff : curDiff();   // 看哪個難度的排行榜
     chef.idlePose = 'wave'; Sound.startBgm();
     this.load();
   },
   load() {
     this.list = null; this.err = false; this.loading = false;
     if (!Online.enabled) return;
-    const id = SONGS[this.idx].id; this.loading = true;
-    Online.top(id).then(l => { if (SONGS[this.idx].id === id) { this.list = l; this.loading = false; } })
-      .catch(() => { if (SONGS[this.idx].id === id) { this.err = true; this.list = []; this.loading = false; } });
+    const id = recId(SONGS[this.idx], this.diff), cur = () => recId(SONGS[this.idx], this.diff); this.loading = true;
+    Online.top(id).then(l => { if (cur() === id) { this.list = l; this.loading = false; } })
+      .catch(() => { if (cur() === id) { this.err = true; this.list = []; this.loading = false; } });
   },
   move(d) { this.idx = (this.idx + d + SONGS.length) % SONGS.length; this.hl = null; this.hlId = null; Sound.play('select'); this.load(); },
+  setDiff(d) { d = (d + DIFFS.length) % DIFFS.length; if (d === this.diff) return; this.diff = d; this.hl = null; this.hlId = null; Sound.play('select'); this.load(); },
   frame() {
     menuBackdrop(0.72);
     UI.header('排行榜', Online.enabled ? 'LEADERBOARD（線上）' : 'LEADERBOARD（本機）');
@@ -1269,7 +1284,11 @@ Screens.ranking = {
     const song = SONGS[this.idx];
     UI.wood(W / 2 - 300, 182, 600, 66, { r: 14, seed: 'rank-bar' });
     UI.text(song.title, W / 2, 205, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 420 });
-    drawStars(W / 2, 233, song.stars, 16);
+    drawStars(W / 2, 233, diffStars(song, this.diff), 16);
+    // 右側：難度（點一下或 Q／E、手把 LB／RB 切換）
+    { const D = DIFFS[this.diff]; UI.panel(W / 2 + 78, 219, 104, 28, 14, D.color, '#fff'); UI.text(D.name, W / 2 + 130, 234, 17, { fill: '#fff', stroke: null });
+      if (UI.tapIn(W / 2 + 72, 214, 116, 38)) this.setDiff(this.diff + 1);
+      if (Input.was('diffPrev')) this.setDiff(this.diff - 1); if (Input.was('diffNext')) this.setDiff(this.diff + 1); }
     UI.text('VOL.' + song.vol, W / 2 - 200, 233, 15, { fill: '#8a3a10', stroke: null, raw: true });
     UI.text('◀', W / 2 - 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 }); UI.text('▶', W / 2 + 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 });
     if (Input.was('left') || UI.tapIn(W / 2 - 320, 176, 120, 80)) this.move(-1);
@@ -1286,7 +1305,7 @@ Screens.ranking = {
       UI.text('廣島燒', C.oko, 290, 18, { fill: '#7fe4ff', stroke: null });
       UI.text('分數', C.score, 290, 18, { align: 'right', fill: '#7fe4ff', stroke: null });
     }
-    const glob = Online.enabled, b = glob ? (this.list || []) : Save.board(song.id);
+    const glob = Online.enabled, b = glob ? (this.list || []) : Save.board(recId(song, this.diff));
     if (glob && this.loading) UI.text('讀取中…', W / 2, lay(640, 580), 30);
     for (let i = 0; i < 20; i++) {
       const c = Math.floor(i / per), x0 = colX(c), C = Cx(x0), y = lay(326, 334) + (i % per) * dy, e = b[i];
@@ -1342,12 +1361,13 @@ function drawSongMedal(id, cx, cy, r) {
   if (m.ag || m.fc) drawMedalBadge(m.ag ? 'ag' : 'fc', cx, cy + r + 6, r * 3.1, r * 0.62);
 }
 function drawStars(cx, cy, n, size, max = 5) {
+  max = Math.max(max, n);   // 5 星歌選困難 = 第 6 顆（紅色）
   ctx.save(); ctx.font = `${size}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
   const gap = size * 1.15, x0 = cx - (max - 1) * gap / 2;
   for (let i = 0; i < max; i++) {
-    const on = i < n, x = x0 + i * gap;
-    ctx.lineWidth = size * 0.28; ctx.strokeStyle = on ? '#5a2a00' : 'rgba(40,20,0,.35)'; ctx.strokeText('★', x, cy);
-    ctx.fillStyle = on ? '#ffc21a' : 'rgba(255,255,255,.28)'; ctx.fillText('★', x, cy);
+    const on = i < n, x = x0 + i * gap, red = i >= 5;
+    ctx.lineWidth = size * 0.28; ctx.strokeStyle = on ? (red ? '#5a0008' : '#5a2a00') : 'rgba(40,20,0,.35)'; ctx.strokeText('★', x, cy);
+    ctx.fillStyle = on ? (red ? '#ff3a3a' : '#ffc21a') : 'rgba(255,255,255,.28)'; ctx.fillText('★', x, cy);
   }
   ctx.restore();
 }
@@ -1563,7 +1583,8 @@ Screens.result = {
   enter() {
     this.r = Game.result; this.t = 0; this.sel = 0; this.checked = false; this.submitted = false; this.shownInput = false; this.stamped = false;
     this.song = songById(this.r.song);
-    this.newRecord = this.r.score > Save.best(this.song.id);
+    this.rid = recId(this.song, Game.diff);   // 這一局難度的紀錄 id
+    this.newRecord = this.r.score > Save.best(this.rid);
     Sound.duck(false);
     SND.fanfare(A.ctx.currentTime + 0.2);
     const o = this.r.oko;
@@ -1575,7 +1596,7 @@ Screens.result = {
     }
     this.input.value = Save.data.name || '';
     this.input.onkeydown = e => { if (e.key === 'Enter') this.submit(); };
-    if (Online.enabled) Online.top(this.song.id).catch(() => {});
+    if (Online.enabled) Online.top(this.rid).catch(() => {});
   },
   leave() { this.input.style.display = 'none'; this.input.blur(); chef.idlePose = 'wave'; },
   submit() {
@@ -1583,12 +1604,12 @@ Screens.result = {
     this.submitted = true;
     const nm = (this.input.value || '').trim().slice(0, 8) || 'PLAYER';
     const r = this.r, entry = { name: nm, score: r.score, oko: r.oko, combo: r.maxCombo };
-    const id = this.song.id;
+    const id = this.rid, song = this.song.id, diff = Game.diff;   // 存進這個難度的排行榜
     Save.add(entry, id);
     Sound.play('confirm');
     if (Online.enabled) {
-      Online.submit(entry, id).then(eid => App.goto('ranking', { entry, entryId: eid, song: id })).catch(() => App.goto('ranking', { entry, song: id }));
-    } else App.goto('ranking', { entry, song: id });
+      Online.submit(entry, id).then(eid => App.goto('ranking', { entry, entryId: eid, song, diff })).catch(() => App.goto('ranking', { entry, song, diff }));
+    } else App.goto('ranking', { entry, song, diff });
   },
   frame(dt) {
     this.t += dt;
@@ -1599,6 +1620,8 @@ Screens.result = {
     const x = lay(50, 340), y = lay(120, 170), w = 620, h = 700, cx = x + w / 2;   // 橫式：成績卡在左、按鈕在右
     ctx.fillStyle = 'rgba(255,250,238,.97)'; rrect(x, y, w, h, 28); ctx.fill(); ctx.strokeStyle = '#1f2a5a'; ctx.lineWidth = 6; ctx.stroke();
     UI.ribbon(cx, y + 4, '本日營業結束！', 34, 380);
+    { const D = DIFFS[Game.diff === undefined ? 1 : Game.diff];   // 左上：這一局的難度
+      UI.panel(x + 22, y + 36, 112, 44, 22, D.color, '#fff'); UI.text(D.name, x + 78, y + 59, 22, { fill: '#fff', stroke: 'rgba(0,0,0,.35)', sw: 4 }); }
     drawImgW(IMG.okonomiyaki, cx - 70, y + 140, 240);
     UI.text('×' + r.oko, cx + 150, y + 150, 72, { fill: '#c8321e', stroke: '#fff', sw: 10 });
     UI.text('完成的廣島燒', cx, y + 242, 20, { fill: '#6b4a2a', stroke: null });
@@ -1606,7 +1629,7 @@ Screens.result = {
     const cnt = clamp((t - 0.4) / 1.0, 0, 1);
     UI.text(String(Math.floor(r.score * cnt)), cx, y + 344, 64, { fill: '#1f2a5a', stroke: null });
     if (this.newRecord && t > 1.4) UI.text('★ NEW RECORD ★', cx, y + 400, 26, { fill: '#d6462a', stroke: null, alpha: 0.6 + 0.4 * Math.sin(Game.time * 6) });
-    else UI.text('HISCORE  ' + pad(Save.best(this.song.id), 7), cx, y + 400, 22, { fill: '#6b4a2a', stroke: null });
+    else UI.text('HISCORE  ' + pad(Save.best(this.rid), 7), cx, y + 400, 22, { fill: '#6b4a2a', stroke: null });
     ['GREAT', 'NICE', 'GOOD', 'BAD'].forEach((g, i) => {
       const gx = x + 80 + i * 153;
       drawGradeText(g, gx, y + 466, 1, 1, 26);
@@ -1622,7 +1645,7 @@ Screens.result = {
     ctx.restore();
 
     if (t < 1.6) { if (t > 0.4 && (Input.taps.length || Input.was('confirm'))) { this.t = 1.6; Input.taps.length = 0; Input.pressed.delete('confirm'); } return; }
-    if (!this.checked) { this.checked = true; this.qualifies = Online.enabled ? Online.qualifies(r.score, this.song.id) : Save.qualifies(r.score, this.song.id); }
+    if (!this.checked) { this.checked = true; this.qualifies = Online.enabled ? Online.qualifies(r.score, this.rid) : Save.qualifies(r.score, this.rid); }
     UI.begin(this);
     const BX = lay(160, 1180), BY = i => lay(872 + i * 74, 340 + i * 96);
     if (this.qualifies && !this.submitted) {
@@ -1636,7 +1659,7 @@ Screens.result = {
       this.input.style.display = 'none';
       if (UI.button(this, '再玩一次', BX, BY(0), 400, 64, { lacquer: true })) App.goto('game', { song: this.song });
       if (UI.button(this, '返回選擇樂曲', BX, BY(1), 400, 64)) App.goto('songs');
-      if (UI.button(this, '排行榜', BX, BY(2), 400, 64)) App.goto('ranking', { song: this.song.id });
+      if (UI.button(this, '排行榜', BX, BY(2), 400, 64)) App.goto('ranking', { song: this.song.id, diff: Game.diff });
       if (UI.button(this, '回主選單', BX, BY(3), 400, 64, { back: true })) App.goto('menu');
       // 成績卡右上角：分享成績圖（手機叫出分享選單，PC 下載圖片）
       if (UI.button(this, '分享', x + w - 150, y + 34, 132, 52, { size: 24 })) Share.result(r, this.song);
