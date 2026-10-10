@@ -90,7 +90,7 @@ const Share = {
     const ch = IMG.chef_cheer || IMG.chef_wave;
     if (ch) { const w = 330, h = w * ch.height / ch.width; g.drawImage(ch, W - w + 10, H - h - 6, w, h); }
     // 頁尾
-    const d = new Date(), date = `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`;
+    const now = new Date(), date = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
     text(date, 60, H - 40, 26, { align: 'left', fill: 'rgba(255,255,255,.8)' });
     text("©Arc's Concept Game", W - 40, H - 40, 24, { align: 'right', fill: 'rgba(255,255,255,.8)', stroke: 'rgba(0,0,0,.6)', sw: 6 });
     return c;
