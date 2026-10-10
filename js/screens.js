@@ -624,6 +624,10 @@ Screens.songs = {
     }
     rrect(x + 4, y + 7, w, h, 16); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
     UI.wood(x, y, w, h, { r: 16, seed: 'song' + i, light: on });
+    // 木板依難度換木頭色（簡單 = 原木、普通 = 胡桃木、困難 = 紅木），外框用難度色（淡一點，不搶眼）
+    const D = DIFFS[curDiff()];
+    if (D.card) { ctx.save(); rrect(x, y, w, h, 16); ctx.clip(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = D.card; ctx.fillRect(x, y, w, h); ctx.restore(); }
+    rrect(x + 2, y + 2, w - 4, h - 4, 14); ctx.lineWidth = 3; ctx.strokeStyle = hexA(D.color, 0.7); ctx.stroke();
     // 編號圓牌（樂曲代表色）
     const bx = x + 54, by = y + h / 2;
     ctx.fillStyle = song.color; ctx.beginPath(); ctx.arc(bx, by, 34, 0, 7); ctx.fill();
@@ -636,8 +640,9 @@ Screens.songs = {
     UI.text(`BPM ${S[0].bpm}–${S[S.length - 1].bpm}`, x + 104, y + 116, 17, { align: 'left', fill: soft, stroke: null, raw: true });
     if (on && this.previewIdx === i) {
       const b = Math.abs(Math.sin(Game.time * 5)) * 4;
-      UI.text('♪', x + 262, y + 114 - b, 20, { fill: '#c43a1a', stroke: null, raw: true });
-      UI.text(tr('試聽中'), x + 280, y + 116, 16, { align: 'left', fill: '#c43a1a', stroke: null, raw: true });
+      const hot = D.key === 'hard' ? '#5a0a00' : '#c43a1a';   // 困難的紅木板上改用深色，才看得清楚
+      UI.text('♪', x + 262, y + 114 - b, 20, { fill: hot, stroke: null, raw: true });
+      UI.text(tr('試聽中'), x + 280, y + 116, 16, { align: 'left', fill: hot, stroke: null, raw: true });
     }
     drawStars(x + w - 118, y + 40, diffStars(song), 24);   // 目前難度的星級
     drawSongMedal(recId(song), x + w - 196, y + 84, 22);   // 曲目獎章（目前難度：最佳評價＋全連擊／全 GREAT）
