@@ -115,6 +115,8 @@ const CREDITS = [
   ['企劃', ['Arc Wang', '大王KUNI']],
   ['特別感謝', ['Kelvin Lo', 'Bubu Lin']],
 ];
+// 語音的授權標示（VOICEVOX 與角色利用規約要求，不可省略）：顯示在 CREDIT 畫面
+const VOICE_CREDIT = 'VOICEVOX:玄野武宏(CV:ガロ)';
 
 // ---- 小工具 ----
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));

@@ -13,3 +13,6 @@ desktop.ini
 
 # 環境變數
 .env
+
+# VOICEVOX 試聽檔（tools/voicevox_samples.ps1 產生）
+voice_samples/

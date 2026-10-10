@@ -2,7 +2,7 @@
 
 // ===== Service Worker：讓遊戲可安裝成 APP、離線也能玩 =====
 // 發佈新版本時把 VERSION 加 1，舊快取會在下次開啟時清掉。
-const VERSION = 'v25';
+const VERSION = 'v27';
 const CACHE = 'daioyaki-' + VERSION;
 const IMAGES = ['bg_stall.jpg', 'griddle.png', 'button.png', 'great_text.png', 'okonomiyaki.png',
   'chef_idle.png', 'chef_wave.png', 'chef_knife.png', 'chef_spatula.png', 'chef_sauce.png', 'chef_great.png', 'chef_nice.png', 'chef_bad.png', 'chef_cheer.png',
@@ -11,7 +11,7 @@ const CORE = ['./', 'index.html', 'manifest.json', 'css/style.css',
   ...['config', 'assets', 'save', 'platform', 'i18n', 'firebase-config', 'online', 'voices', 'audio', 'songs', 'rhythm', 'input', 'pwa', 'ui', 'street', 'game', 'screens', 'main'].map(n => `js/${n}.js`),
   ...IMAGES.map(n => 'assets/images/' + n),
   'assets/icons/icon-192.png', 'assets/icons/icon-512.png', 'assets/icons/apple-touch-icon.png', 'assets/icons/favicon-32.png',
-  'assets/audio/voice_irasshaimase.mp3', 'assets/audio/voice_select_song.mp3'];
+  'assets/audio/voice_irasshaimase.wav', 'assets/audio/voice_select_song.wav'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));

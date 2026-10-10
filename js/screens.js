@@ -1436,6 +1436,7 @@ Screens.credits = {
     if (okoK >= 1) this.steam(dt, L.ox, L.oy - 10);
     line(idx++, L.ty, yy => UI.text('大王焼き  リズム屋台', L.ox, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
     line(idx++, L.ty + 50, yy => UI.text("©Arc's Concept Game", L.ox, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
+    line(idx++, L.ty + 90, yy => UI.text(tr('語音') + '：' + VOICE_CREDIT, L.ox, yy, 18, { fill: '#cfd8ff', stroke: null, raw: true, maxW: lay(560, 520) }));
     UI.begin(this);
     if (UI.button(this, '返回', W / 2 - 110, lay(1076, 940), 220, 70, { back: true }) || Input.was('back')) App.goto('menu');
     UI.nav(this);

@@ -105,7 +105,7 @@ const I18N = {
     '點網址列右邊的「安裝」圖示 ⊕': 'アドレスバー右の「インストール」アイコン ⊕', '按「安裝」，桌面就會出現圖示': '「インストール」でデスクトップにアイコンが出ます',
     '請將手機直立握持': 'スマホを縦に持ってください',
     // PC 版（橫式）
-    '結束遊戲': 'ゲーム終了', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
+    '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
     '滑鼠': 'マウス', '左鍵點擊\n畫面任何地方': '画面のどこでも\n左クリック', '移動游標': 'カーソルを移動', '左鍵點擊按鈕': 'ボタンを左クリック',
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': '打つボタンはどれでも OK。マウスなら画面のどこをクリックしても OK（右上のポーズボタンを除く）。ポーズから再開すると 3 拍カウントしてから元のリズムに戻ります。',
   },
@@ -195,7 +195,7 @@ const I18N = {
     '點網址列右邊的「安裝」圖示 ⊕': 'Click the install icon ⊕ in the address bar', '按「安裝」，桌面就會出現圖示': 'Click "Install" — an icon appears on your desktop',
     '請將手機直立握持': 'Please hold your phone upright',
     // PC version (landscape)
-    '結束遊戲': 'QUIT GAME', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
+    '結束遊戲': 'QUIT GAME', '語音': 'Voice', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
     '滑鼠': 'Mouse', '左鍵點擊\n畫面任何地方': 'Left-click\nanywhere', '移動游標': 'Move cursor', '左鍵點擊按鈕': 'Click button',
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': 'Any hit button works. With a mouse, click anywhere on the screen (except the pause button at top right). After a pause, RESUME counts 3 beats and then rejoins the rhythm.',
   },

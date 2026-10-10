@@ -262,8 +262,8 @@ const Sound = {
 
   // ---- 語音（錄音檔）：走音效音量（設定的「音效」可調、可靜音）；offset 跳過錄音開頭的靜音 ----
   VOICES: {
-    irasshaimase: { url: 'assets/audio/voice_irasshaimase.mp3', gain: 0.5, offset: 0.2 },   // 錄音本身很大聲（峰值 0.94）：比當下音樂清楚、但不搶戲（比打擊音效略小）
-    selectSong: { url: 'assets/audio/voice_select_song.mp3', gain: 0.42, offset: 0.12 },     // 選曲畫面的語音（比上面那段略大聲：調成聽起來一樣大）
+    irasshaimase: { url: 'assets/audio/voice_irasshaimase.wav', gain: 1.05, offset: 0 },   // VOICEVOX:玄野武宏（喜び）。音量調到和舊版語音聽起來一樣大（比當下音樂清楚、但不搶戲）
+    selectSong: { url: 'assets/audio/voice_select_song.wav', gain: 1.1, offset: 0 },          // 選曲畫面的語音「曲を選んでや！」（同一個聲音；略大聲一點，聽起來和上面一樣大）
   },
   voices: {},
   loadVoices() {
