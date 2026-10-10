@@ -6,6 +6,7 @@ const Save = {
   data: { music: 4, sfx: 4, offset: 0, vibrate: true, eco: false, lang: null, res: '1920x1080', tutorialDone: false, name: '', lastSong: null, boards: null,
     history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
     totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次
+    medals: null,  // 曲目獎章：{ 歌曲id: { r: 最佳評價（RATINGS 的索引，越小越好）, fc: 全連擊, ag: 全 GREAT } }
   },
 
   // 各曲預設排行榜的分數倍率（曲子越難、音符越多，分數越高）
@@ -18,10 +19,15 @@ const Save = {
       const raw = localStorage.getItem(this.key);
       if (raw) Object.assign(this.data, JSON.parse(raw));
     } catch (e) { /* ignore */ }
+    this.normalize();
+  },
+  // 補齊缺的欄位、修正格式（讀檔與匯入存檔碼後都會呼叫）
+  normalize() {
     const d = this.data;
     if (!d.boards || typeof d.boards !== 'object' || Array.isArray(d.boards)) d.boards = {};
     if (!Array.isArray(d.history)) d.history = [];
     if (!d.totals || typeof d.totals !== 'object') d.totals = { plays: 0, oko: 0, maxCombo: 0, songs: {} };
+    if (!d.medals || typeof d.medals !== 'object') d.medals = {};
     // 舊版只有一首歌的排行榜：搬到「屋台ばやし」
     if (Array.isArray(d.board)) { if (d.board.length && !d.boards.yatai) d.boards.yatai = d.board; delete d.board; }
     if (!RESOLUTIONS.includes(d.res)) d.res = RESOLUTIONS[0];
@@ -74,6 +80,38 @@ const Save = {
     const c = Online.enabled && Online.cache[id];
     const l = c && c.length ? c : this.board(id);
     return l.length ? l[0].score : 0;
+  },
+
+  // ---- 存檔備份：匯出成一串「存檔碼」，在其他裝置或資料被清掉後貼回來還原 ----
+  // 排行榜裡的預設名單（seed）不匯出（還原時會重新產生），只留玩家自己的成績
+  CODE_HEAD: 'DAIOYAKI1.',
+  exportCode() {
+    const d = JSON.parse(JSON.stringify(this.data)), boards = {};
+    for (const [id, b] of Object.entries(d.boards || {})) { const mine = (b || []).filter(e => !e.seed); if (mine.length) boards[id] = mine; }
+    d.boards = boards;
+    const json = JSON.stringify(d), bytes = new TextEncoder().encode(json);
+    let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return this.CODE_HEAD + btoa(bin);
+  },
+  // 解析存檔碼：成功回傳資料物件，失敗回傳 null
+  parseCode(code) {
+    try {
+      code = String(code || '').replace(/\s+/g, '');
+      const at = code.indexOf(this.CODE_HEAD); if (at < 0) return null;
+      const bin = atob(code.slice(at + this.CODE_HEAD.length)), bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
+      const d = JSON.parse(new TextDecoder().decode(bytes));
+      return d && typeof d === 'object' && d.boards && typeof d.boards === 'object' ? d : null;
+    } catch (e) { return null; }
+  },
+  // 用存檔碼覆蓋目前的存檔（排行榜補回預設名單）
+  importData(d) {
+    const keep = { lang: this.data.lang, res: this.data.res };   // 語言、解析度跟著這台裝置
+    const mine = d.boards; d.boards = {};
+    this.data = Object.assign({}, this.data, d, keep);
+    this.data.boards = {};
+    for (const [id, list] of Object.entries(mine)) { this.seed(id); this.data.boards[id].push(...list); this.sort(id); }
+    this.normalize();
+    this.store();
   },
 };
 

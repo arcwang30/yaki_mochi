@@ -442,7 +442,12 @@ const Game = {
     const ratio = s.score / maxScoreFor(s.chart.notes.length);
     this.result = { song: this.song.id, score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length,
       ratio, rating: ratingFor(ratio) };
-    Rhythm.record(this.song, s, ratio);   // 節奏分析用的遊玩紀錄
+    // 曲目獎章：最佳評價、全連擊（沒有 BAD／漏接）、全 GREAT
+    const R = this.result, n = s.chart.notes.length, md = Save.data.medals[this.song.id] || {};
+    R.fc = s.grades.BAD === 0 && n > 0; R.ag = s.grades.GREAT === n && n > 0;
+    R.newFc = R.fc && !md.fc; R.newAg = R.ag && !md.ag;
+    Save.data.medals[this.song.id] = { r: Math.min(md.r === undefined ? 99 : md.r, R.rating), fc: !!(md.fc || R.fc), ag: !!(md.ag || R.ag) };
+    Rhythm.record(this.song, s, ratio);   // 節奏分析用的遊玩紀錄（裡面會存檔）
     App.goto('result');
   },
 

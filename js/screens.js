@@ -473,7 +473,7 @@ Screens.songs = {
     UI.text(String(song.no), bx, by + 2, 34, { fill: '#fff', stroke: '#3e2210', sw: 6, raw: true });   // 這一集裡的編號 1～10
     const ink = on ? '#9a1a08' : '#3a1d0a', soft = on ? '#8a3a10' : '#6a3c18';
     UI.text(song.title, x + 104, y + 40, 32, { align: 'left', fill: ink, stroke: null, raw: true, maxW: w - 320 });
-    UI.text(loc(song.sub) + '・' + loc(song.genre), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: w - 310 });
+    UI.text(loc(song.sub) + '・' + loc(song.genre), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: w - 340 });
     const S = song.sections;
     UI.text(`BPM ${S[0].bpm}–${S[S.length - 1].bpm}`, x + 104, y + 116, 17, { align: 'left', fill: soft, stroke: null, raw: true });
     if (on && this.previewIdx === i) {
@@ -482,6 +482,7 @@ Screens.songs = {
       UI.text(tr('試聽中'), x + 280, y + 116, 16, { align: 'left', fill: '#c43a1a', stroke: null, raw: true });
     }
     drawStars(x + w - 118, y + 40, song.stars, 24);
+    drawSongMedal(song.id, x + w - 196, y + 84, 22);   // 曲目獎章（最佳評價＋全連擊／全 GREAT）
     UI.text('HISCORE', x + w - 24, y + 84, 14, { align: 'right', fill: soft, stroke: null, raw: true });
     UI.text(pad(Save.best(song.id), 7), x + w - 24, y + 114, 24, { align: 'right', fill: ink, stroke: null, raw: true });
     ctx.restore();
@@ -512,8 +513,15 @@ Screens.songs = {
       UI.text('♪ ' + tr('試聽中'), cx, y + 520 - b, 22, { fill: '#ffd23f', stroke: null, raw: true });
     }
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 556, w - 80, 2);
-    UI.text('HISCORE', x + 80, y + 630, 26, { align: 'left', fill: '#ffb0a0', stroke: null, raw: true });
-    UI.text(pad(Save.best(song.id), 7), x + w - 80, y + 632, 64, { align: 'right', fill: '#fff', raw: true, sw: 9 });
+    UI.text('HISCORE', x + 80, y + 604, 26, { align: 'left', fill: '#ffb0a0', stroke: null, raw: true });
+    UI.text(pad(Save.best(song.id), 7), x + w - 80, y + 606, 64, { align: 'right', fill: '#fff', raw: true, sw: 9 });
+    // 曲目獎章：最佳評價＋全連擊／全 GREAT
+    const md = Save.data.medals[song.id];
+    if (md && md.r <= 9) {
+      drawMedalStamp(md.r, x + 108, y + 674, 30);
+      UI.text(tr(RATINGS[md.r].title), x + 154, y + 676, 26, { align: 'left', fill: RATINGS[md.r].color, stroke: '#fff3d8', sw: 4, raw: true, maxW: w - 420 });
+      if (md.ag || md.fc) drawMedalBadge(md.ag ? 'ag' : 'fc', x + w - 170, y + 676, 200, 34);
+    } else UI.text(tr('還沒有通關紀錄'), x + 80, y + 676, 20, { align: 'left', fill: '#8a90b8', stroke: null, raw: true });
   },
 };
 
@@ -913,12 +921,12 @@ Screens.howto = {
 Screens.settings = {
   sel: 0, n: 0, from: 'menu',
   // 各列（上下鍵的順序）：直式 = 手機；橫式 = PC（全螢幕、解析度）；桌面版沒有「安裝到主畫面」
-  KEYS: LAND ? ['music', 'sfx', 'offset', 'full', 'res', 'eco', 'lang', ...(DESKTOP_APP ? [] : ['install'])]
-    : ['music', 'sfx', 'offset', 'vibrate', 'eco', 'lang', 'install'],
+  KEYS: LAND ? ['music', 'sfx', 'offset', 'backup', 'full', 'res', 'eco', 'lang', ...(DESKTOP_APP ? [] : ['install'])]
+    : ['music', 'sfx', 'offset', 'vibrate', 'eco', 'lang', 'install', 'backup'],
   // 各列的位置 [x, y]：直式一欄；橫式兩欄（左：音量、判定校正；右：全螢幕、解析度、省電、語言、安裝）
-  POS: lay({ music: [50, 182], sfx: [50, 308], offset: [50, 434], vibrate: [50, 590], eco: [50, 690], lang: [50, 790], install: [50, 914] },
-    { music: [300, 200], sfx: [300, 326], offset: [300, 452], full: [1000, 200], res: [1000, 300], eco: [1000, 424], lang: [1000, 524], install: [1000, 648] }),
-  BACK: lay([230, 1030], [W / 2 - 130, 800]),
+  POS: lay({ music: [50, 176], sfx: [50, 298], offset: [50, 420], vibrate: [50, 572], eco: [50, 668], lang: [50, 764], install: [50, 884], backup: [50, 980] },
+    { music: [300, 200], sfx: [300, 326], offset: [300, 452], backup: [300, 610], full: [1000, 200], res: [1000, 300], eco: [1000, 424], lang: [1000, 524], install: [1000, 648] }),
+  BACK: lay([230, 1078], [W / 2 - 130, 800]),
   get ROWS() { return this.KEYS.length + 1; },   // 最後一列 = 返回
   idx(k) { return this.KEYS.indexOf(k); },
   enter(arg) {
@@ -927,6 +935,32 @@ Screens.settings = {
     if (this.from === 'menu') Sound.startBgm();
   },
   back() { if (this.from === 'game') App.goto('game', { resume: true }); else App.goto('menu'); },
+  say(text) { this.toast = { text: tr(text), t: Game.time }; },
+  // 匯出：存檔碼複製到剪貼簿；不行的話下載成文字檔
+  exportSave() {
+    Sound.play('confirm');
+    const code = Save.exportCode();
+    const download = () => {
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([code], { type: 'text/plain' })); a.download = 'daioyaki-save.txt';
+      document.body.appendChild(a); a.click(); a.remove(); this.say('已下載存檔檔案（daioyaki-save.txt）');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(code).then(() => this.say('已複製存檔碼！貼到記事本或傳給自己保存')).catch(download);
+    else download();
+  },
+  // 匯入：先讀剪貼簿；讀不到或不是存檔碼，再請玩家貼上
+  importSave() {
+    Sound.play('confirm');
+    const apply = code => {
+      const d = Save.parseCode(code);
+      if (!d) { if (code) this.say('這不是有效的存檔碼'); return; }
+      if (!window.confirm(tr('會用存檔碼覆蓋目前的成績、紀錄與設定，確定嗎？'))) return;
+      Save.importData(d); this.say('匯入完成！即將重新載入…');
+      setTimeout(() => location.reload(), 900);
+    };
+    const ask = () => { const c = window.prompt(tr('請貼上存檔碼')); if (c) apply(c); };
+    if (navigator.clipboard && navigator.clipboard.readText) navigator.clipboard.readText().then(t => (Save.parseCode(t) ? apply(t) : ask())).catch(ask);
+    else ask();
+  },
   setVol(key, v) {
     v = clamp(v, 0, 5);
     if (v === Save.data[key]) return;
@@ -1043,6 +1077,28 @@ Screens.settings = {
       const openInstall = () => { Sound.play('confirm'); App.goto('install', { from: this.from }); };
       if (UI.tapIn(X, y5, 620, 90)) { this.sel = i; openInstall(); }
       if (this.sel === i && Input.was('confirm')) openInstall();
+    }
+
+    // 存檔備份：匯出（複製存檔碼）／匯入（貼上存檔碼）；← → 選按鈕、ENTER 執行
+    { const [X, y, i] = this.panel('backup', 84);
+      UI.text('存檔備份', X + 34, y + 28, 28, { align: 'left', maxW: 280 });
+      UI.text('換手機或資料被清掉時，用存檔碼還原', X + 34, y + 62, 15, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 280 });
+      [['匯出', () => this.exportSave()], ['匯入', () => this.importSave()]].forEach(([label, act], j) => {
+        const bx = X + 330 + j * 140, on = this.sel === i && (this.bk || 0) === j;
+        UI.panel(bx, y + 16, 128, 52, 26, on ? '#ffd23f' : j ? 'rgba(255,255,255,.18)' : '#e8502a', '#fff');
+        UI.text(label, bx + 64, y + 43, 24, { fill: on ? '#5a2a00' : '#fff', stroke: on ? null : '#5a0f05', sw: 5 });
+        if (UI.tapIn(bx, y + 16, 128, 52)) { this.sel = i; this.bk = j; act(); }
+      });
+      if (this.sel === i) {
+        if (Input.was('left')) this.bk = 0;
+        if (Input.was('right')) this.bk = 1;
+        if (Input.was('confirm')) (this.bk ? this.importSave() : this.exportSave());
+      } }
+    // 匯出／匯入的結果訊息
+    if (this.toast && Game.time - this.toast.t < 3) {
+      const a = clamp(3 - (Game.time - this.toast.t), 0, 1), ty = lay(1050, 1000);
+      ctx.save(); ctx.globalAlpha = a; UI.panel(W / 2 - 330, ty - 30, 660, 60, 30, 'rgba(16,22,52,.94)', '#8dff8a');
+      UI.text(this.toast.text, W / 2, ty + 1, 20, { fill: '#fff', stroke: null, raw: true, maxW: 620 }); ctx.restore();
     }
 
     // 最後一列：返回
@@ -1255,6 +1311,36 @@ Screens.ranking = {
 };
 
 // 星級（最多 5 顆）
+// 曲目獎章：最佳評價的圓形印章（特上～修行）
+function drawMedalStamp(rIdx, cx, cy, r, rot = -0.14) {
+  const R = RATINGS[rIdx]; if (!R) return;
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
+  ctx.fillStyle = 'rgba(255,250,238,.92)'; ctx.beginPath(); ctx.arc(0, 0, r, 0, 7); ctx.fill();
+  ctx.strokeStyle = R.color; ctx.lineWidth = Math.max(2, r * 0.12); ctx.beginPath(); ctx.arc(0, 0, r * 0.9, 0, 7); ctx.stroke();
+  ctx.lineWidth = Math.max(1, r * 0.04); ctx.beginPath(); ctx.arc(0, 0, r * 0.72, 0, 7); ctx.stroke();
+  const st = tr(R.stamp);
+  UI.text(st, 0, 1, st.length > 1 ? r * 0.62 : r * 0.95, { fill: R.color, stroke: null, raw: true, maxW: r * 1.3 });
+  ctx.restore();
+}
+// 全連擊／全 GREAT 的彩帶（ALL GREAT 是彩虹色）
+function drawMedalBadge(kind, cx, cy, w, h) {
+  ctx.save();
+  if (kind === 'ag') {
+    const g = ctx.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0);
+    ['#ff5a7a', '#ffb84a', '#ffe14a', '#7affb0', '#7ad8ff', '#c890ff'].forEach((c, i, a) => g.addColorStop(i / (a.length - 1), c));
+    ctx.fillStyle = g;
+  } else ctx.fillStyle = '#e8b64a';
+  rrect(cx - w / 2, cy - h / 2, w, h, h / 2); ctx.fill();
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  UI.text(kind === 'ag' ? 'ALL GREAT' : 'FULL COMBO', cx, cy + 1, h * 0.62, { fill: '#5a2a00', stroke: null, raw: true, maxW: w - 8 });
+  ctx.restore();
+}
+// 選曲卡片／詳細資料用：印章＋（全 GREAT 優先，否則全連擊）彩帶
+function drawSongMedal(id, cx, cy, r) {
+  const m = Save.data.medals[id]; if (!m || m.r === undefined || m.r > 9) return;
+  drawMedalStamp(m.r, cx, cy, r);
+  if (m.ag || m.fc) drawMedalBadge(m.ag ? 'ag' : 'fc', cx, cy + r + 6, r * 3.1, r * 0.62);
+}
 function drawStars(cx, cy, n, size, max = 5) {
   ctx.save(); ctx.font = `${size}px ${FONT}`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
   const gap = size * 1.15, x0 = cx - (max - 1) * gap / 2;
@@ -1527,6 +1613,10 @@ Screens.result = {
       UI.text(String(r.grades[g]), gx, y + 514, 34, { fill: '#1f2a5a', stroke: null });
     });
     UI.text('MAX COMBO  ' + r.maxCombo, cx, y + 556, 24, { fill: '#1f2a5a', stroke: null });
+    if ((r.ag || r.fc) && t > 1.4) {   // 這一場達成全連擊／全 GREAT（第一次達成加 NEW!）
+      drawMedalBadge(r.ag ? 'ag' : 'fc', cx + 200, y + 556, 150, 28);
+      if (r.ag ? r.newAg : r.newFc) UI.text('NEW!', cx + 200, y + 579, 17, { fill: '#d6462a', stroke: '#fff', sw: 4, raw: true, alpha: 0.6 + 0.4 * Math.sin(Game.time * 6) });
+    }
     if (r.hits >= 5) UI.text(tr('平均時間差：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), cx, y + 586, 16, { fill: '#8a6a4a', stroke: null, raw: true });
     this.drawRating(r, x, y + 604, w, t);
     ctx.restore();
@@ -1548,6 +1638,8 @@ Screens.result = {
       if (UI.button(this, '返回選擇樂曲', BX, BY(1), 400, 64)) App.goto('songs');
       if (UI.button(this, '排行榜', BX, BY(2), 400, 64)) App.goto('ranking', { song: this.song.id });
       if (UI.button(this, '回主選單', BX, BY(3), 400, 64, { back: true })) App.goto('menu');
+      // 成績卡右上角：分享成績圖（手機叫出分享選單，PC 下載圖片）
+      if (UI.button(this, '分享', x + w - 150, y + 34, 132, 52, { size: 24 })) Share.result(r, this.song);
     }
     UI.nav(this);
   }

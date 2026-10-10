@@ -8,7 +8,7 @@ const IMAGES = ['bg_stall.jpg', 'griddle.png', 'button.png', 'great_text.png', '
   'chef_idle.png', 'chef_wave.png', 'chef_knife.png', 'chef_spatula.png', 'chef_sauce.png', 'chef_great.png', 'chef_nice.png', 'chef_bad.png', 'chef_cheer.png',
   'noodles_raw.png', 'yakisoba.png', 'cabbage_raw.png', 'cabbage_shred.png', 'crepe_raw.png', 'crepe_sauce.png', 'bacon_raw.png', 'bacon_bits.png'];
 const CORE = ['./', 'index.html', 'manifest.json', 'css/style.css',
-  ...['config', 'assets', 'save', 'platform', 'i18n', 'firebase-config', 'online', 'voices', 'audio', 'songs', 'rhythm', 'input', 'pwa', 'ui', 'street', 'game', 'screens', 'main'].map(n => `js/${n}.js`),
+  ...['config', 'assets', 'save', 'platform', 'i18n', 'firebase-config', 'online', 'voices', 'audio', 'songs', 'rhythm', 'share', 'input', 'pwa', 'ui', 'street', 'game', 'screens', 'main'].map(n => `js/${n}.js`),
   ...IMAGES.map(n => 'assets/images/' + n),
   'assets/icons/icon-192.png', 'assets/icons/icon-512.png', 'assets/icons/apple-touch-icon.png', 'assets/icons/favicon-32.png',
   'assets/audio/voice_irasshaimase.wav', 'assets/audio/voice_select_song.wav'];
