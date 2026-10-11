@@ -155,7 +155,7 @@ const HIT_SOUNDS = [
   { id: 'cat', name: '貓咪', desc: '喵！每一下都是貓叫', price: 600, color: '#e8902a' },
 ];
 
-// 遊戲幣商店：false = 還沒有遊戲幣，商店裡的東西全部免費可裝備；做好賺遊戲幣的機制後改成 true，就會照 price 收費
+// 遊戲幣商店：false = 還沒有遊戲幣，商店裡的東西全部免費可套用；做好賺遊戲幣的機制後改成 true，就會照 price 收費
 const COIN_SHOP = false;
 
 // ---- 製作名單 ----

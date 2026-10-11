@@ -69,7 +69,7 @@ const Fx = {
 const Scene = {
   bg: { s: 1, x: 0, y: 0 },
   // 目前的店面背景圖、燈籠光暈位置、兩側街景主題（選的圖還沒載入完，先用原本的攤位）
-  // preview：商店裡正在看的背景（還沒裝備），離開商店時清掉
+  // preview：商店裡正在看的背景（還沒套用），離開商店時清掉
   preview: null,
   theme() {
     const id = this.preview || Save.data.bg, t = BACKGROUNDS.find(b => b.id === id) || BACKGROUNDS[0], img = IMG['bg_' + t.id] || Assets.bg(t.id);

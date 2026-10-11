@@ -2,7 +2,8 @@
 
 // ===== 音訊：全部即時合成（太鼓、三味線、笛、鉦），不需音檔 =====
 // 三條音軌：music（樂曲）、sfx（遊戲中音效）、ui（選單音效）；音量 0~5 存在 Save
-const A = { ctx: null, noise: null, master: null, music: null, sfx: null, ui: null };
+const A = { ctx: null, noise: null, master: null, music: null, sfx: null, hit: null, ui: null };
+const HIT_VOL = 0.5;   // 打擊音效（打中食材）相對其他音效的音量
 
 function env(g, t, att, peak, dec) {
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + att);
@@ -221,8 +222,8 @@ const SND = {
     nz(t, 0.16, 0.22, A.sfx, { f: 600, to: 3500, q: 1.5 });
     osc('sine', ING[type].cue, t, 0.07, 0.32, A.sfx, { to: ING[type].cue * 1.5 });
   },
-  // 打中食材：用裝備中的打擊音效包（商店試聽時 pack 指定要聽的那包）
-  hit(type, grade, dest = A.sfx, t = A.ctx.currentTime, pack = Save.data.hitSound) {
+  // 打中食材：用套用中的打擊音效包（商店試聽時 pack 指定要聽的那包）
+  hit(type, grade, dest = A.hit, t = A.ctx.currentTime, pack = Save.data.hitSound) {
     (HIT_PACKS[pack] || HIT_PACKS.classic)(t, ING[type].pose, grade === 'GREAT', dest);
   },
   bad() { const t = A.ctx.currentTime; osc('square', 190, t, 0.2, 0.1, A.sfx, { to: 110 }); nz(t, 0.12, 0.2, A.sfx, { f: 500, q: 2 }); },
@@ -313,6 +314,8 @@ const Sound = {
       const comp = C.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 4; comp.connect(A.master);
       A.music = C.createGain(); A.music.connect(comp);
       A.sfx = C.createGain(); A.sfx.connect(comp);
+      // 打擊音效再過一層音量：打中的「咚」是短而尖的聲音，和音樂一樣大時聽起來會蓋過音樂（實測峰值比音樂平均大 10～14 dB）
+      A.hit = C.createGain(); A.hit.gain.value = HIT_VOL; A.hit.connect(A.sfx);
       A.ui = C.createGain(); A.ui.connect(comp);
       const len = C.sampleRate, buf = C.createBuffer(1, len, C.sampleRate), d = buf.getChannelData(0);
       for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;

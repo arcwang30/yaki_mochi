@@ -63,7 +63,7 @@ Shop.init();
 
 // ===== 遊戲幣商店（主選單 → 商店）：店面背景等外觀 =====
 // 商品以「種類:id」記在 Save.data.owned（例如 bg:rock），價格在各商品的 price（js/config.js 的 BACKGROUNDS）。
-// COIN_SHOP = false（目前）：還沒有賺遊戲幣的方式，全部視為已擁有、免費裝備。
+// COIN_SHOP = false（目前）：還沒有賺遊戲幣的方式，全部視為已擁有、免費套用。
 const CoinShop = {
   coins() { return Save.data.coins || 0; },
   owned(kind, item) { return !COIN_SHOP || !item.price || Save.data.owned.includes(kind + ':' + item.id); },
