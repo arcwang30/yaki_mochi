@@ -2099,10 +2099,12 @@ const MATHROCK = {   // D 大調（點弦分散和弦）
   MEL: [[78, null, 76, 78, null, 81, null, 78], [74, null, null, 73, null, 71, null, null], [79, null, 78, 79, null, 83, null, 79], [76, null, null, 74, null, 73, null, null],
     [81, null, 79, 81, null, 86, null, 81], [83, null, 81, null, 78, null, 74, null], [79, null, 78, null, 76, null, 73, null], [74, null, null, null, null, null, null, null]],
 };
-const INDUSTRIAL = {   // C# 小調（金屬撞擊）
-  ROOT: [37, 37, 37, 40, 37, 37, 42, 40],
-  MEL: [[73, null, 73, null, 76, null, 73, null], [72, null, null, null, 68, null, null, null], [73, null, 73, null, 76, null, 78, null], [76, null, 75, null, 73, null, null, null],
-    [80, null, 80, null, 81, null, 80, null], [78, null, 76, null, 75, null, 73, null], [72, null, 73, null, 75, null, 76, null], [73, null, null, null, null, null, null, null]],
+const MOOMBAH = {   // G 大調 G-Em-C-D（明亮的拉丁電子；dembow 節奏）
+  CHORD: [[55, 59, 62], [55, 59, 62], [55, 59, 64], [55, 59, 64], [55, 60, 64], [55, 60, 64], [54, 57, 62], [54, 57, 62]],
+  ROOT: [43, 43, 40, 40, 36, 36, 38, 38],
+  // 輕快的切分旋律：一問一答，最後停在 F#（下一圈回到 G）
+  MEL: [[79, null, 76, 79, null, 81, 79, null], [76, 74, null, 71, 74, null, null, null], [76, null, 79, 76, null, 74, 71, null], [74, 76, null, 79, 81, null, null, null],
+    [84, null, 83, 81, null, 79, 76, null], [79, 81, null, 79, 76, null, 72, null], [74, null, 78, 81, null, 78, 81, 83], [81, null, 79, null, 78, null, null, null]],
 };
 const JERSEY = {   // F 小調（Jersey club 的三連發大鼓）
   CHORD: [[60, 65, 68], [61, 65, 68], [63, 67, 70], [60, 64, 67], [60, 65, 68], [61, 65, 68], [63, 67, 70], [60, 64, 67]],
@@ -2210,20 +2212,33 @@ SONGS.push(
     outro(ms, add) { add(ms.at(0), (x, d) => { [62, 66, 69, 74, 78].forEach((n, i) => SND.twang(x + i * 0.05, n, 1.2, 0.8, d)); SND.walk(x, 26, 1.4, 1, d); SND.crash(x, 0.9, d); SND.kick(x, 0.9, d); }); },
   },
   {
-    id: 'industrial', title: 'インダストリアル屋台', stars: 4, color: '#9aa0a8',
-    sub: { zh: '工業電子屋台', ja: 'Industrial Yatai', en: 'Industrial Yatai' }, genre: { zh: '工業電子・金屬撞擊', ja: 'インダストリアル', en: 'Industrial Electronic' },
-    sections: secs(4, 120, 158), patterns: PT.RUN,
+    id: 'moombah', title: 'ムーンバートン屋台', stars: 4, color: '#ff6fae',
+    sub: { zh: '慕巴頓屋台', ja: 'Moombahton Yatai', en: 'Moombahton Yatai' }, genre: { zh: 'Moombahton（拉丁電子・dembow）', ja: 'ムーンバートン', en: 'Moombahton' },
+    sections: secs(4, 108, 146), patterns: PT.SYNC,
     arrange(ms, add) {
-      const I = INDUSTRIAL, mi = ms.idx % 8, r = I.ROOT[mi], rest = ms.kind === 'rest';
-      if (!rest) beatAt(ms, add, [0, 2, 4, 6], (x, d) => SND.gkick(x, 0.6, d));
-      beatAt(ms, add, [2, 6], (x, d) => { SND.snare(x, 0.8, d); SND.metallo(x, 88, 0.5, d, 0.3); });   // 金屬撞擊
-      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.kane(x, 0.5, d));
-      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.dguitar(x, [r - 12], ms.sd * 0.7, 0.85, d, { mute: true }));   // 機械般的低音
-      if (ms.sec >= 2) beatAt(ms, add, [3], (x, d) => SND.reese(x, r, ms.bd * 2, 0.8, d));
-      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => SND.metallo(x, 76 + (k % 4) * 3, 0.4 + k * 0.03, d, 0.2));
-      melody(I.MEL[mi], ms, add, (x, n, dur, d) => { SND.synlead(x, n, dur, 1.5, d); if (ms.sec >= 3) SND.dguitar(x, [n - 24], dur, 0.4, d); });
+      const M = MOOMBAH, mi = ms.idx % 8, ch = M.CHORD[mi], r = M.ROOT[mi], rest = ms.kind === 'rest';
+      // dembow：大鼓每拍「咚」，小鼓在「咚—恰—咚恰」的位置（16 分音符 3、6、11、14）
+      if (!rest) [0, 4, 8, 12].forEach(k => add(t16(ms, k), (x, d) => SND.kick(x, 1, d)));
+      [3, 6, 11, 14].forEach(k => add(t16(ms, k), (x, d) => SND.snare(x, 0.5, d)));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.hat(x, 0.4, d));
+      if (ms.sec >= 1) for (let k = 1; k < 16; k += 2) add(t16(ms, k), (x, d) => SND.shaker(x, 0.8, d));
+      if (ms.sec >= 2) [2, 7, 10].forEach(k => add(t16(ms, k), (x, d) => SND.conga(x, k !== 10, 0.7, d)));
+      // 低音：跟著 dembow 跳（根音／八度）
+      [0, 3, 8, 11].forEach((k, i) => add(t16(ms, k), (x, d) => SND.synbass(x, r + (i % 2 ? 12 : 0), ms.bd * 0.6, 1, d)));
+      // 反拍的明亮管樂「叭！」；後段加上鋸齒波和弦鋪底
+      beatAt(ms, add, [1, 5], (x, d) => SND.brass(x, ch.map(n => n + 12), ms.sd * 0.5, 0.8, d));
+      if (ms.sec >= 3) add(ms.at(0), (x, d) => SND.pad(x, ch, ms.bd * 4, 0.4, d, 'sawtooth'));
+      if (rest) { add(ms.at(0), (x, d) => SND.riser(x, ms.bd * 4, d)); fillSnare(ms, add); }
+      melody(M.MEL[mi], ms, add, (x, n, dur, d) => {
+        SND.pluck(x, n, 1.6, d);
+        if (ms.sec >= 2) SND.marimba(x, n + 12, 0.5, d);       // 馬林巴琴疊高八度，更明亮
+        if (ms.sec >= 4) SND.trumpet(x, n - 12, dur, 0.6, d);   // 最後兩段：小號低八度一起唱
+      });
     },
-    outro(ms, add) { add(ms.at(0), (x, d) => { SND.dguitar(x, [25, 32, 37], 1.6, 1.1, d); SND.metallo(x, 85, 1.5, d, 1); SND.gkick(x, 1, d); SND.crash(x, 1, d); }); },
+    outro(ms, add) {
+      add(ms.at(0), (x, d) => { SND.kick(x, 1, d); SND.brass(x, [67, 71, 74, 79], 1.2, 1.1, d); SND.synbass(x, 31, 1.2, 1, d); SND.crash(x, 1, d); });
+      add(ms.at(0), (x, d) => SND.pluck(x, 79, 1.6, d));
+    },
   },
   {
     id: 'jersey', title: 'ジャージークラブ屋台', stars: 5, color: '#ffa03a',
@@ -2352,7 +2367,7 @@ const VOL_ORDER = [
   ['gamelan', 'hawaii', 'synthwave', 'future', 'anime', 'britpop', 'dancepunk', 'thrash', 'power', 'wametal'],    // VOL.3
   ['soul', 'boombap', 'gospel', 'afrobeat', 'newjack', 'kpop', 'trance', 'eswing', 'bigbeat', 'punk'],            // VOL.4：靈魂・嘻哈・流行
   ['calypso', 'okinawa', 'minyue', 'arabic', 'cumbia', 'baroque', 'ragtime', 'kalinka', 'balkan', 'samul'],      // VOL.5：世界音樂
-  ['trap', 'vapor', 'garage', 'bounce', 'house', 'glitch', 'mathrock', 'industrial', 'hyperpop', 'jersey'],       // VOL.6：電子
+  ['trap', 'vapor', 'garage', 'bounce', 'house', 'glitch', 'mathrock', 'moombah', 'hyperpop', 'jersey'],       // VOL.6：電子
 ];
 {
   const all = SONGS.splice(0);
