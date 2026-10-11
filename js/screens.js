@@ -749,6 +749,7 @@ Screens.songs = {
     // 選中的那張捲進畫面（組多到一頁放不下時）
     const top = Math.floor(P.sel / cols) * (ch + gap);
     if (top < P.scroll) P.scroll = top; else if (top + ch > P.scroll + viewH) P.scroll = top + ch - viewH;
+    let picked = -1;
     ctx.save(); ctx.beginPath(); ctx.rect(px + 10, gy - 8, pw - 20, viewH + 16); ctx.clip();
     for (let v = 0; v < N; v++) {
       const x = px + 30 + (v % cols) * (cw + gap), y = gy + Math.floor(v / cols) * (ch + gap) - P.scroll;
@@ -771,9 +772,10 @@ Screens.songs = {
       const ly = y + th + (ch - th) / 2 + 4;
       if (owned) UI.text(tr('已過關 {0}/{1}', cleared, songs.length), x + cw / 2, ly, lay(20, 22), { fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: cw - 20 });
       else UI.text(Shop.price(v) || tr('追加樂曲 {0} 首', songs.length), x + cw / 2, ly, lay(20, 22), { fill: '#fff27a', stroke: null, raw: true, maxW: cw - 20 });
-      if (Input.taps.some(t => UI.inside(t.x, t.y, x, Math.max(y, gy), cw, Math.min(y + ch, gy + viewH) - Math.max(y, gy)))) return this.pickVol(v);
+      if (picked < 0 && Input.taps.some(t => UI.inside(t.x, t.y, x, Math.max(y, gy), cw, Math.min(y + ch, gy + viewH) - Math.max(y, gy)))) picked = v;
     }
-    ctx.restore();
+    ctx.restore();   // 一定要先還原裁切（之前在迴圈裡直接 return，裁切沒還原 → 之後整個選曲畫面只畫在這個框裡）
+    if (picked >= 0) return this.pickVol(picked);
     UI.text(Input.touchMode ? '點一組切換・點外面關閉' : Input.padConnected ? '十字鍵 選擇　A 決定　B 關閉' : '方向鍵 選擇　ENTER 決定　ESC 關閉', px + pw / 2, py + ph - 44, 18, { fill: '#cfd8ff', stroke: null });
     if (Input.was('confirm')) return this.pickVol(P.sel);
     if (Input.was('back') || Input.was('listen')) return this.closePicker();
@@ -842,18 +844,26 @@ Screens.songs = {
     if (view < VOL_SIZE - this.SLOTS - 0.05) UI.text('▼', C.x + C.w / 2, bottom + 6 - bob, 22, { fill: '#ffd23f' });
     // ---- 樂曲組切換列：◀ 基本樂曲 ▼ ●○○○ ▶（左右鍵 / 點箭頭：上一組・下一組；點名稱 / X 鍵：打開樂曲組選單） ----
     const py = lay(978, 944), cx = C.x + C.w / 2, NV = VOL_ORDER.length;
-    UI.wood(cx - 160, py - 26, 320, 52, { r: 26, seed: 'page-bar' });
-    UI.text(volName(vol) + ' ▼', cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 170 });
+    // 做成按鈕的樣子：底下有影子、滑鼠移上去變亮、金色外框慢慢呼吸、右邊紅色圓鈕「▼」；按下時往下沉一點
+    { const bx = cx - 160, bw = 320, bh = 52, hover = !this.picker && UI.inside(Input.ptr.x, Input.ptr.y, bx, py - 26, bw, bh);
+      const sink = Game.time - (this.barT || -9) < 0.12 ? 3 : 0, by = py - 26 + sink;
+      ctx.fillStyle = 'rgba(0,0,0,.45)'; rrect(bx + 2, py - 26 + 6, bw, bh, 26); ctx.fill();
+      UI.wood(bx, by, bw, bh, { r: 26, seed: 'page-bar', light: hover });
+      ctx.save(); ctx.globalAlpha *= 0.55 + 0.35 * Math.sin(Game.time * 2.6) ** 2; ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 3; rrect(bx, by, bw, bh, 26); ctx.stroke(); ctx.restore();
+      const yy = py + sink;
+      UI.text(volName(vol), cx - 46, yy + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 150 });
+      if (!Shop.owned(vol)) drawLock(cx - 132, yy, 0.62);
+      for (let v = 0; v < NV; v++) { ctx.fillStyle = v === vol ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 42 + v * 18, yy, 6, 0, 7); ctx.fill(); }
+      ctx.fillStyle = '#c43a1a'; ctx.beginPath(); ctx.arc(cx + 130, yy, 17, 0, 7); ctx.fill(); ctx.strokeStyle = '#fff3d8'; ctx.lineWidth = 2.5; ctx.stroke();
+      UI.text('▼', cx + 130, yy + 2, 16, { fill: '#fff', stroke: null, raw: true }); }
     const locked = !Shop.owned(vol);
-    if (locked) drawLock(cx - 118, py, 0.62);
-    for (let v = 0; v < NV; v++) { ctx.fillStyle = v === vol ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 50 + v * 24, py, 8, 0, 7); ctx.fill(); }
     UI.text('◀', cx - 200, py, 40, { fill: '#ffd23f' }); UI.text('▶', cx + 200, py, 40, { fill: '#ffd23f' });
     // 手機：左右滑動切換 VOL（手指往左 = 下一集）
     if (Input.swipe === 'left') this.setVol(vol + 1);
     if (Input.swipe === 'right') this.setVol(vol - 1);
-    if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 110, 80)) this.setVol(vol - 1);
-    if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80)) this.setVol(vol + 1);
-    if (UI.tapIn(cx - 150, py - 26, 300, 52) || Input.was('listen')) this.openPicker();
+    if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 88, 80)) this.setVol(vol - 1);   // 箭頭的點擊範圍不和中間的按鈕重疊
+    if (Input.was('right') || UI.tapIn(cx + 162, py - 40, 88, 80)) this.setVol(vol + 1);
+    if (UI.tapIn(cx - 160, py - 26, 320, 52) || Input.was('listen')) { this.barT = Game.time; this.openPicker(); }
     // 鍵盤 / 手把 / 滑鼠滾輪：↑↓ 一首一首選（第 1 首再按 ↑ → 焦點移到右上角的「新手教學」，↓ 回到曲目）；T 鍵 / 手把 Y 直接開教學
     const TUT = 2;
     if (Input.was('up')) {
