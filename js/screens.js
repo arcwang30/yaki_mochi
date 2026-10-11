@@ -591,6 +591,21 @@ Screens.shop = {
     ctx.restore();
     // 捲軸（有超過一頁時）
     const max = this.maxScroll();
+    // 上下還有東西時：邊緣淡出；下面還有 → 跳動的 ▼「還有 N 件」
+    if (max > 0) {
+      const fh = Math.min(70, G.ch * 0.45), top = this.scroll > 4, more = this.scroll < max - 4;
+      const fade = (y0, y1) => { const g = ctx.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(10,12,30,0)'); g.addColorStop(1, 'rgba(10,12,30,.85)'); ctx.fillStyle = g; ctx.fillRect(G.x - 6, Math.min(y0, y1), gw + 12, Math.abs(y1 - y0)); };
+      if (top) fade(G.y + fh * 0.6, G.y - 6);
+      if (more) {
+        fade(G.y + viewH - fh, G.y + viewH + 6);
+        const lastRow = Math.floor((this.scroll + viewH + G.gap + G.ch * 0.3) / (G.ch + G.gap)), left = Math.max(0, list.length - lastRow * G.cols);
+        const bob = Math.sin(Game.time * 5) * 4, cy = G.y + viewH - 16 + bob;
+        const txt = left > 0 ? '▼ ' + tr('還有 {0} 件', left) + ' ▼' : '▼', fs = LAND ? 20 : 17;
+        ctx.font = `${fs}px ${FONT}`; const pw = ctx.measureText(txt).width + 28;
+        UI.panel(G.x + gw / 2 - pw / 2, cy - 16, pw, 32, 16, 'rgba(16,22,52,.92)', '#ffd23f');
+        UI.text(txt, G.x + gw / 2, cy + 1, fs, { fill: '#ffd23f', stroke: null, raw: true });
+      }
+    }
     if (max > 0) {
       const sx = G.x + gw + 4, bh = viewH * viewH / (viewH + max), by = G.y + (viewH - bh) * (this.scroll / max);
       ctx.fillStyle = 'rgba(255,255,255,.15)'; rrect(sx, G.y, 5, viewH, 3); ctx.fill();
