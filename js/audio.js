@@ -27,6 +27,12 @@ function nz(t, dur, peak, dest, o = {}) {
   release(s, fl, g);
 }
 
+// 失真曲線（破音吉他、硬核大鼓共用）：用奇數點，讓輸入 0 剛好對到 0（偶數點會有直流偏移，沒聲音時也一直漏出來）
+function distCurve() {
+  if (!A.distCurve) { const N = 1025, c = new Float32Array(N), k = 50; for (let i = 0; i < N; i++) { const x = i * 2 / (N - 1) - 1; c[i] = (1 + k) * x / (1 + k * Math.abs(x)); } A.distCurve = c; }
+  return A.distCurve;
+}
+
 // 通用音色：波形＋（可選）低通濾波掃頻、顫音、延音
 function voice(type, f, t, dur, peak, dest, o = {}) {
   const C = A.ctx, os = C.createOscillator(), g = C.createGain(), att = o.att || 0.005, hold = o.hold || 0;
@@ -187,10 +193,8 @@ const SND = {
   // 破音吉他（真的過一層失真）：notes 一起刷；o.mute 悶音（短、暗）、o.strum 刷弦間隔
   dguitar(t, notes, dur, v = 1, dest = A.music, o = {}) {
     const C = A.ctx;
-    // 失真曲線用奇數點，讓輸入 0 剛好對到 0（偶數點會有直流偏移，沒聲音時也一直漏出來）
-    if (!A.distCurve) { const N = 1025, c = new Float32Array(N), k = 50; for (let i = 0; i < N; i++) { const x = i * 2 / (N - 1) - 1; c[i] = (1 + k) * x / (1 + k * Math.abs(x)); } A.distCurve = c; }
     const pre = C.createGain(), sh = C.createWaveShaper(), fl = C.createBiquadFilter(), g = C.createGain();
-    pre.gain.value = 0.45; g.gain.value = 0; sh.curve = A.distCurve; fl.type = 'lowpass'; fl.frequency.value = o.mute ? 1000 : 3200; fl.Q.value = 0.9;
+    pre.gain.value = 0.45; g.gain.value = 0; sh.curve = distCurve(); fl.type = 'lowpass'; fl.frequency.value = o.mute ? 1000 : 3200; fl.Q.value = 0.9;
     const end = t + dur + 0.12;
     const oscs = [];
     notes.forEach((n, i) => [-9, 9].forEach(d => { const os = C.createOscillator(); os.type = 'sawtooth'; os.frequency.value = m2f(n); os.detune.value = d; os.connect(pre); os.start(t + i * (o.strum || 0)); os.stop(end); oscs.push(os); }));
@@ -198,6 +202,45 @@ const SND = {
     pre.connect(sh); sh.connect(fl); fl.connect(g); g.connect(dest);
     const pk = 0.06 * v, hold = o.mute ? Math.min(dur, 0.06) : dur * 0.7;
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.004); g.gain.setValueAtTime(pk, t + 0.004 + hold); g.gain.exponentialRampToValueAtTime(0.0001, end);
+  },
+  // ---- VOL.4 新曲用 ----
+  accordion(t, notes, dur, v = 1, dest = A.music) {   // 手風琴（musette：兩片簧略為走音、微顫）
+    notes.forEach(n => [-11, 11].forEach(d => voice('sawtooth', m2f(n), t, 0.06, 0.03 * v, dest, { att: 0.015, hold: Math.max(0, dur - 0.05), lp: 2000, q: 1.2, detune: d })));
+  },
+  shaku(t, n, dur, v = 1, dest = A.music) {   // 尺八：從下面吹上來、氣音、慢顫音
+    osc('sine', m2f(n - 1), t, Math.max(0.2, dur), 0.12 * v, dest, { to: m2f(n), bend: 0.12, att: 0.06 });
+    voice('sine', m2f(n), t + 0.12, Math.max(0.15, dur - 0.1), 0.05 * v, dest, { att: 0.08, vib: 0.012, vibRate: 5, vibDelay: 0.1 });
+    nz(t, Math.min(0.35, dur), 0.05 * v, dest, { f: m2f(n) * 2, q: 6 });
+  },
+  conga(t, hi, v = 1, dest = A.music) {   // 康加鼓：hi = 拍擊（高）、否則開放音（低）
+    if (hi) { nz(t, 0.05, 0.4 * v, dest, { f: 1800, q: 1.5 }); osc('sine', 420, t, 0.07, 0.2 * v, dest, { to: 380 }); }
+    else osc('sine', 260, t, 0.22, 0.45 * v, dest, { to: 235, bend: 0.06 });
+  },
+  cajon(t, hi, v = 1, dest = A.music) {   // 木箱鼓：低音「咚」／高音「啪」
+    if (hi) { nz(t, 0.08, 0.45 * v, dest, { f: 2600, q: 0.9 }); nz(t, 0.05, 0.2 * v, dest, { type: 'lowpass', f: 600 }); }
+    else { osc('sine', 95, t, 0.2, 0.75 * v, dest, { to: 60, bend: 0.1 }); nz(t, 0.04, 0.3 * v, dest, { type: 'lowpass', f: 400 }); }
+  },
+  palmas(t, v = 1, dest = A.music) { nz(t, 0.05, 0.4 * v, dest, { f: 2300, q: 1.4 }); nz(t + 0.008, 0.05, 0.3 * v, dest, { f: 2800, q: 1.4 }); },   // 佛朗明哥拍手（乾、尖）
+  dhol(t, hi, v = 1, dest = A.music) {   // 多爾鼓：低音面「咚」＋細棒面「答」
+    if (hi) { nz(t, 0.04, 0.5 * v, dest, { f: 3000, q: 2.5 }); osc('square', 880, t, 0.025, 0.05 * v, dest); }
+    else { osc('sine', 115, t, 0.3, 0.85 * v, dest, { to: 55, bend: 0.14 }); nz(t, 0.03, 0.3 * v, dest, { type: 'lowpass', f: 700 }); }
+  },
+  tumbi(t, n, dur, v = 1, dest = A.music) {   // 圖姆比（單弦撥弦）：尖亮、音高一撥就往下掉一點
+    osc('square', m2f(n + 0.7), t, Math.min(0.3, dur), 0.05 * v, dest, { to: m2f(n), bend: 0.03, att: 0.001 });
+    voice('sawtooth', m2f(n), t, Math.min(0.28, dur), 0.03 * v, dest, { att: 0.001, lp: 4200, lpTo: 1400, lpT: 0.15, q: 3 });
+  },
+  hoover(t, n, dur, v = 1, dest = A.music) {   // Hoover（硬核電音）：一群走音鋸齒波從上面俯衝下來
+    [-25, 0, 25].forEach(d => { const C = A.ctx, os = C.createOscillator(), fl = C.createBiquadFilter(), g = C.createGain();
+      os.type = 'sawtooth'; os.detune.value = d; os.frequency.setValueAtTime(m2f(n + 5), t); os.frequency.exponentialRampToValueAtTime(m2f(n), t + 0.08);
+      fl.type = 'lowpass'; fl.frequency.value = 2400; fl.Q.value = 2;
+      env(g, t, 0.006, 0.035 * v, Math.max(0.08, dur)); os.connect(fl); fl.connect(g); g.connect(dest); os.start(t); os.stop(t + dur + 0.1); release(os, fl, g); });
+  },
+  gkick(t, v = 1, dest = A.music) {   // 硬核破音大鼓（Gabber）：正弦波俯衝＋失真
+    const C = A.ctx, os = C.createOscillator(), pre = C.createGain(), sh = C.createWaveShaper(), fl = C.createBiquadFilter(), g = C.createGain();
+    os.type = 'sine'; os.frequency.setValueAtTime(220, t); os.frequency.exponentialRampToValueAtTime(48, t + 0.1);
+    pre.gain.value = 3; sh.curve = distCurve(); fl.type = 'lowpass'; fl.frequency.value = 3000;
+    env(g, t, 0.002, 0.6 * v, 0.24);
+    os.connect(pre); pre.connect(sh); sh.connect(fl); fl.connect(g); g.connect(dest); os.start(t); os.stop(t + 0.32); release(os, pre, sh, fl, g);
   },
   don(t, v = 1, dest = A.music) { osc('sine', 150, t, 0.34, 0.9 * v, dest, { to: 58, bend: 0.2 }); osc('sine', 88, t, 0.5, 0.3 * v, dest); nz(t, 0.05, 0.5 * v, dest, { type: 'lowpass', f: 500 }); },
   ka(t, v = 1, dest = A.music) { nz(t, 0.045, 0.45 * v, dest, { f: 3300, q: 4 }); osc('square', 1150, t, 0.02, 0.06 * v, dest); },
@@ -245,6 +288,17 @@ function meow(t, f0, dur, v, dest) {
   g.gain.setValueAtTime(v, t + dur * 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
   os.connect(fl); fl.connect(fl2); fl2.connect(g); g.connect(dest); os.start(t); os.stop(t + dur + 0.05);
   release(os, fl, fl2, g);
+}
+// 狗叫「汪」：鋸齒波＋寬共鳴峰，音高一開口就往下掉、很短
+function bark(t, f0, dur, v, dest) {
+  const C = A.ctx, os = C.createOscillator(), fl = C.createBiquadFilter(), g = C.createGain();
+  os.type = 'sawtooth';
+  os.frequency.setValueAtTime(f0 * 1.15, t); os.frequency.exponentialRampToValueAtTime(f0 * 0.7, t + dur);
+  fl.type = 'bandpass'; fl.Q.value = 2.2; fl.frequency.setValueAtTime(1400, t); fl.frequency.exponentialRampToValueAtTime(700, t + dur);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  os.connect(fl); fl.connect(g); g.connect(dest); os.start(t); os.stop(t + dur + 0.05);
+  release(os, fl, g);
+  nz(t, dur * 0.6, v * 0.25, dest, { f: 1200, q: 1.5 });   // 喉嚨的氣音
 }
 // 鈴聲：不成整數倍的泛音（金屬感），長餘韻
 function bell(t, f, dur, v, dest) {
@@ -296,6 +350,36 @@ const HIT_PACKS = {
     else if (p === 'spatula') meow(t, 600, 0.24, 1.1, d);
     else meow(t, 430, 0.32, 1.15, d);
     if (great) meow(t + 0.12, 1100, 0.14, 0.6, d);
+  },
+  drums(t, p, great, d) {   // 切 = 小鼓、炒 = 大鼓＋閉合鈸、淋醬 = 中鼓；GREAT = 銅鈸
+    if (p === 'knife') { SND.snare(t, 2.6, d); SND.kick(t, 0.6, d); }
+    else if (p === 'spatula') { SND.kick(t, 1.2, d); SND.hat(t, 1.8, d); }
+    else { osc('sine', 170, t, 0.22, 0.9, d, { to: 95, bend: 0.18, att: 0.001 }); nz(t, 0.04, 0.4, d, { type: 'lowpass', f: 1200 }); }
+    if (great) nz(t + 0.02, 0.45, 0.4, d, { type: 'highpass', f: 5000 });
+  },
+  bubble(t, p, great, d) {   // 泡泡「啵」：正弦波快速往上滑
+    const pop = (x, f, v) => { osc('sine', f, x, 0.07, v, d, { to: f * 3.2, bend: 0.045, att: 0.001 }); nz(x, 0.015, v * 0.4, d, { f: f * 3, q: 3 }); };
+    osc('sine', 120, t, 0.08, 0.8, d, { to: 70, att: 0.002 });   // 墊一點低音，打擊感紮實
+    if (p === 'knife') pop(t, 520, 1);
+    else if (p === 'spatula') { pop(t, 380, 1); pop(t + 0.06, 560, 0.8); }
+    else pop(t, 240, 1.2);
+    if (great) [0.07, 0.12, 0.17].forEach((x, i) => pop(t + x, 700 + i * 220, 0.45));
+  },
+  register(t, p, great, d) {   // 收銀機：按鍵「喀」、抽屜「咚」、錢鈴「鈴」
+    nz(t, 0.03, 0.9, d, { f: 2600, q: 2 });   // 按鍵
+    osc('sine', 110, t, 0.09, 0.85, d, { to: 65, att: 0.002 });
+    if (p === 'knife') bell(t + 0.02, 2349, 0.35, 0.3, d);
+    else if (p === 'spatula') { bell(t + 0.02, 1760, 0.4, 0.28, d); bell(t + 0.08, 2349, 0.4, 0.22, d); }
+    else { osc('sine', 150, t + 0.03, 0.12, 0.8, d, { to: 80, att: 0.001 }); nz(t + 0.03, 0.06, 0.4, d, { type: 'lowpass', f: 900 }); }   // 抽屜彈開
+    if (great) { bell(t + 0.06, 3136, 0.5, 0.2, d); bell(t + 0.11, 3520, 0.5, 0.17, d); }   // 「鏘鈴～」
+  },
+  dog(t, p, great, d) {   // 柴犬：切 = 尖的「汪」、炒 = 「汪」、淋醬 = 低沉「嗚汪」
+    nz(t, 0.02, 0.8, d, { type: 'lowpass', f: 2000 });
+    osc('sine', 130, t, 0.08, 0.9, d, { to: 75, att: 0.002 });
+    if (p === 'knife') bark(t, 720, 0.1, 2.3, d);
+    else if (p === 'spatula') bark(t, 520, 0.14, 2.4, d);
+    else bark(t, 360, 0.2, 2.5, d);
+    if (great) bark(t + 0.13, 900, 0.09, 1.3, d);
   },
 };
 

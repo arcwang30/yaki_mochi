@@ -365,12 +365,12 @@ Screens.menu = {
 // 遊戲幣先預留（js/shop.js 的 CoinShop、js/config.js 的 COIN_SHOP / price）：COIN_SHOP = false 時全部免費
 // 「追加樂曲」是付真錢的（js/shop.js 的 Shop：App Store / Google Play / Steam），分頁與價格用朱漆色和遊戲幣商品區分
 const VOL_ITEMS = VOL_ORDER.map((ids, i) => ({ id: 'vol' + (i + 1), vol: i + 1, name: 'VOL.' + (i + 1), songs: SONGS.filter(s => s.vol === i + 1),
-  color: ['#e8702a', '#2a8ad6', '#8a3ad6'][i] || '#c8321e' }));
+  color: ['#e8702a', '#2a8ad6', '#8a3ad6', '#2a9a6a'][i] || '#c8321e' }));
 Screens.shop = {
   cat: 0, sel: [], scroll: 0, scrollTo: 0, tabScroll: 0, btn: { sel: -1, n: 0 }, vs: 0,
   CATS: [
-    // 卡片放大：手機 3 張一排（填滿格子區）、PC 一張一列的橫幅
-    { name: '追加樂曲', kind: 'vol', list: VOL_ITEMS, cols: lay(3, 1), ch: lay(180, 140), paid: true,
+    // 卡片放大：手機 4 張一排（填滿格子區）、PC 一張一列的橫幅
+    { name: '追加樂曲', kind: 'vol', list: VOL_ITEMS, cols: lay(4, 1), ch: lay(180, 140), paid: true,
       // 縮圖：VOL 代表色＋大字＋這一集 10 首的顏色點；沒買的有鎖
       thumb(it, x, y, w, h) {
         const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, it.color); g.addColorStop(1, 'rgba(0,0,0,.6)');

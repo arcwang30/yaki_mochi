@@ -153,6 +153,10 @@ const HIT_SOUNDS = [
   { id: 'laser', name: '電子雷射', desc: '咻碰！電音舞台的合成音效', price: 400, color: '#7a2ad6' },
   { id: 'bell', name: '風鈴', desc: '叮鈴～清涼的夏日鈴聲', price: 400, color: '#2a8ad6' },
   { id: 'cat', name: '貓咪', desc: '喵！每一下都是貓叫', price: 600, color: '#e8902a' },
+  { id: 'drums', name: '爵士鼓組', desc: '咚恰！大鼓小鼓配銅鈸', price: 300, color: '#5a6a8a' },
+  { id: 'bubble', name: '泡泡', desc: '啵！一顆一顆的泡泡破掉', price: 400, color: '#3ac0d8' },
+  { id: 'register', name: '收銀機', desc: '鏘鈴！生意興隆的收銀聲', price: 500, color: '#d8a020' },
+  { id: 'dog', name: '柴犬', desc: '汪！柴犬老闆幫你吆喝', price: 600, color: '#c87a3a' },
 ];
 
 // 遊戲幣商店：false = 還沒有遊戲幣，商店裡的東西全部免費可套用；做好賺遊戲幣的機制後改成 true，就會照 price 收費
