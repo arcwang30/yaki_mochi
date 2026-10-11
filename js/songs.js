@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== 樂曲（內建曲目＋追加的 VOL.1～VOL.3，各 10 首；分組與排列順序在檔案最後的 VOL_ORDER） =====
+// ===== 樂曲（內建曲目＋追加的 VOL.1～VOL.6，各 10 首；分組與排列順序在檔案最後的 VOL_ORDER） =====
 // 每首歌 = 資料（歌名、星級、各段 BPM 與節奏難度、搖擺比例）＋ arrange()：產生一個小節的音樂。
 // arrange(ms, add)：ms 為小節資訊（kind: 'play' | 'rest'，sec 第幾段，idx 第幾小節，bd 一拍秒數，at(s) 第 s 個八分音符的時間）；
 // add(t, (x, dest) => 播放) 把音符排進去。dest 一定要傳給樂器（遊戲 / 選曲試聽共用）。
@@ -2341,21 +2341,26 @@ SONGS.push(
     outro(ms, add) { add(ms.at(0), (x, d) => { SND.supersaw(x, 88, 1.6, 1.2, d); SND.supersaw(x, 83, 1.6, 0.8, d); SND.bell(x, 100, 1, d); SND.b808(x, 28, 1.4, 1, d); SND.crash(x, 1, d); SND.kick(x, 1, d); }); },
   },
 );
-// ---- 曲目排列：第 0 組 = 內建曲目（一開始就能玩、不收費、不算 VOL 系列）；之後是追加的 VOL.1、VOL.2、VOL.3（各 10 首）；每組依星級由易到難 ----
+// ---- 曲目排列：第 0 組 = 內建曲目（一開始就能玩、不收費、不算 VOL 系列）；之後是追加的 VOL.1～VOL.6，各 10 首、各自付費；每組依星級由易到難 ----
+// VOL.1～VOL.3 = 最早做的 30 首（VOL.2 的クレズマー已換成ディキシー）；VOL.4～VOL.6 = 後來新作的 30 首，
+// 依曲風分成三組（靈魂・嘻哈・流行／世界音樂／電子），每組 2～5 星各 2～3 首，難度分布平均
 // song.vol = 第幾組（0 = 內建曲目）；畫面上的名稱用 volName()
 const VOL_ORDER = [
   ['tsukimi', 'bossa', 'yatai', 'chindon', 'swing', 'ska', 'funk', 'chip', 'hyper', 'dnb'],                       // 內建曲目
-  ['musicbox', 'reggae', 'citypop', 'ondo', 'soul', 'boombap', 'gospel', 'samba', 'surf', 'afrobeat', 'newjack', 'disco', 'boogie', 'kpop', 'trance', 'eswing', 'jrock', 'hoedown', 'bigbeat', 'punk'],   // VOL.1
-  ['enka', 'blues', 'polka', 'tango', 'calypso', 'okinawa', 'celtic', 'bhangra', 'minyue', 'arabic', 'cumbia', 'salsa', 'dixie', 'baroque', 'ragtime', 'flamenco', 'gabber', 'kalinka', 'balkan', 'samul'],   // VOL.2
-  ['gamelan', 'hawaii', 'synthwave', 'future', 'trap', 'vapor', 'garage', 'anime', 'bounce', 'house', 'glitch', 'britpop', 'dancepunk', 'mathrock', 'industrial', 'thrash', 'power', 'wametal', 'hyperpop', 'jersey'],   // VOL.3
+  ['musicbox', 'reggae', 'citypop', 'ondo', 'samba', 'surf', 'disco', 'boogie', 'jrock', 'hoedown'],              // VOL.1
+  ['enka', 'blues', 'polka', 'tango', 'celtic', 'bhangra', 'salsa', 'dixie', 'flamenco', 'gabber'],               // VOL.2
+  ['gamelan', 'hawaii', 'synthwave', 'future', 'anime', 'britpop', 'dancepunk', 'thrash', 'power', 'wametal'],    // VOL.3
+  ['soul', 'boombap', 'gospel', 'afrobeat', 'newjack', 'kpop', 'trance', 'eswing', 'bigbeat', 'punk'],            // VOL.4：靈魂・嘻哈・流行
+  ['calypso', 'okinawa', 'minyue', 'arabic', 'cumbia', 'baroque', 'ragtime', 'kalinka', 'balkan', 'samul'],      // VOL.5：世界音樂
+  ['trap', 'vapor', 'garage', 'bounce', 'house', 'glitch', 'mathrock', 'industrial', 'hyperpop', 'jersey'],       // VOL.6：電子
 ];
 {
   const all = SONGS.splice(0);
   VOL_ORDER.forEach((ids, v) => ids.forEach((id, k) => { const s = all.find(x => x.id === id); s.vol = v; s.no = k + 1; SONGS.push(s); }));
 }
-const volSize = v => VOL_ORDER[v].length;   // 每組幾首（內建曲目 10 首、各 VOL 20 首）
+const volSize = v => VOL_ORDER[v].length;   // 每組幾首（目前都是 10 首）
 const volName = v => (v === 0 ? tr('內建曲目') : 'VOL.' + v);
-const VOL_COLORS = ['#e8a040', '#2a8ad6', '#2a9a6a', '#8a3ad6'];   // 各組的代表色（樂曲組選單、商店卡片）
+const VOL_COLORS = ['#e8a040', '#2a8ad6', '#2a9a6a', '#8a3ad6', '#d6457a', '#2aa6b0', '#5a5ad6'];   // 各組的代表色（樂曲組選單、商店卡片）
 
 // 選單背景音樂用哪一首（index）
 const MENU_SONG = SONGS.findIndex(s => s.id === 'yatai');

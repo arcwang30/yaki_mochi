@@ -881,7 +881,8 @@ Screens.songs = {
       const yy = py + sink;
       UI.text(volName(vol), cx - 46, yy + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 150 });
       if (!Shop.owned(vol)) drawLock(cx - 132, yy, 0.62);
-      for (let v = 0; v < NV; v++) { ctx.fillStyle = v === vol ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 42 + v * 18, yy, 6, 0, 7); ctx.fill(); }
+      const ds = Math.min(18, 76 / Math.max(1, NV - 1)), dr = Math.min(6, ds * 0.4);   // 組數多時圓點縮小、靠緊（不壓到右邊的 ▼ 鈕）
+      for (let v = 0; v < NV; v++) { ctx.fillStyle = v === vol ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 34 + v * ds, yy, dr, 0, 7); ctx.fill(); }
       ctx.fillStyle = '#c43a1a'; ctx.beginPath(); ctx.arc(cx + 130, yy, 17, 0, 7); ctx.fill(); ctx.strokeStyle = '#fff3d8'; ctx.lineWidth = 2.5; ctx.stroke();
       UI.text('▼', cx + 130, yy + 2, 16, { fill: '#fff', stroke: null, raw: true }); }
     const locked = !Shop.owned(vol);
@@ -1333,7 +1334,7 @@ Screens.howto = {
     [(x, y) => drawButtonImg(x - 14, y + 20, 92), '跟著節拍按按鈕', '食材會從左右兩邊丟到鐵板中央的金色框裡，落下的瞬間按下按鈕！'],
     [(x, y) => drawImgW(IMG.cabbage_raw, x, y, 96), '先聽，再按', '食材丟出時會發出「咻～啵」提示音，2 拍之後落下。跟著音樂的節拍就對了。'],
     [(x, y) => drawImgW(IMG.okonomiyaki, x, y, 110), '湊齊四種食材', '炒麵、高麗菜、煎餅、培根各處理好 1 個，就會自動合成一份廣島燒，加 1000 分！'],
-    ['⏩', '越來越快', '每 8 小節節奏加快一次。共 30 首樂曲（3 集，每集 10 首），星越多越快、越難。'],
+    ['⏩', '越來越快', '每 8 小節節奏加快一次。共 70 首樂曲（內建 10 首＋VOL.1～VOL.6 各 10 首），星越多越快、越難。'],
     ['🏆', 'HISCORE', '每首歌的每種難度，都會記下你自己的最高分。'],
   ],
   p1() { this.RULES.forEach(([ic, t, d], i) => this.row(222 + i * 164, ic, t, d)); },
