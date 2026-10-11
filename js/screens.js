@@ -364,8 +364,9 @@ Screens.menu = {
 //   需要不同流程的種類可以另外給 state / status / badge / label / act / extra（額外按鈕）/ overlay（上方大面板）/ blur / cols
 // 遊戲幣先預留（js/shop.js 的 CoinShop、js/config.js 的 COIN_SHOP / price）：COIN_SHOP = false 時全部免費
 // 「追加樂曲」是付真錢的（js/shop.js 的 Shop：App Store / Google Play / Steam），分頁與價格用朱漆色和遊戲幣商品區分
-const VOL_ITEMS = VOL_ORDER.map((ids, i) => ({ id: 'vol' + (i + 1), vol: i + 1, name: 'VOL.' + (i + 1), songs: SONGS.filter(s => s.vol === i + 1),
-  color: ['#e8702a', '#2a8ad6', '#8a3ad6', '#2a9a6a'][i] || '#c8321e' }));
+// 只列付費的 VOL（基本樂曲不算 VOL 系列，不在商店賣）
+const VOL_ITEMS = VOL_ORDER.map((ids, v) => v).filter(v => v > 0).map(v => ({ id: 'vol' + v, vol: v, name: volName(v), songs: SONGS.filter(s => s.vol === v),
+  color: VOL_COLORS[v] || '#c8321e' }));
 Screens.shop = {
   cat: 0, sel: [], scroll: 0, scrollTo: 0, tabScroll: 0, btn: { sel: -1, n: 0 }, vs: 0,
   CATS: [
@@ -684,8 +685,8 @@ Screens.songs = {
   vol() { return SONGS[this.sel].vol; },
   row() { return SONGS[this.sel].no - 1; },                       // 這一集裡的第幾首（0～9）
   idxOf(vol, row) { return SONGS.findIndex(s => s.vol === vol && s.no === row + 1); },
-  setVol(v) {   // ← →：切換 VOL.1 / VOL.2（停在同樣的編號）
-    const nv = (v - 1 + VOL_ORDER.length) % VOL_ORDER.length + 1;
+  setVol(v) {   // ← →：切換基本樂曲 / VOL.1 / VOL.2…（停在同樣的編號）
+    const N = VOL_ORDER.length, nv = ((v % N) + N) % N;
     if (nv === this.vol()) return;
     this.sel = this.idxOf(nv, this.row()); this.previewT = 0.3; this.bs.sel = -1;
     this.volT = 0; this.volDir = v > this.vol() ? 1 : -1;
@@ -693,7 +694,7 @@ Screens.songs = {
   },
   enter() {
     const i = SONGS.findIndex(s => s.id === Save.data.lastSong);
-    this.sel = i >= 0 ? i : 0; this.previewIdx = -1; this.bs.sel = -1; this.pos = this.row(); this.dragFrom = null; this.volT = 1;
+    this.sel = i >= 0 ? i : 0; this.previewIdx = -1; this.bs.sel = -1; this.pos = this.row(); this.dragFrom = null; this.volT = 1; this.picker = null;
     chef.idlePose = 'wave'; Sound.init(); Sound.duck(false);
     // 選曲語音；試聽等語音講完（約 1.1 秒）再開始，不會蓋過去
     Sound.stopBgm(); Sound.playVoice('selectSong', A.ui, A.ctx && A.ctx.currentTime + 0.25);
@@ -713,7 +714,7 @@ Screens.songs = {
     if (Shop.busy) return;
     Sound.play('confirm');
     Shop.buy(vol).then(r => {
-      if (r === 'ok') { if (A.ctx) SND.fanfare(A.ctx.currentTime + 0.05); this.say(tr('已解鎖 {0}！', 'VOL.' + vol)); }
+      if (r === 'ok') { if (A.ctx) SND.fanfare(A.ctx.currentTime + 0.05); this.say(tr('已解鎖 {0}！', volName(vol))); }
       else this.say(tr(r === 'cancel' ? '已取消購買' : '購買失敗，請稍後再試'));
     });
   },
@@ -723,9 +724,67 @@ Screens.songs = {
     Shop.restore().then(n => this.say(tr(n < 0 ? '恢復購買失敗' : n > 0 ? '已恢復購買' : '沒有可恢復的購買')));
   },
   say(text) { this.msg = { text, t: Game.time }; },
+  // ---- 樂曲組選單（點 VOL 列 / X 鍵 / 手把 X 打開）：全部的組一次列出來，直接跳到任一組（組再多也不用一直左右切） ----
+  openPicker() { this.picker = { sel: this.vol(), scroll: 0 }; Sound.play('confirm'); },
+  closePicker() { this.picker = null; Sound.play('back'); },
+  pickVol(v) { this.picker = null; if (v !== this.vol()) this.setVol(v); else Sound.play('select'); },
+  drawPicker(dt) {
+    const P = this.picker, N = VOL_ORDER.length, cols = lay(2, 4);
+    // 面板高度跟著組數（最多到 maxH，再多就捲動）；畫面置中
+    const [px, pw, maxH] = lay([36, 648, 900], [420, 1080, 820]), gap = 18, ch = lay(200, 250), rows = Math.ceil(N / cols);
+    const ph = Math.min(maxH, 96 + rows * (ch + gap) - gap + 90), py = (H - ph) / 2;
+    const cw = (pw - 60 - gap * (cols - 1)) / cols, gy = py + 96, viewH = ph - 96 - 90;
+    UI.dim(0.6);
+    UI.panel(px, py, pw, ph, 28, 'rgba(16,22,52,.96)', '#ffd23f');
+    UI.text('選擇樂曲組', px + pw / 2, py + 50, 34, { fill: '#ffd23f', sw: 7 });
+    // 右上角 ✕
+    UI.text('✕', px + pw - 44, py + 46, 30, { fill: '#fff', stroke: null, raw: true });
+    if (UI.tapIn(px + pw - 84, py + 10, 76, 72)) return this.closePicker();
+    // 鍵盤 / 手把：方向鍵移動、ENTER / A 決定、ESC / B / X 關閉
+    if (Input.was('left')) P.sel = Math.max(0, P.sel - 1);
+    if (Input.was('right')) P.sel = Math.min(N - 1, P.sel + 1);
+    if (Input.was('up')) P.sel = Math.max(0, P.sel - cols);
+    if (Input.was('down')) P.sel = Math.min(N - 1, P.sel + cols);
+    if (['left', 'right', 'up', 'down'].some(k => Input.was(k))) Sound.play('select');
+    // 選中的那張捲進畫面（組多到一頁放不下時）
+    const top = Math.floor(P.sel / cols) * (ch + gap);
+    if (top < P.scroll) P.scroll = top; else if (top + ch > P.scroll + viewH) P.scroll = top + ch - viewH;
+    ctx.save(); ctx.beginPath(); ctx.rect(px + 10, gy - 8, pw - 20, viewH + 16); ctx.clip();
+    for (let v = 0; v < N; v++) {
+      const x = px + 30 + (v % cols) * (cw + gap), y = gy + Math.floor(v / cols) * (ch + gap) - P.scroll;
+      if (y > gy + viewH || y + ch < gy) continue;
+      const songs = SONGS.filter(s => s.vol === v), owned = Shop.owned(v), cur = v === this.vol(), on = v === P.sel, col = VOL_COLORS[v] || '#c8321e';
+      const cleared = songs.filter(s => Save.data.medals[recId(s)]).length;
+      UI.panel(x, y, cw, ch, 18, on ? 'rgba(255,190,60,.25)' : 'rgba(255,255,255,.07)', on ? '#ffd23f' : 'rgba(255,255,255,.25)');
+      // 上半：代表色＋名稱＋10 首的顏色點
+      const th = ch * 0.56;
+      ctx.save(); rrect(x + 6, y + 6, cw - 12, th, 12); ctx.clip();
+      const g = ctx.createLinearGradient(0, y, 0, y + th); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,.55)');
+      ctx.fillStyle = col; ctx.fillRect(x + 6, y + 6, cw - 12, th); ctx.fillStyle = g; ctx.fillRect(x + 6, y + 6, cw - 12, th);
+      ctx.restore();
+      UI.text(volName(v), x + cw / 2, y + 6 + th * 0.42, lay(34, 36), { fill: '#fff', stroke: 'rgba(0,0,0,.45)', sw: 6, raw: true, maxW: cw - 30 });
+      const dr = Math.min(7, (cw - 40) / 26);
+      songs.forEach((s, k) => { ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(x + cw / 2 + (k - 4.5) * dr * 2.4, y + 6 + th * 0.8, dr, 0, 7); ctx.fill(); });
+      if (cur) { UI.panel(x + 14, y + 14, 70, 28, 14, '#2fc46a', '#fff'); UI.text('目前', x + 49, y + 29, 16, { stroke: null }); }
+      if (!owned) drawLock(x + cw - 30, y + 34, 0.6);
+      // 下半：過關數（這個難度拿過獎章的歌）／沒買的顯示價格
+      const ly = y + th + (ch - th) / 2 + 4;
+      if (owned) UI.text(tr('已過關 {0}/{1}', cleared, songs.length), x + cw / 2, ly, lay(20, 22), { fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: cw - 20 });
+      else UI.text(Shop.price(v) || tr('追加樂曲 {0} 首', songs.length), x + cw / 2, ly, lay(20, 22), { fill: '#fff27a', stroke: null, raw: true, maxW: cw - 20 });
+      if (Input.taps.some(t => UI.inside(t.x, t.y, x, Math.max(y, gy), cw, Math.min(y + ch, gy + viewH) - Math.max(y, gy)))) return this.pickVol(v);
+    }
+    ctx.restore();
+    UI.text(Input.touchMode ? '點一組切換・點外面關閉' : Input.padConnected ? '十字鍵 選擇　A 決定　B 關閉' : '方向鍵 選擇　ENTER 決定　ESC 關閉', px + pw / 2, py + ph - 44, 18, { fill: '#cfd8ff', stroke: null });
+    if (Input.was('confirm')) return this.pickVol(P.sel);
+    if (Input.was('back') || Input.was('listen')) return this.closePicker();
+    if (Input.taps.some(t => !UI.inside(t.x, t.y, px, py, pw, ph))) this.closePicker();   // 點面板外面關閉
+  },
   frame(dt) {
     // 付款 / 恢復購買進行中：這一幀的操作全部忽略（畫面照畫，最後蓋上「處理中…」）
     if (Shop.busy) { Input.taps.length = 0; Input.pressed.clear(); Input.swipe = null; }
+    // 樂曲組選單打開時：這一幀的操作只給選單（先收起來，畫完選曲畫面再還給選單）
+    let held = null;
+    if (this.picker) { held = { taps: Input.taps.splice(0), pressed: new Set(Input.pressed), swipe: Input.swipe }; Input.pressed.clear(); Input.swipe = null; }
     menuBackdrop(0.66);
     UI.header('選擇樂曲', 'SELECT SONG');
     if (this.previewIdx !== this.sel) {
@@ -745,7 +804,7 @@ Screens.songs = {
       if (Input.was('diffNext')) this.setDiff(cd + 1); }
     const inList = (x, y) => UI.inside(x, y, C.x, top, C.w, bottom - top);
     // ---- 手指上下拖曳：清單跟著手指轉，放開時對齊最近的一首（甩得快會多轉幾首） ----
-    const drag = Input.dragY();
+    const drag = this.picker ? null : Input.dragY();
     if (drag && inList(drag.x, drag.y)) {
       if (this.dragFrom === null) this.dragFrom = this.pos;
       this.pos = clamp(this.dragFrom - drag.dy / slot, -0.45, VOL_SIZE - 0.55);
@@ -781,19 +840,20 @@ Screens.songs = {
     const bob = Math.sin(Game.time * 4) * 4;
     if (view > 0.05) UI.text('▲', C.x + C.w / 2, top - 4 + bob, 22, { fill: '#ffd23f' });
     if (view < VOL_SIZE - this.SLOTS - 0.05) UI.text('▼', C.x + C.w / 2, bottom + 6 - bob, 22, { fill: '#ffd23f' });
-    // ---- VOL 切換列：◀ VOL.1 ●○ ▶（左右鍵 / 點箭頭 / 點 VOL） ----
+    // ---- 樂曲組切換列：◀ 基本樂曲 ▼ ●○○○ ▶（左右鍵 / 點箭頭：上一組・下一組；點名稱 / X 鍵：打開樂曲組選單） ----
     const py = lay(978, 944), cx = C.x + C.w / 2, NV = VOL_ORDER.length;
     UI.wood(cx - 160, py - 26, 320, 52, { r: 26, seed: 'page-bar' });
-    UI.text('VOL.' + vol, cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true });
+    UI.text(volName(vol) + ' ▼', cx - 34, py + 1, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 170 });
     const locked = !Shop.owned(vol);
-    if (locked) drawLock(cx - 104, py, 0.62);
-    for (let v = 1; v <= NV; v++) { ctx.fillStyle = v === vol ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 50 + (v - 1) * 24, py, 8, 0, 7); ctx.fill(); }
+    if (locked) drawLock(cx - 118, py, 0.62);
+    for (let v = 0; v < NV; v++) { ctx.fillStyle = v === vol ? '#c43a1a' : 'rgba(58,29,10,.35)'; ctx.beginPath(); ctx.arc(cx + 50 + v * 24, py, 8, 0, 7); ctx.fill(); }
     UI.text('◀', cx - 200, py, 40, { fill: '#ffd23f' }); UI.text('▶', cx + 200, py, 40, { fill: '#ffd23f' });
     // 手機：左右滑動切換 VOL（手指往左 = 下一集）
     if (Input.swipe === 'left') this.setVol(vol + 1);
     if (Input.swipe === 'right') this.setVol(vol - 1);
     if (Input.was('left') || UI.tapIn(cx - 250, py - 40, 110, 80)) this.setVol(vol - 1);
-    if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80) || UI.tapIn(cx - 150, py - 26, 300, 52)) this.setVol(vol + 1);
+    if (Input.was('right') || UI.tapIn(cx + 140, py - 40, 110, 80)) this.setVol(vol + 1);
+    if (UI.tapIn(cx - 150, py - 26, 300, 52) || Input.was('listen')) this.openPicker();
     // 鍵盤 / 手把 / 滑鼠滾輪：↑↓ 一首一首選（第 1 首再按 ↑ → 焦點移到右上角的「新手教學」，↓ 回到曲目）；T 鍵 / 手把 Y 直接開教學
     const TUT = 2;
     if (Input.was('up')) {
@@ -819,7 +879,7 @@ Screens.songs = {
     } else {
       if (UI.button(this.bs, '返回', B.bx, B.by, B.bw, B.bh, { back: true }) || Input.was('back')) App.goto('menu');
       // 沒買的 VOL：「開始遊戲」變成「購買 VOL.n」（副標是價格），下面多一顆「恢復購買」
-      if (UI.button(this.bs, locked ? tr('購買 {0}', 'VOL.' + vol) : '開始遊戲', B.sx, B.sy, B.sw, B.sh, { lacquer: true, sub: locked ? Shop.price(vol) : 'sub.start', size: lay(36, 42) })) this.start();
+      if (UI.button(this.bs, locked ? tr('購買 {0}', volName(vol)) : '開始遊戲', B.sx, B.sy, B.sw, B.sh, { lacquer: true, sub: locked ? Shop.price(vol) : 'sub.start', size: lay(36, 42) })) this.start();
       if (locked) this.restoreBtn(W / 2 - 110, 1136, 220, 46);
     }
     // 右上角：掛在竹竿上的「新手教學」木札（和主選單同款）；燈火光暈＋每隔一陣子晃一下，提示可以按
@@ -828,7 +888,7 @@ Screens.songs = {
     ctx.drawImage(Scene.glowSprite('#ffb04a'), T.x - 34, T.y - 30, T.w + 68, T.h + 64); ctx.restore();
     UI.pole(T.x - 16, 20, T.w + 30);
     if (UI.button(this.bs, '新手教學', T.x, T.y, T.w, T.h, { tag: true, sub: 'sub.tutorial', size: 22, ropeH: 20, wiggle: true })) App.goto('tutorial', { from: 'songs' });
-    UI.hint(Input.touchMode ? '上下滑動選曲・點中間的歌開始・左右切換 VOL' : Input.padConnected ? '↑↓ 選曲　← → VOL　LB／RB 難度　A 開始　Y 教學　B 返回' : '↑↓ 選曲　← → VOL　Q／E 難度　ENTER 開始　T 教學');
+    UI.hint(Input.touchMode ? '上下滑動選曲・點中間的歌開始・點樂曲組名稱切換' : Input.padConnected ? '↑↓ 選曲　← → 切換　X 樂曲組　LB／RB 難度　A 開始　Y 教學　B 返回' : '↑↓ 選曲　← → 切換　X 樂曲組　Q／E 難度　ENTER 開始　T 教學');
     // 購買結果的訊息（3 秒後淡出）
     if (this.msg && Game.time - this.msg.t < 3) {
       const a = clamp(3 - (Game.time - this.msg.t), 0, 1), ty = lay(600, 540);
@@ -838,6 +898,7 @@ Screens.songs = {
       UI.text(this.msg.text, W / 2, ty + 1, 30, { fill: '#fff', stroke: null, raw: true, maxW: mw - 40 });
       ctx.restore();
     }
+    if (held) { Input.taps.push(...held.taps); held.pressed.forEach(k => Input.pressed.add(k)); Input.swipe = held.swipe; this.drawPicker(dt); }
     if (Shop.busy) { UI.dim(0.55); UI.text('處理中…', W / 2, H / 2, 44, { fill: '#fff', sw: 8 }); }
   },
   // 「恢復購買」小按鈕（換手機、重裝後找回已買的 VOL；App Store 規定一定要有）
@@ -852,7 +913,7 @@ Screens.songs = {
     const x = 1000, y = 176, w = 820, h = 720, cx = x + w / 2;
     UI.panel(x, y, w, h, 28, 'rgba(16,22,52,.9)');
     drawLock(x + 84, y + 88, 1.7);
-    UI.text('VOL.' + vol, x + 150, y + 72, 60, { align: 'left', fill: '#ffd23f', raw: true, sw: 9 });
+    UI.text(volName(vol), x + 150, y + 72, 60, { align: 'left', fill: '#ffd23f', raw: true, sw: 9 });
     UI.text(tr('追加樂曲 {0} 首', list.length), x + 154, y + 132, 24, { align: 'left', fill: '#ffe8b0', stroke: null, raw: true });
     if (Shop.isTest()) { UI.panel(x + w - 150, y + 30, 110, 40, 20, '#c8321e', '#fff'); UI.text('TEST', x + w - 95, y + 51, 22, { fill: '#fff', stroke: null, raw: true }); }
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 176, w - 80, 2);
@@ -869,7 +930,7 @@ Screens.songs = {
     // 購買鈕（朱漆）＋恢復購買
     const bx = cx - 230, by = y + 600, bw = 460, bh = 72, hover = UI.inside(Input.ptr.x, Input.ptr.y, bx, by, bw, bh);
     UI.wood(bx, by, bw, bh, { r: 14, seed: 'buy', lacquer: true, light: hover });
-    UI.text(tr('購買 {0}', 'VOL.' + vol), cx, by + bh / 2 + 1, 34, { fill: '#fff6e0', stroke: '#5a0f05', sw: 6, raw: true });
+    UI.text(tr('購買 {0}', volName(vol)), cx, by + bh / 2 + 1, 34, { fill: '#fff6e0', stroke: '#5a0f05', sw: 6, raw: true });
     if (UI.tapIn(bx, by, bw, bh)) this.purchase(vol);
     this.restoreBtn(cx - 100, y + 684 - 8, 200, 40);
   },
@@ -1707,7 +1768,7 @@ Screens.ranking = {
     { const D = DIFFS[this.diff]; UI.panel(W / 2 + 78, 219, 104, 28, 14, D.color, '#fff'); UI.text(D.name, W / 2 + 130, 234, 17, { fill: '#fff', stroke: null });
       if (UI.tapIn(W / 2 + 72, 214, 116, 38)) this.setDiff(this.diff + 1);
       if (Input.was('diffPrev')) this.setDiff(this.diff - 1); if (Input.was('diffNext')) this.setDiff(this.diff + 1); }
-    UI.text('VOL.' + song.vol, W / 2 - 200, 233, 15, { fill: '#8a3a10', stroke: null, raw: true });
+    UI.text(volName(song.vol), W / 2 - 200, 233, 15, { fill: '#8a3a10', stroke: null, raw: true });
     UI.text('◀', W / 2 - 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 }); UI.text('▶', W / 2 + 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 });
     if (Input.was('left') || UI.tapIn(W / 2 - 320, 176, 120, 80)) this.move(-1);
     if (Input.was('right') || UI.tapIn(W / 2 + 200, 176, 120, 80)) this.move(1);

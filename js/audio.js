@@ -115,7 +115,7 @@ const SND = {
   chipHat(t, v = 1, dest = A.music) { nz(t, 0.025, 0.18 * v, dest, { type: 'highpass', f: 9000 }); },
   // 鼓打貝斯的 Reese 低音（兩把略為走音的鋸齒波）
   reese(t, n, dur, v = 1, dest = A.music) { [-18, 18].forEach(d => voice('sawtooth', m2f(n), t, 0.08, 0.13 * v, dest, { att: 0.01, hold: Math.max(0, dur - 0.08), detune: d, lp: 520, q: 3 })); },
-  // ---- VOL.2 新曲用 ----
+  // ---- VOL.1 新曲用 ----
   bell(t, n, v = 1, dest = A.music) {   // 音樂盒的金屬簧片：基音長餘韻＋高頻泛音
     const f = m2f(n);
     voice('sine', f, t, 1.3, 0.11 * v, dest, { att: 0.002 });
@@ -203,7 +203,7 @@ const SND = {
     const pk = 0.06 * v, hold = o.mute ? Math.min(dur, 0.06) : dur * 0.7;
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(pk, t + 0.004); g.gain.setValueAtTime(pk, t + 0.004 + hold); g.gain.exponentialRampToValueAtTime(0.0001, end);
   },
-  // ---- VOL.4 新曲用 ----
+  // ---- VOL.2 新曲用 ----
   accordion(t, notes, dur, v = 1, dest = A.music) {   // 手風琴（musette：兩片簧略為走音、微顫）
     notes.forEach(n => [-11, 11].forEach(d => voice('sawtooth', m2f(n), t, 0.06, 0.03 * v, dest, { att: 0.015, hold: Math.max(0, dur - 0.05), lp: 2000, q: 1.2, detune: d })));
   },

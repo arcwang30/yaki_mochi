@@ -54,7 +54,7 @@ const Share = {
     text(songName(song), cx, py + 70, 52, { fill: '#1f2a5a', maxW: pw - 80 });
     const d = Game.diff === undefined ? 1 : Game.diff, ns = diffStars(song, d);
     const st = '★'.repeat(Math.min(ns, 5)) + '☆'.repeat(Math.max(0, 5 - ns)) + (ns > 5 ? '★' : '');
-    text('VOL.' + song.vol + '　' + st + '　' + tr(DIFFS[d].name), cx, py + 128, 30, { fill: DIFFS[d].color, maxW: pw - 80 });
+    text(volName(song.vol) + '　' + st + '　' + tr(DIFFS[d].name), cx, py + 128, 30, { fill: DIFFS[d].color, maxW: pw - 80 });
     // 評價印章＋稱號
     const sx = px + 150, sy = py + 280, sr = 100;
     g.save(); g.translate(sx, sy); g.rotate(-0.15);

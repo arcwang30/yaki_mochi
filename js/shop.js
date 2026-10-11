@@ -1,14 +1,14 @@
 'use strict';
 
-// ===== 付費 VOL（追加樂曲）：VOL.1 免費；VOL.2～VOL.4 各自付費 =====
+// ===== 付費 VOL（追加樂曲）：基本樂曲（song.vol = 0）免費；VOL.1～VOL.3 各自付費 =====
 // 遊戲只問 Shop：這一集買了沒（owned）、買（buy）、恢復購買（restore）。實際付款交給「商店」（provider）：
 //   test   ：測試用（網址加 ?shop=test），不會真的扣款；購買紀錄存在本機
 //   之後加 ：steam（Steam DLC）、apple（App Store 內購）、google（Google Play 內購）
 // 沒有商店時（一般網頁版）不鎖任何一集，和以前一樣全部可以玩。
 const PAID_VOLS = {
-  2: { sku: 'vol2', songs: 10 },   // sku = 各商店裡這個商品的 ID（Steam 是 DLC 的 App ID，之後在 provider 裡對應）
+  1: { sku: 'vol1', songs: 10 },   // sku = 各商店裡這個商品的 ID（Steam 是 DLC 的 App ID，之後在 provider 裡對應）
+  2: { sku: 'vol2', songs: 10 },
   3: { sku: 'vol3', songs: 10 },
-  4: { sku: 'vol4', songs: 10 },
 };
 
 // ---- 測試商店：購買約 1 秒後成功（模擬付款畫面）；網址加 &fail=1 一律「取消」，測試失敗流程 ----
