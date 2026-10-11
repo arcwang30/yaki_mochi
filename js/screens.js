@@ -417,6 +417,30 @@ Screens.shop = {
       },
       desc(it) { return IMG['bg_' + it.id] ? it.desc : '載入中…'; },
       focus(it) { Scene.preview = it.id; } },
+    { name: '陪伴寵物', kind: 'pet', key: 'pet', list: PETS,
+      // 縮圖：寵物本身（不帶寵物 = 空的木檯）
+      thumb(it, x, y, w, h, live) {
+        const bg = ctx.createLinearGradient(0, y, 0, y + h); bg.addColorStop(0, '#5a4a8a'); bg.addColorStop(1, '#2a2050');
+        ctx.fillStyle = bg; ctx.fillRect(x, y, w, h);
+        ctx.fillStyle = '#a8703a'; ctx.fillRect(x, y + h * 0.82, w, h * 0.18);   // 木檯
+        if (it.id === 'none') { UI.text('—', x + w / 2, y + h * 0.45, h * 0.4, { fill: 'rgba(255,255,255,.5)', stroke: null, raw: true }); return; }
+        const k = h / 135;
+        ctx.save(); ctx.translate(x + w / 2, y + h * 0.88); ctx.scale(k, k);
+        drawPet(ctx, it.id, live ? 'happy' : 'idle', live ? (Game.time % 0.6) : 0, 0); ctx.restore();
+      },
+      // 預覽：木檯上的寵物直接換成這一隻，並開心跳一下
+      focus(it) { Scene.preview = Save.data.bg; Pet.preview = it.id; Pet.react('happy', 0.5); },
+      // 手機：木檯在商店面板後面看不到 → 在主角左邊放大預覽（站在發光的圓台上）；PC 的木檯露在外面，不用另外畫
+      overlay(it) {
+        if (LAND || it.id === 'none') return;
+        const x = 140, y = 790;
+        const glow = ctx.createRadialGradient(x, y, 4, x, y, 120); glow.addColorStop(0, 'rgba(255,220,140,.55)'); glow.addColorStop(1, 'rgba(255,220,140,0)');
+        ctx.fillStyle = glow; ctx.fillRect(x - 130, y - 200, 260, 260);
+        ctx.fillStyle = 'rgba(16,22,52,.75)'; ctx.beginPath(); ctx.ellipse(x, y + 4, 78, 16, 0, 0, 7); ctx.fill();
+        ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 3; ctx.stroke();
+        if (Game.time >= Pet.until) Pet.mood = 'idle';
+        ctx.save(); ctx.translate(x, y); ctx.scale(1.7, 1.7); drawPet(ctx, it.id, Pet.mood, Game.time - Pet.hopT, Scene.idlePulse()); ctx.restore();
+      } },
     { name: '打擊音效', kind: 'hit', key: 'hitSound', list: HIT_SOUNDS,
       // 縮圖：商品色底＋等化器長條（試聽時會跳動）
       thumb(it, x, y, w, h, live) {
@@ -451,7 +475,7 @@ Screens.shop = {
     Sound.startBgm();
     this.C().focus(this.item()); this.follow(true);
   },
-  leave() { Scene.preview = null; this.stopDemo(); },
+  leave() { Scene.preview = null; Pet.preview = null; this.stopDemo(); },
   back() { App.goto('menu'); },
   // 選中的卡片捲到看得到的位置（now = 直接跳過去）
   follow(now) {
@@ -472,6 +496,7 @@ Screens.shop = {
     if (c === this.cat) return;
     this.stopDemo();
     if (this.C().blur) this.C().blur();
+    Pet.preview = null;   // 寵物的預覽只在那一頁
     this.cat = c; this.sel[c] = this.sel[c] || 0; this.scroll = this.scrollTo = 0; this.follow(true); Sound.play('select');
     this.C().focus(this.item());
   },
@@ -622,7 +647,7 @@ Screens.shop = {
     const c = this.C(), N = c.list.length, it = this.item(), G = this.grid(), st = this.state(c, it), ex = c.extra && c.extra();
     // 左上：商店名牌；右上：遊戲幣（COIN_SHOP 打開才顯示；追加樂曲的曲目面板蓋住時不顯示）
     const tx = lay(18, 36);
-    if (!c.overlay || LAND) {
+    if (c.kind !== 'vol' || LAND) {   // 手機的追加樂曲：曲目面板蓋住名牌的位置
       UI.panel(tx, 18, 200, 64, 32, 'rgba(16,22,52,.88)', '#e8b64a');
       UI.text('商店', tx + 100, 51, 32, { fill: '#ffd23f' });
     }

@@ -159,6 +159,23 @@ const HIT_SOUNDS = [
   { id: 'dog', name: '柴犬', desc: '汪！柴犬老闆幫你吆喝', price: 600, color: '#c87a3a' },
 ];
 
+// ---- 陪伴寵物（主選單 → 商店 → 陪伴寵物）：畫法與反應在 js/pets.js；art: true = 改用 assets/images/pet_<id>_<mood>.png ----
+const PETS = [
+  { id: 'none', name: '不帶寵物', desc: '一個人顧攤也很自在', price: 0 },
+  { id: 'shiba', name: '柴犬', desc: '麻呂眉的看板犬，跟著節拍搖尾巴', price: 500, color: '#e8913a' },
+  { id: 'maneki', name: '招財貓', desc: '招手招來客人與好成績', price: 500, color: '#f4efe4' },
+  { id: 'tanuki', name: '狸貓', desc: '頭上頂著葉子的愛笑狸貓', price: 500, color: '#9a6a3e' },
+  { id: 'tako', name: '章魚燒小章魚', desc: '綁著頭巾的隔壁攤小幫手', price: 600, color: '#e8584a' },
+  { id: 'kingyo', name: '金魚', desc: '撈金魚撈到的小金魚，在水袋裡游來游去', price: 400, color: '#ff7a3a' },
+  { id: 'usagi', name: '月兔', desc: '從月亮跑來逛夜市的白兔', price: 500, color: '#f6f2ff' },
+  { id: 'panda', name: '熊貓', desc: '圓滾滾的黑眼圈店員', price: 500, color: '#f4f4f0' },
+  { id: 'penguin', name: '企鵝', desc: '拍拍翅膀幫你打拍子', price: 500, color: '#2a3a5a' },
+  { id: 'daruma', name: '達摩', desc: '跟著節拍搖搖晃晃，歡呼時畫上另一隻眼', price: 600, color: '#d8382a' },
+  { id: 'hiyoko', name: '小雞', desc: '剛從蛋殼探出頭的小雞', price: 400, color: '#ffd84a' },
+  { id: 'pocket', name: '遊戲機', desc: '螢幕就是臉的掌上遊戲機，一起打出高分', price: 600, color: '#ff8a3a' },
+];
+const PET_POS = { x: 652, y: 950, s: 1.1 };   // 世界座標：鐵板右上角的木檯（腳底中間）
+
 // 遊戲幣商店：false = 還沒有遊戲幣，商店裡的東西全部免費可套用；做好賺遊戲幣的機制後改成 true，就會照 price 收費
 const COIN_SHOP = false;
 

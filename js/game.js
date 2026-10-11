@@ -79,6 +79,7 @@ const Scene = {
     this.background(pulse);
     this.chef(pulse);
     this.griddle();
+    Pet.draw(pulse);   // 陪伴寵物（鐵板右上角的木檯）
   },
   // lit(i)：第 i 盞燈籠的亮度 0～1（開場用來一盞一盞點亮；省略 = 全亮）
   // sky = false：橫式不畫夜空層（開場時夜空另外畫，野台升起時只有街景移動）
@@ -320,6 +321,7 @@ const Game = {
       bump: {}, okoAnims: [], gradeFx: null, pressT: -9,
     };
     Object.assign(Sound.sayState, { end: 0, last: {}, src: null, any: -99 });
+    Pet.reset();
     Fx.clear();
     chef.queue = []; chef.idlePose = 'idle'; chef.pose = 'idle';
   },
@@ -472,6 +474,7 @@ const Game = {
       return;
     }
     n.state = 'hit'; n.hitT = this.songTime(); n.dir = Math.random() < 0.5 ? -1 : 1;
+    if (grade === 'GREAT') Pet.react('happy', 0.35);
     s.combo++; s.maxCombo = Math.max(s.maxCombo, s.combo);
     const pts = POINTS[grade] + Math.min(s.combo, COMBO_CAP) * COMBO_BONUS;
     s.score += pts;
@@ -489,6 +492,7 @@ const Game = {
       poses.push({ pose: 'great', dur: 0.5 });
       s.comboFx = { n: s.combo, t: 0 };
       SND.kane(A.ctx.currentTime + 0.05, 1.6, A.sfx);
+      Pet.react('cheer', 0.9);
       Sound.say('combo', A.sfx, A.ctx.currentTime + 0.12);   // 「いいね！」「ええやん！」「その調子や！」（有冷卻，不會每 10 連擊都講）
     }
     setPoses(poses);
@@ -498,6 +502,7 @@ const Game = {
   breakCombo() {
     const s = this.s;
     if (s.combo >= COMBO_STEP) Sound.say('oops', A.sfx);
+    Pet.react('sad', 0.7);   // BAD／漏接：寵物難過一下
     s.combo = 0;
   },
   addStock(type) {
@@ -508,6 +513,7 @@ const Game = {
       s.oko++; s.score += OKO_BONUS; s.bump.oko = this.time + 0.9;
       s.okoAnims.push({ t: 0 });
       SND.fanfare(A.ctx.currentTime);
+      Pet.react('cheer', 0.9);
       Sound.say('oko', A.sfx, A.ctx.currentTime + 0.15);   // 「へい、お待ち！」「できあがりや！」
       setPoses([{ pose: 'cheer', dur: 0.8 }]);
     }
