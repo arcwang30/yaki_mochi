@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== 樂曲（基本樂曲＋追加的 VOL.1～VOL.3，各 10 首；分組與排列順序在檔案最後的 VOL_ORDER） =====
+// ===== 樂曲（內建曲目＋追加的 VOL.1～VOL.3，各 10 首；分組與排列順序在檔案最後的 VOL_ORDER） =====
 // 每首歌 = 資料（歌名、星級、各段 BPM 與節奏難度、搖擺比例）＋ arrange()：產生一個小節的音樂。
 // arrange(ms, add)：ms 為小節資訊（kind: 'play' | 'rest'，sec 第幾段，idx 第幾小節，bd 一拍秒數，at(s) 第 s 個八分音符的時間）；
 // add(t, (x, dest) => 播放) 把音符排進去。dest 一定要傳給樂器（遊戲 / 選曲試聽共用）。
@@ -231,7 +231,7 @@ const SONGS = [
   },
 ];
 
-// ================= 基本樂曲後加入的 5 首（排列順序見檔案最後的 VOL_ORDER） =================
+// ================= 內建曲目後加入的 5 首（排列順序見檔案最後的 VOL_ORDER） =================
 // ---------- 6. 縁側ボサノバ（巴薩諾瓦，C 大調） ----------
 const BOSSA = {
   CHORD: [[55, 59, 60, 64], [55, 57, 60, 64], [53, 57, 60, 62], [53, 55, 59, 62], [55, 59, 60, 64], [55, 57, 61, 64], [53, 57, 60, 62], [53, 55, 59, 62]],
@@ -1226,7 +1226,7 @@ SONGS.push(
   },
 );
 
-// ================= VOL.2：世界各地與跨年代的曲風（星級分佈同基本樂曲：1 星 2、2 星 2、3 星 2、4 星 2、5 星 2） =================
+// ================= VOL.2：世界各地與跨年代的曲風（星級分佈同內建曲目：1 星 2、2 星 2、3 星 2、4 星 2、5 星 2） =================
 // 每首都有自己的打擊節奏型（patterns）：演歌的長音、藍調的搖擺、探戈的 3-3-2、騷莎的克拉維、硬核的四拍大鼓
 // ---------- 港町屋台演歌（演歌，A 小調四七拔き音階） ----------
 const ENKA = {
@@ -1647,10 +1647,10 @@ SONGS.push(
   },
 );
 
-// ---- 曲目排列：第 0 組 = 基本樂曲（一開始就能玩、不收費、不算 VOL 系列）；之後是追加的 VOL.1、VOL.2、VOL.3（各 10 首）；每組依星級由易到難 ----
-// song.vol = 第幾組（0 = 基本樂曲）；畫面上的名稱用 volName()
+// ---- 曲目排列：第 0 組 = 內建曲目（一開始就能玩、不收費、不算 VOL 系列）；之後是追加的 VOL.1、VOL.2、VOL.3（各 10 首）；每組依星級由易到難 ----
+// song.vol = 第幾組（0 = 內建曲目）；畫面上的名稱用 volName()
 const VOL_ORDER = [
-  ['tsukimi', 'bossa', 'yatai', 'chindon', 'swing', 'ska', 'funk', 'chip', 'hyper', 'dnb'],                       // 基本樂曲
+  ['tsukimi', 'bossa', 'yatai', 'chindon', 'swing', 'ska', 'funk', 'chip', 'hyper', 'dnb'],                       // 內建曲目
   ['musicbox', 'reggae', 'citypop', 'ondo', 'samba', 'surf', 'disco', 'boogie', 'jrock', 'hoedown'],              // VOL.1
   ['enka', 'blues', 'polka', 'tango', 'celtic', 'bhangra', 'salsa', 'klezmer', 'flamenco', 'gabber'],             // VOL.2
   ['gamelan', 'hawaii', 'synthwave', 'future', 'anime', 'britpop', 'dancepunk', 'thrash', 'power', 'wametal'],    // VOL.3
@@ -1660,7 +1660,7 @@ const VOL_ORDER = [
   VOL_ORDER.forEach((ids, v) => ids.forEach((id, k) => { const s = all.find(x => x.id === id); s.vol = v; s.no = k + 1; SONGS.push(s); }));
 }
 const VOL_SIZE = 10;
-const volName = v => (v === 0 ? tr('基本樂曲') : 'VOL.' + v);
+const volName = v => (v === 0 ? tr('內建曲目') : 'VOL.' + v);
 const VOL_COLORS = ['#e8a040', '#2a8ad6', '#2a9a6a', '#8a3ad6'];   // 各組的代表色（樂曲組選單、商店卡片）
 
 // 選單背景音樂用哪一首（index）

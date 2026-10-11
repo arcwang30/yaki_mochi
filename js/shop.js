@@ -1,6 +1,6 @@
 'use strict';
 
-// ===== 付費 VOL（追加樂曲）：基本樂曲（song.vol = 0）免費；VOL.1～VOL.3 各自付費 =====
+// ===== 付費 VOL（追加樂曲）：內建曲目（song.vol = 0）免費；VOL.1～VOL.3 各自付費 =====
 // 遊戲只問 Shop：這一集買了沒（owned）、買（buy）、恢復購買（restore）。實際付款交給「商店」（provider）：
 //   test   ：測試用（網址加 ?shop=test），不會真的扣款；購買紀錄存在本機
 //   之後加 ：steam（Steam DLC）、apple（App Store 內購）、google（Google Play 內購）

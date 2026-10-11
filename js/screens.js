@@ -364,7 +364,7 @@ Screens.menu = {
 //   需要不同流程的種類可以另外給 state / status / badge / label / act / extra（額外按鈕）/ overlay（上方大面板）/ blur / cols
 // 遊戲幣先預留（js/shop.js 的 CoinShop、js/config.js 的 COIN_SHOP / price）：COIN_SHOP = false 時全部免費
 // 「追加樂曲」是付真錢的（js/shop.js 的 Shop：App Store / Google Play / Steam），分頁與價格用朱漆色和遊戲幣商品區分
-// 只列付費的 VOL（基本樂曲不算 VOL 系列，不在商店賣）
+// 只列付費的 VOL（內建曲目不算 VOL 系列，不在商店賣）
 const VOL_ITEMS = VOL_ORDER.map((ids, v) => v).filter(v => v > 0).map(v => ({ id: 'vol' + v, vol: v, name: volName(v), songs: SONGS.filter(s => s.vol === v),
   color: VOL_COLORS[v] || '#c8321e' }));
 Screens.shop = {
@@ -685,7 +685,7 @@ Screens.songs = {
   vol() { return SONGS[this.sel].vol; },
   row() { return SONGS[this.sel].no - 1; },                       // 這一集裡的第幾首（0～9）
   idxOf(vol, row) { return SONGS.findIndex(s => s.vol === vol && s.no === row + 1); },
-  setVol(v) {   // ← →：切換基本樂曲 / VOL.1 / VOL.2…（停在同樣的編號）
+  setVol(v) {   // ← →：切換內建曲目 / VOL.1 / VOL.2…（停在同樣的編號）
     const N = VOL_ORDER.length, nv = ((v % N) + N) % N;
     if (nv === this.vol()) return;
     this.sel = this.idxOf(nv, this.row()); this.previewT = 0.3; this.bs.sel = -1;
@@ -842,7 +842,7 @@ Screens.songs = {
     const bob = Math.sin(Game.time * 4) * 4;
     if (view > 0.05) UI.text('▲', C.x + C.w / 2, top - 4 + bob, 22, { fill: '#ffd23f' });
     if (view < VOL_SIZE - this.SLOTS - 0.05) UI.text('▼', C.x + C.w / 2, bottom + 6 - bob, 22, { fill: '#ffd23f' });
-    // ---- 樂曲組切換列：◀ 基本樂曲 ▼ ●○○○ ▶（左右鍵 / 點箭頭：上一組・下一組；點名稱 / X 鍵：打開樂曲組選單） ----
+    // ---- 樂曲組切換列：◀ 內建曲目 ▼ ●○○○ ▶（左右鍵 / 點箭頭：上一組・下一組；點名稱 / X 鍵：打開樂曲組選單） ----
     const py = lay(978, 944), cx = C.x + C.w / 2, NV = VOL_ORDER.length;
     // 做成按鈕的樣子：底下有影子、滑鼠移上去變亮、金色外框慢慢呼吸、右邊紅色圓鈕「▼」；按下時往下沉一點
     { const bx = cx - 160, bw = 320, bh = 52, hover = !this.picker && UI.inside(Input.ptr.x, Input.ptr.y, bx, py - 26, bw, bh);
