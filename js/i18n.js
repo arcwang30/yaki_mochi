@@ -114,7 +114,7 @@ const I18N = {
     // PC 版（橫式）
     '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
     // 商店・店面背景
-    '打擊音效': '打撃音', '♪ 試聽': '♪ 試聴', '← → 瀏覽　Q E 分頁　X 試聽　ENTER 決定': '← → 見る　Q E タブ　X 試聴　ENTER 決定', '← → 瀏覽　Q E 分頁　ENTER 決定': '← → 見る　Q E タブ　ENTER 決定',
+    '打擊音效': '打撃音', '♪ 試聽': '♪ 試聴', '方向鍵 選擇　Q E 分頁　X 試聽　ENTER 裝備': '方向キー 選択　Q E タブ　X 試聴　ENTER 装備', '方向鍵 選擇　Q E 分頁　ENTER 裝備': '方向キー 選択　Q E タブ　ENTER 装備', '試聽': '試聴',
     '經典鐵板': 'クラシック鉄板', '咚！鐵板與菜刀的原味聲響': 'ドン！鉄板と包丁のおなじみの音', '和太鼓': '和太鼓', '咚、咔！祭典太鼓的節奏': 'ドン・カッ！お祭り太鼓のリズム',
     '8-bit 電玩': '8ビット', '嗶嗶！懷舊遊戲機的電子音': 'ピコッ！なつかしゲーム機の電子音', '電子雷射': 'エレクトロ', '咻碰！電音舞台的合成音效': 'ピュン！EDMステージのシンセ音',
     '風鈴': '風鈴', '叮鈴～清涼的夏日鈴聲': 'チリン～涼しい夏の鈴の音', '貓咪': 'ネコ', '喵！每一下都是貓叫': 'ニャー！叩くたびにネコの声',
@@ -225,7 +225,7 @@ const I18N = {
     // PC version (landscape)
     '結束遊戲': 'QUIT GAME', '語音': 'Voice', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
     // Shop / stall style
-    '打擊音效': 'Hit Sounds', '♪ 試聽': '♪ Listen', '← → 瀏覽　Q E 分頁　X 試聽　ENTER 決定': '← → Browse　Q E Tabs　X Listen　ENTER OK', '← → 瀏覽　Q E 分頁　ENTER 決定': '← → Browse　Q E Tabs　ENTER OK',
+    '打擊音效': 'Hit Sounds', '♪ 試聽': '♪ Listen', '方向鍵 選擇　Q E 分頁　X 試聽　ENTER 裝備': 'Arrows Select　Q E Tabs　X Listen　ENTER Equip', '方向鍵 選擇　Q E 分頁　ENTER 裝備': 'Arrows Select　Q E Tabs　ENTER Equip', '試聽': 'Listen',
     '經典鐵板': 'Classic Griddle', '咚！鐵板與菜刀的原味聲響': 'Thud! The original griddle and knife sounds', '和太鼓': 'Taiko', '咚、咔！祭典太鼓的節奏': 'Don, ka! Festival taiko drums',
     '8-bit 電玩': '8-bit', '嗶嗶！懷舊遊戲機的電子音': 'Bleep! Retro game console sounds', '電子雷射': 'Laser', '咻碰！電音舞台的合成音效': 'Pew! Synth sounds from the EDM stage',
     '風鈴': 'Wind Chime', '叮鈴～清涼的夏日鈴聲': 'Ting~ Cool summer chimes', '貓咪': 'Kitty', '喵！每一下都是貓叫': 'Meow! Every hit is a cat',

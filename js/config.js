@@ -145,13 +145,14 @@ const BACKGROUNDS = [
 ];
 // ---- 打擊音效包（主選單 → 商店 → 打擊音效）：打中食材時的聲音；音色在 js/audio.js 的 HIT_PACKS ----
 // 每包都依處理動作（切 / 炒 / 淋醬）分三種音，GREAT 再加一聲亮音，節奏回饋和原本一樣清楚
+// color：商店卡片縮圖的底色
 const HIT_SOUNDS = [
-  { id: 'classic', name: '經典鐵板', desc: '咚！鐵板與菜刀的原味聲響', price: 0 },
-  { id: 'taiko', name: '和太鼓', desc: '咚、咔！祭典太鼓的節奏', price: 300 },
-  { id: 'chip', name: '8-bit 電玩', desc: '嗶嗶！懷舊遊戲機的電子音', price: 400 },
-  { id: 'laser', name: '電子雷射', desc: '咻碰！電音舞台的合成音效', price: 400 },
-  { id: 'bell', name: '風鈴', desc: '叮鈴～清涼的夏日鈴聲', price: 400 },
-  { id: 'cat', name: '貓咪', desc: '喵！每一下都是貓叫', price: 600 },
+  { id: 'classic', name: '經典鐵板', desc: '咚！鐵板與菜刀的原味聲響', price: 0, color: '#c8521e' },
+  { id: 'taiko', name: '和太鼓', desc: '咚、咔！祭典太鼓的節奏', price: 300, color: '#a82a2a' },
+  { id: 'chip', name: '8-bit 電玩', desc: '嗶嗶！懷舊遊戲機的電子音', price: 400, color: '#2a9a3a' },
+  { id: 'laser', name: '電子雷射', desc: '咻碰！電音舞台的合成音效', price: 400, color: '#7a2ad6' },
+  { id: 'bell', name: '風鈴', desc: '叮鈴～清涼的夏日鈴聲', price: 400, color: '#2a8ad6' },
+  { id: 'cat', name: '貓咪', desc: '喵！每一下都是貓叫', price: 600, color: '#e8902a' },
 ];
 
 // 遊戲幣商店：false = 還沒有遊戲幣，商店裡的東西全部免費可裝備；做好賺遊戲幣的機制後改成 true，就會照 price 收費

@@ -354,61 +354,178 @@ Screens.menu = {
   }
 };
 
-// ---------- 商店：店面背景、打擊音效（上方分頁切換；之後可在 CATS 加種類）----------
-// 店面背景：瀏覽時整個畫面直接換成那款背景預覽（Scene.preview，主角、鐵板照常）
-// 打擊音效：瀏覽時自動試聽一小段（切、炒、淋醬、GREAT）；點面板再聽一次
-// 擁有的按「裝備」套用，沒有的用遊戲幣購買。
+// ---------- 商店 ----------
+// 版面（之後商品變多也放得下）：
+//   上：分頁列（種類多了可以左右捲動，選中的那頁一定看得到）
+//   中：商品卡片格子（縮圖＋名稱＋狀態；超過一頁就上下捲動，手指可拖曳、滑鼠滾輪可捲）
+//   下：選中商品的名稱、說明、狀態，以及「裝備／購買」「返回」
+// 手機：畫面下半部的面板（上半部留給背景預覽與主角）；PC：畫面右側的面板（中間的攤位照常看得到）
+// 新增種類：在 CATS 加一項（list 商品清單、key 存檔欄位、thumb 縮圖畫法、focus 選到時的預覽）
 // 遊戲幣先預留（js/shop.js 的 CoinShop、js/config.js 的 COIN_SHOP / price）：COIN_SHOP = false 時全部免費
 Screens.shop = {
-  sel: 0, n: 0, cat: 0, idx: [0, 0],
-  CATS: [{ name: '店面背景', kind: 'bg', list: BACKGROUNDS, key: 'bg' }, { name: '打擊音效', kind: 'hit', list: HIT_SOUNDS, key: 'hitSound' }],
+  cat: 0, sel: [], scroll: 0, scrollTo: 0, tabScroll: 0, btn: { sel: -1, n: 0 },
+  CATS: [
+    { name: '店面背景', kind: 'bg', key: 'bg', list: BACKGROUNDS,
+      // 縮圖：背景圖中間偏上（招牌、燈籠、主角）
+      thumb(it, x, y, w, h) {
+        const img = IMG['bg_' + it.id];
+        if (!img) { ctx.fillStyle = 'rgba(255,255,255,.08)'; ctx.fillRect(x, y, w, h); UI.text('…', x + w / 2, y + h / 2, 24, { fill: '#cfd8ff', stroke: null, raw: true }); return; }
+        const sh = img.height * 0.36, sw = Math.min(img.width, sh * w / h), s2 = sw * h / w;
+        ctx.drawImage(img, (img.width - sw) / 2, img.height * 0.4 - s2 / 2, sw, s2, x, y, w, h);
+      },
+      focus(it) { Scene.preview = it.id; } },
+    { name: '打擊音效', kind: 'hit', key: 'hitSound', list: HIT_SOUNDS,
+      // 縮圖：商品色底＋等化器長條（試聽時會跳動）
+      thumb(it, x, y, w, h, live) {
+        const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, it.color); g.addColorStop(1, 'rgba(0,0,0,.55)');
+        ctx.fillStyle = it.color; ctx.fillRect(x, y, w, h); ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+        const n = 7, bw = Math.min(14, w / (n * 1.8)), gap = bw * 0.7, x0 = x + w / 2 - (n * bw + (n - 1) * gap) / 2, t = Game.time;
+        ctx.fillStyle = 'rgba(255,255,255,.85)';
+        for (let k = 0; k < n; k++) {
+          const base = [0.35, 0.6, 0.85, 0.5, 0.75, 0.45, 0.3][k], hh = h * 0.7 * (live ? 0.25 + 0.75 * Math.abs(Math.sin(t * 9 + k * 1.7)) : base);
+          rrect(x0 + k * (bw + gap), y + h * 0.85 - hh, bw, hh, bw / 2); ctx.fill();
+        }
+      },
+      focus(it) { Scene.preview = Save.data.bg; Screens.shop.demo(); } },
+  ],
+  // 版面：sheet 面板、tabs 分頁列、grid 格子（cols 欄、rows 看得到幾列）、detail 說明區
+  L: lay({ sheet: [12, 846, 696, 426], tabs: [28, 858, 664, 44], grid: { x: 28, y: 914, cols: 4, cw: 157, ch: 84, gap: 12, rows: 2 }, detail: [28, 1102, 664, 72], btnY: 1186 },
+    { sheet: [1342, 104, 552, 940], tabs: [1362, 120, 512, 48], grid: { x: 1362, y: 184, cols: 2, cw: 250, ch: 140, gap: 12, rows: 4 }, detail: [1362, 778, 512, 120], btnY: 966 }),
   C() { return this.CATS[this.cat]; },
-  item() { return this.C().list[this.idx[this.cat]]; },
+  item() { return this.C().list[this.sel[this.cat] || 0]; },
   enter() {
-    this.sel = 0; this.toast = null; this.cat = 0;
-    this.idx = this.CATS.map(c => Math.max(0, c.list.findIndex(x => x.id === Save.data[c.key])));
-    BACKGROUNDS.forEach(b => Assets.bg(b.id));   // 其他背景這時才載入
-    this.show();
+    this.toast = null; this.cat = 0; this.btn.sel = -1; this.demoT = -9;
+    this.sel = this.CATS.map(c => Math.max(0, c.list.findIndex(x => x.id === Save.data[c.key])));
+    BACKGROUNDS.forEach(b => Assets.bg(b.id));   // 其他背景這時才載入（縮圖、預覽用）
+    this.C().focus(this.item()); this.follow(true);
     Sound.startBgm();
   },
   leave() { Scene.preview = null; this.stopDemo(); },
   back() { App.goto('menu'); },
-  // 畫面背景：瀏覽背景時預覽那一款，其他分頁顯示目前裝備的
-  show() { Scene.preview = this.C().kind === 'bg' ? this.item().id : Save.data.bg; },
-  go(d) {
+  // 選中的卡片捲到看得到的位置（now = 直接跳過去）
+  follow(now) {
+    const G = this.L.grid, row = Math.floor(this.sel[this.cat] / G.cols), top = row * (G.ch + G.gap), viewH = G.rows * (G.ch + G.gap) - G.gap;
+    if (top < this.scrollTo) this.scrollTo = top;
+    if (top + G.ch > this.scrollTo + viewH) this.scrollTo = top + G.ch - viewH;
+    if (now) this.scroll = this.scrollTo;
+  },
+  maxScroll() { const G = this.L.grid, rows = Math.ceil(this.C().list.length / G.cols); return Math.max(0, rows * (G.ch + G.gap) - G.gap - (G.rows * (G.ch + G.gap) - G.gap)); },
+  pick(i) {
     const N = this.C().list.length;
-    this.idx[this.cat] = (this.idx[this.cat] + d + N) % N; this.show(); Sound.play('select');
-    if (this.C().kind === 'hit') this.demo();
+    i = clamp(i, 0, N - 1);
+    if (i === this.sel[this.cat]) return;
+    this.sel[this.cat] = i; Sound.play('select'); this.follow(); this.C().focus(this.item());
   },
   setCat(c) {
     c = clamp(c, 0, this.CATS.length - 1);
     if (c === this.cat) return;
-    this.cat = c; this.show(); Sound.play('select');
-    if (this.C().kind === 'hit') this.demo();
+    this.stopDemo(); this.cat = c; this.sel[c] = this.sel[c] || 0; this.scroll = this.scrollTo = 0; this.follow(true); Sound.play('select');
+    this.C().focus(this.item());
   },
   // 打擊音效試聽：切、炒、淋醬、GREAT 各一下（走音效音量）；換下一包時前一段立刻停
   demo() {
     if (!A.ctx) return;
     this.stopDemo();
     const bus = this.demoBus = A.ctx.createGain(), t = A.ctx.currentTime + 0.12, pack = this.item().id;
-    bus.connect(A.sfx);
+    bus.connect(A.sfx); this.demoT = Game.time;
     const byPose = p => TYPES.find(k => ING[k].pose === p);
     [['knife', 'NICE'], ['spatula', 'NICE'], ['sauce', 'NICE'], ['knife', 'GREAT']].forEach(([p, g], i) => SND.hit(byPose(p), g, bus, t + i * 0.26, pack));
   },
-  stopDemo() { if (this.demoBus) { try { this.demoBus.disconnect(); } catch (e) { /* ignore */ } this.demoBus = null; } },
+  stopDemo() { this.demoT = -9; if (this.demoBus) { try { this.demoBus.disconnect(); } catch (e) { /* ignore */ } this.demoBus = null; } },
   say(text) { this.toast = { text: tr(text), t: Game.time }; },
   // 裝備（沒有的先買）
   act(item) {
     const c = this.C();
+    if (Save.data[c.key] === item.id) return;
     if (!CoinShop.owned(c.kind, item)) {
-      if (CoinShop.buy(c.kind, item) !== 'ok') { this.say('遊戲幣不足'); return; }
+      if (CoinShop.buy(c.kind, item) !== 'ok') { Sound.play('back'); this.say('遊戲幣不足'); return; }
       this.say('購買成功！');
     }
-    if (Save.data[c.key] !== item.id) { Save.data[c.key] = item.id; Save.store(); this.say('已裝備！'); }
+    Save.data[c.key] = item.id; Save.store(); Sound.play('confirm'); this.say('已裝備！');
+  },
+  state(c, it) { return Save.data[c.key] === it.id ? 'on' : CoinShop.owned(c.kind, it) ? 'owned' : 'locked'; },
+
+  // 分頁列：每頁寬度依文字；放不下時跟著選中的那頁左右捲動，兩端淡出提示還有
+  drawTabs() {
+    const [x, y, w, h] = this.L.tabs, gap = 10;
+    ctx.font = `22px ${FONT}`;
+    const ws = this.CATS.map(c => Math.max(150, ctx.measureText(tr(c.name)).width + 56)), total = ws.reduce((a, b) => a + b, 0) + gap * (ws.length - 1);
+    const left = ws.slice(0, this.cat).reduce((a, b) => a + b + gap, 0);
+    const want = total <= w ? -(w - total) / 2 : clamp(left + ws[this.cat] / 2 - w / 2, 0, total - w);
+    this.tabScroll += (want - this.tabScroll) * 0.25;
+    ctx.save(); ctx.beginPath(); ctx.rect(x, y - 4, w, h + 8); ctx.clip();
+    let tx = x - this.tabScroll;
+    this.CATS.forEach((c, k) => {
+      const on = k === this.cat;
+      UI.panel(tx, y, ws[k], h, h / 2, on ? '#e8502a' : 'rgba(255,255,255,.1)', on ? '#fff' : 'rgba(255,255,255,.35)');
+      UI.text(c.name, tx + ws[k] / 2, y + h / 2 + 1, 22, { fill: on ? '#fff' : '#cfd8ff', stroke: on ? '#5a0f05' : null, sw: 5, maxW: ws[k] - 20 });
+      if (Input.taps.some(t => UI.inside(t.x, t.y, Math.max(x, tx), y, Math.min(tx + ws[k], x + w) - Math.max(x, tx), h))) this.setCat(k);
+      tx += ws[k] + gap;
+    });
+    ctx.restore();
+    if (total > w) {   // 兩端還有分頁：小箭頭
+      if (this.tabScroll > 4) UI.text('‹', x - 8, y + h / 2, 30, { fill: '#ffd23f', raw: true });
+      if (this.tabScroll < total - w - 4) UI.text('›', x + w + 8, y + h / 2, 30, { fill: '#ffd23f', raw: true });
+    }
+  },
+  // 商品格子：縮圖、名稱、狀態徽章；選中的卡片金框
+  drawGrid() {
+    const G = this.L.grid, c = this.C(), list = c.list, viewH = G.rows * (G.ch + G.gap) - G.gap, gw = G.cols * (G.cw + G.gap) - G.gap;
+    // 手指上下拖曳捲動（放開後停在原位）
+    const drag = Input.dragY();
+    if (drag && UI.inside(drag.x, drag.y, G.x, G.y, gw, viewH)) {
+      if (this.dragFrom === null || this.dragFrom === undefined) this.dragFrom = this.scrollTo;
+      this.scrollTo = this.scroll = clamp(this.dragFrom - drag.dy, 0, this.maxScroll());
+    } else this.dragFrom = null;
+    this.scrollTo = clamp(this.scrollTo, 0, this.maxScroll());
+    this.scroll += (this.scrollTo - this.scroll) * 0.3;
+    ctx.save(); ctx.beginPath(); ctx.rect(G.x - 6, G.y - 6, gw + 12, viewH + 12); ctx.clip();
+    list.forEach((it, i) => {
+      const col = i % G.cols, row = Math.floor(i / G.cols), x = G.x + col * (G.cw + G.gap), y = G.y + row * (G.ch + G.gap) - this.scroll;
+      if (y + G.ch < G.y - 6 || y > G.y + viewH + 6) return;
+      const on = i === this.sel[this.cat], st = this.state(c, it), th = G.ch - (LAND ? 40 : 30);
+      UI.panel(x, y, G.cw, G.ch, 12, on ? 'rgba(255,190,60,.28)' : 'rgba(255,255,255,.07)', on ? '#ffd23f' : 'rgba(255,255,255,.22)');
+      ctx.save(); rrect(x + 5, y + 5, G.cw - 10, th, 8); ctx.clip();
+      c.thumb(it, x + 5, y + 5, G.cw - 10, th, on && Game.time - this.demoT < 1.2);
+      if (st === 'locked') { ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + 5, y + 5, G.cw - 10, th); }
+      ctx.restore();
+      UI.text(it.name, x + G.cw / 2, y + th + (G.ch - th) / 2 + 2, LAND ? 21 : 16, { fill: on ? '#ffd23f' : '#fff', stroke: null, maxW: G.cw - 14 });
+      // 狀態徽章：裝備中 ✓（綠）／未擁有：價格
+      if (st === 'on') { ctx.fillStyle = '#2fc46a'; ctx.beginPath(); ctx.arc(x + G.cw - 14, y + 14, 13, 0, 7); ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke(); UI.text('✓', x + G.cw - 14, y + 15, 16, { stroke: null, raw: true }); }
+      else if (st === 'locked') { UI.panel(x + G.cw / 2 - 46, y + 5 + th / 2 - 14, 92, 28, 14, 'rgba(16,22,52,.9)', '#fff27a'); UI.text('● ' + it.price, x + G.cw / 2, y + 5 + th / 2 + 1, 17, { fill: '#fff27a', stroke: null, raw: true }); }
+      if (Input.taps.some(t => UI.inside(t.x, t.y, x, Math.max(y, G.y), G.cw, Math.min(y + G.ch, G.y + viewH) - Math.max(y, G.y)))) this.pick(i);
+    });
+    ctx.restore();
+    // 捲軸（有超過一頁時）
+    const max = this.maxScroll();
+    if (max > 0) {
+      const sx = G.x + gw + 4, bh = viewH * viewH / (viewH + max), by = G.y + (viewH - bh) * (this.scroll / max);
+      ctx.fillStyle = 'rgba(255,255,255,.15)'; rrect(sx, G.y, 5, viewH, 3); ctx.fill();
+      ctx.fillStyle = '#ffd23f'; rrect(sx, by, 5, bh, 3); ctx.fill();
+    }
+  },
+  // 說明區：名稱、說明、狀態（＋打擊音效的「♪ 試聽」）
+  drawDetail() {
+    const [x, y, w, h] = this.L.detail, c = this.C(), it = this.item(), st = this.state(c, it), hit = c.kind === 'hit';
+    const bw = hit ? (LAND ? 150 : 130) : 0, tw = w - bw - (hit ? 16 : 0);
+    UI.text(it.name, x, y + (LAND ? 22 : 18), LAND ? 32 : 28, { align: 'left', fill: '#ffd23f', maxW: LAND ? tw : tw - 140 });
+    const desc = c.kind === 'bg' && !IMG['bg_' + it.id] ? '載入中…' : it.desc;
+    if (LAND) UI.wrap(desc, x, y + 62, tw, 26, 19, { fill: '#cfd8ff' });
+    else UI.text(desc, x, y + 50, 17, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: tw });
+    const status = st === 'on' ? '✓ 裝備中' : st === 'owned' ? '已擁有' : tr('{0} 遊戲幣', it.price);
+    const sOpt = { fill: st === 'on' ? '#8dff8a' : st === 'owned' ? '#fff' : '#fff27a', stroke: null, raw: st === 'locked' };
+    if (LAND) UI.text(status, x, y + h - 6, 20, Object.assign({ align: 'left' }, sOpt));
+    else UI.text(status, x + tw, y + 20, 18, Object.assign({ align: 'right' }, sOpt));   // 手機：名稱那一行的右邊
+    if (hit) {
+      const bx = x + w - bw, by = y + (LAND ? 4 : 6), bh = LAND ? 48 : 44;
+      UI.panel(bx, by, bw, bh, bh / 2, '#2a6fd6', '#fff');
+      UI.text('♪ 試聽', bx + bw / 2, by + bh / 2 + 1, LAND ? 22 : 20, { stroke: '#0c2c63', sw: 4, maxW: bw - 16 });
+      if (UI.tapIn(bx - 6, by - 6, bw + 12, bh + 12)) this.demo();
+    }
   },
   frame() {
     menuBackdrop(0);
-    const c = this.C(), N = c.list.length, cur = this.idx[this.cat], item = this.item(), owned = CoinShop.owned(c.kind, item), on = Save.data[c.key] === item.id;
+    const c = this.C(), N = c.list.length, it = this.item(), G = this.L.grid, st = this.state(c, it);
     // 左上：商店名牌；右上：遊戲幣（COIN_SHOP 打開才顯示）
     const tx = lay(18, 36);
     UI.panel(tx, 18, 200, 64, 32, 'rgba(16,22,52,.88)', '#e8b64a');
@@ -417,51 +534,40 @@ Screens.shop = {
       UI.panel(W - tx - 220, 18, 220, 64, 32, 'rgba(16,22,52,.88)', '#e8b64a');
       UI.text(tr('遊戲幣 {0}', CoinShop.coins()), W - tx - 110, 51, 26, { fill: '#fff27a', raw: true, maxW: 196 });
     }
-    // 下方面板：種類・編號、名稱、說明、狀態（裝備中／已擁有／價格）、頁碼點點；◀ ▶ 在兩側
-    const [px, py, pw, ph] = lay([30, 944, 660, 216], [W / 2 - 440, 776, 880, 200]);
-    // 分頁（店面背景｜打擊音效）：點選、鍵盤 Q／E、手把 LB／RB
-    { const th = 46, tw = 230, ty = py - th - 14, x0 = W / 2 - (this.CATS.length * (tw + 10) - 10) / 2;
-      this.CATS.forEach((C, k) => {
-        const x = x0 + k * (tw + 10), sel = k === this.cat;
-        UI.panel(x, ty, tw, th, th / 2, sel ? '#e8502a' : 'rgba(16,22,52,.88)', sel ? '#fff' : 'rgba(255,255,255,.4)');
-        UI.text(C.name, x + tw / 2, ty + th / 2 + 1, 24, { fill: sel ? '#fff' : '#cfd8ff', stroke: sel ? '#5a0f05' : null, sw: 5, maxW: tw - 24 });
-        if (UI.tapIn(x, ty, tw, th)) this.setCat(k);
-      });
-      if (Input.was('diffPrev')) this.setCat(this.cat - 1);
-      if (Input.was('diffNext')) this.setCat(this.cat + 1); }
-    UI.panel(px, py, pw, ph, 26, 'rgba(16,22,52,.9)', '#e8b64a');
-    UI.text(tr(c.name) + `　${cur + 1} / ${N}`, px + pw / 2, py + 28, 18, { fill: '#e8b64a', stroke: null, raw: true });
-    UI.text(item.name, px + pw / 2, py + 70, 36, { fill: '#ffd23f', maxW: pw - 220 });
-    UI.text(c.kind !== 'bg' || IMG['bg_' + item.id] ? item.desc : '載入中…', px + pw / 2, py + 112, 19, { fill: '#cfd8ff', stroke: null, maxW: pw - 220 });
-    const status = on ? '✓ 裝備中' : owned ? '已擁有' : tr('{0} 遊戲幣', item.price);
-    UI.text(status, px + pw / 2, py + 150, 22, { fill: on ? '#8dff8a' : owned ? '#fff' : '#fff27a', stroke: null, raw: !on && !owned });
-    for (let k = 0; k < N; k++) {
-      ctx.fillStyle = k === cur ? '#ffd23f' : 'rgba(255,255,255,.3)';
-      ctx.beginPath(); ctx.arc(px + pw / 2 + (k - (N - 1) / 2) * 24, py + ph - 24, k === cur ? 7 : 5, 0, 7); ctx.fill();
+    const [sx, sy, sw, sh] = this.L.sheet;
+    UI.panel(sx, sy, sw, sh, 26, 'rgba(16,22,52,.9)', '#e8b64a');
+    this.drawTabs(); this.drawGrid(); this.drawDetail();
+    // 鍵盤 / 手把：← → ↑ ↓ 在格子裡移動、Q E（LB RB）換分頁、ENTER 裝備、X 試聽、ESC 返回；手機：左右滑動換分頁
+    const i = this.sel[this.cat];
+    if (Input.was('left') || Input.was('right') || Input.was('up') || Input.was('down')) this.btn.sel = -1;
+    if (Input.was('left')) this.pick(i - 1);
+    if (Input.was('right')) this.pick(i + 1);
+    if (Input.was('up')) this.pick(i - G.cols);
+    if (Input.was('down')) this.pick(Math.min(N - 1, i + G.cols));
+    if (Input.was('diffPrev') || (Input.swipe === 'right' && UI.inside(Input.ptr.x, Input.ptr.y, sx, sy, sw, sh))) this.setCat(this.cat - 1);
+    if (Input.was('diffNext') || (Input.swipe === 'left' && UI.inside(Input.ptr.x, Input.ptr.y, sx, sy, sw, sh))) this.setCat(this.cat + 1);
+    if (c.kind === 'hit' && Input.was('listen')) this.demo();
+    // 按鈕：手機 = 木牌（裝備／購買、返回）；PC = 右下角按鍵提示鈕
+    const label = st === 'on' ? '裝備中' : st === 'owned' ? '裝備' : '購買';
+    if (LAND) {
+      const pad = Input.padConnected, xr = sx + sw - 20;
+      if (UI.prompt(xr, this.L.btnY, pad ? 'A' : 'ENTER', label, { hot: st !== 'on' })) this.act(it);
+      if (c.kind === 'hit' && UI.prompt(UI.promptX - 14, this.L.btnY, 'X', '試聽')) this.demo();
+      if (UI.prompt(UI.promptX - 14, this.L.btnY, pad ? 'B' : 'ESC', '返回', { back: true }) || Input.was('back')) this.back();
+      if (Input.was('confirm')) this.act(it);
+    } else {
+      UI.begin(this.btn);
+      const by = this.L.btnY;
+      if (UI.button(this.btn, label, W / 2 - 250, by, 240, 64, { lacquer: st !== 'on', size: 30 })) this.act(it);
+      if (UI.button(this.btn, '返回', W / 2 + 10, by, 240, 64, { back: true }) || Input.was('back')) this.back();
+      if (Input.was('confirm') && this.btn.sel === -1) this.act(it);   // 滑鼠停在按鈕上時交給按鈕
     }
-    // 打擊音效：右上「♪ 試聽」（點面板中間也可以；鍵盤 X／手把 X）
-    if (c.kind === 'hit') {
-      const bx = px + pw - 150, bw = 128;
-      UI.panel(bx, py + 12, bw, 36, 18, '#2a6fd6', '#fff');
-      UI.text('♪ 試聽', bx + bw / 2, py + 31, 18, { stroke: '#0c2c63', sw: 4, maxW: bw - 16 });
-      if (UI.tapIn(bx - 6, py + 6, bw + 12, 48) || UI.tapIn(px + 120, py + 50, pw - 240, ph - 60) || Input.was('listen')) this.demo();
-    }
-    UI.text('◀', px + 56, py + ph / 2, 52, { fill: '#ffd23f' }); UI.text('▶', px + pw - 56, py + ph / 2, 52, { fill: '#ffd23f' });
-    // 瀏覽：← → / 點 ◀ ▶ / 手機左右滑動（手指往左 = 下一個）
-    if (Input.was('left') || UI.tapIn(px, py, 112, ph) || Input.swipe === 'right') this.go(-1);
-    if (Input.was('right') || UI.tapIn(px + pw - 112, py, 112, ph) || Input.swipe === 'left') this.go(1);
-    // 按鈕：裝備／購買、返回（↑↓ 切換）
-    UI.begin(this);
-    const by = lay(1174, 994), label = on ? '裝備中' : owned ? '裝備' : '購買';
-    if (UI.button(this, label, W / 2 - 250, by, 240, 66, { lacquer: !on, size: 30 }) && !on) this.act(item);
-    if (UI.button(this, '返回', W / 2 + 10, by, 240, 66, { back: true }) || Input.was('back')) this.back();
-    UI.nav(this);
     if (this.toast && Game.time - this.toast.t < 2) {
-      const a = clamp(2 - (Game.time - this.toast.t), 0, 1), ty = py - 110;   // 分頁的上方
-      ctx.save(); ctx.globalAlpha = a; UI.panel(W / 2 - 200, ty - 28, 400, 56, 28, 'rgba(16,22,52,.94)', '#8dff8a');
-      UI.text(this.toast.text, W / 2, ty + 1, 24, { fill: '#fff', stroke: null, raw: true, maxW: 370 }); ctx.restore();
+      const a = clamp(2 - (Game.time - this.toast.t), 0, 1), cx = sx + sw / 2, ty = G.y + (G.rows * (G.ch + G.gap)) / 2;
+      ctx.save(); ctx.globalAlpha = a; UI.panel(cx - 200, ty - 28, 400, 56, 28, 'rgba(16,22,52,.96)', '#8dff8a');
+      UI.text(this.toast.text, cx, ty + 1, 24, { fill: '#fff', stroke: null, raw: true, maxW: 370 }); ctx.restore();
     }
-    UI.hint(c.kind === 'hit' ? '← → 瀏覽　Q E 分頁　X 試聽　ENTER 決定' : '← → 瀏覽　Q E 分頁　ENTER 決定');
+    UI.hint(c.kind === 'hit' ? '方向鍵 選擇　Q E 分頁　X 試聽　ENTER 裝備' : '方向鍵 選擇　Q E 分頁　ENTER 裝備');
   }
 };
 
