@@ -295,7 +295,7 @@ const TITLE = lay({ x: W / 2, y: 252, w: 460, h: 118, ty: 404 }, { x: 310, y: 21
 // 第 1 排 = 朱漆「開始遊戲」大木牌；第 2 排 = 掛在竹竿上的四塊木札
 Screens.menu = {
   sel: 0, n: 0, lastTag: 1,
-  TAGS: [['操作說明', 'sub.howto', 'howto'], ['排行榜', 'sub.ranking', 'ranking'], ['節奏分析', 'sub.rhythm', 'rhythm'], ['設定', 'sub.settings', 'settings'], ['CREDIT', 'sub.credits', 'credits']],
+  TAGS: [['操作說明', 'sub.howto', 'howto'], ['成就', 'sub.achievements', 'achievements'], ['節奏分析', 'sub.rhythm', 'rhythm'], ['設定', 'sub.settings', 'settings'], ['CREDIT', 'sub.credits', 'credits']],
   enter() { this.sel = 0; chef.idlePose = 'wave'; chef.queue = []; Sound.init(); Sound.duck(false); Sound.startBgm(); },
   frame() {
     if (LAND) return this.frameLand();
@@ -1330,7 +1330,7 @@ Screens.howto = {
     [(x, y) => drawImgW(IMG.cabbage_raw, x, y, 96), '先聽，再按', '食材丟出時會發出「咻～啵」提示音，2 拍之後落下。跟著音樂的節拍就對了。'],
     [(x, y) => drawImgW(IMG.okonomiyaki, x, y, 110), '湊齊四種食材', '炒麵、高麗菜、煎餅、培根各處理好 1 個，就會自動合成一份廣島燒，加 1000 分！'],
     ['⏩', '越來越快', '每 8 小節節奏加快一次。共 30 首樂曲（3 集，每集 10 首），星越多越快、越難。'],
-    ['🏆', '排行榜', '遊戲結束時，分數進入前 20 名就能登錄姓名。'],
+    ['🏆', 'HISCORE', '每首歌的每種難度，都會記下你自己的最高分。'],
   ],
   p1() { this.RULES.forEach(([ic, t, d], i) => this.row(222 + i * 164, ic, t, d)); },
   p1L() { this.RULES.forEach(([ic, t, d], i) => this.row(236 + (i % 3) * 210, ic, t, d, i < 3 ? 190 : 980, 600)); },   // 左欄 3 列、右欄 2 列
@@ -1780,74 +1780,29 @@ Screens.install = {
   }
 };
 
-// ---------- 排行榜（每首歌一個；← → 切換樂曲） ----------
-Screens.ranking = {
-  sel: 0, n: 0, hl: null, hlId: null, list: null, loading: false, err: false, idx: 0,
-  enter(arg) {
-    this.hl = arg && arg.entry; this.hlId = arg && arg.entryId; this.sel = 0;
-    const id = (arg && arg.song) || Save.data.lastSong;
-    this.idx = Math.max(0, SONGS.findIndex(s => s.id === id));
-    this.diff = arg && arg.diff !== undefined ? arg.diff : curDiff();   // 看哪個難度的排行榜
-    chef.idlePose = 'wave'; Sound.startBgm();
-    this.load();
-  },
-  load() {
-    this.list = null; this.err = false; this.loading = false;
-    if (!Online.enabled) return;
-    const id = recId(SONGS[this.idx], this.diff), cur = () => recId(SONGS[this.idx], this.diff); this.loading = true;
-    Online.top(id).then(l => { if (cur() === id) { this.list = l; this.loading = false; } })
-      .catch(() => { if (cur() === id) { this.err = true; this.list = []; this.loading = false; } });
-  },
-  move(d) { this.idx = (this.idx + d + SONGS.length) % SONGS.length; this.hl = null; this.hlId = null; Sound.play('select'); this.load(); },
-  setDiff(d) { d = (d + DIFFS.length) % DIFFS.length; if (d === this.diff) return; this.diff = d; this.hl = null; this.hlId = null; Sound.play('select'); this.load(); },
+// ---------- 成就（預留：目前只有按鈕與「準備中」畫面，內容之後再做） ----------
+Screens.achievements = {
+  sel: 0, n: 0,
   frame() {
-    menuBackdrop(0.72);
-    UI.header('排行榜', Online.enabled ? 'LEADERBOARD（線上）' : 'LEADERBOARD（本機）');
-    // 樂曲切換列
-    const song = SONGS[this.idx];
-    UI.wood(W / 2 - 300, 182, 600, 66, { r: 14, seed: 'rank-bar' });
-    UI.text(songName(song), W / 2, 205, 26, { fill: '#3a1d0a', stroke: null, raw: true, maxW: 420 });
-    drawStars(W / 2, 233, diffStars(song, this.diff), 16);
-    // 右側：難度（點一下或 Q／E、手把 LB／RB 切換）
-    { const D = DIFFS[this.diff]; UI.panel(W / 2 + 78, 219, 104, 28, 14, D.color, '#fff'); UI.text(D.name, W / 2 + 130, 234, 17, { fill: '#fff', stroke: null });
-      if (UI.tapIn(W / 2 + 72, 214, 116, 38)) this.setDiff(this.diff + 1);
-      if (Input.was('diffPrev')) this.setDiff(this.diff - 1); if (Input.was('diffNext')) this.setDiff(this.diff + 1); }
-    UI.text(volName(song.vol), W / 2 - 200, 233, 15, { fill: '#8a3a10', stroke: null, raw: true });
-    UI.text('◀', W / 2 - 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 }); UI.text('▶', W / 2 + 268, 215, 36, { fill: '#c43a1a', stroke: '#fff3d8', sw: 5 });
-    if (Input.was('left') || UI.tapIn(W / 2 - 320, 176, 120, 80)) this.move(-1);
-    if (Input.was('right') || UI.tapIn(W / 2 + 200, 176, 120, 80)) this.move(1);
-
-    // 直式：一欄 20 名；橫式：兩欄各 10 名（列較高、字較大）
-    UI.panel(...lay([30, 262, 660, 790], [160, 262, 1600, 650]), 26);
-    const cols = lay(1, 2), per = 20 / cols, rw = lay(636, 770), rh = lay(34, 50), dy = lay(35.5, 56), fs = lay(21, 26);
-    const colX = c => lay(42, 180 + c * 790), Cx = x0 => ({ rank: x0 + 40, name: x0 + 94, oko: x0 + lay(436, 570), score: x0 + rw - 18 });
-    for (let c = 0; c < cols; c++) {
-      const C = Cx(colX(c));
-      UI.text('名次', C.rank, 290, 18, { fill: '#7fe4ff', stroke: null });
-      UI.text('姓名', C.name, 290, 18, { align: 'left', fill: '#7fe4ff', stroke: null });
-      UI.text('廣島燒', C.oko, 290, 18, { fill: '#7fe4ff', stroke: null });
-      UI.text('分數', C.score, 290, 18, { align: 'right', fill: '#7fe4ff', stroke: null });
-    }
-    const glob = Online.enabled, b = glob ? (this.list || []) : Save.board(recId(song, this.diff));
-    if (glob && this.loading) UI.text('讀取中…', W / 2, lay(640, 580), 30);
-    for (let i = 0; i < 20; i++) {
-      const c = Math.floor(i / per), x0 = colX(c), C = Cx(x0), y = lay(326, 334) + (i % per) * dy, e = b[i];
-      const isHl = e && (glob ? (this.hlId && e.id === this.hlId) : e === this.hl);
-      ctx.fillStyle = isHl ? `rgba(255,210,63,${0.35 + 0.25 * Math.sin(Game.time * 8)})` : (i % 2 ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,.12)');
-      ctx.fillRect(x0, y - rh / 2, rw, rh);
-      const col = i === 0 ? '#ffd23f' : i === 1 ? '#e0e6f0' : i === 2 ? '#f0a070' : '#ffffff';
-      UI.text(String(i + 1), C.rank, y, fs, { fill: col, stroke: null });
-      if (e) {
-        UI.text(e.name, C.name, y, fs, { align: 'left', fill: isHl ? '#fff27a' : '#fff', stroke: null, maxW: lay(280, 380), raw: true });
-        UI.text('×' + (e.oko || 0), C.oko, y, fs - 2, { fill: '#ffb0a0', stroke: null });
-        UI.text(pad(e.score, 7), C.score, y, fs, { align: 'right', fill: col, stroke: null });
-      } else UI.text('---', C.name, y, fs, { align: 'left', fill: 'rgba(255,255,255,.4)', stroke: null });
-    }
-    if (this.err) UI.text('無法連線，暫時無法顯示線上排行', W / 2, lay(1036, 930), 17, { fill: '#ff9fb5', stroke: null });
+    menuBackdrop(0.7);
+    UI.header('成就', 'ACHIEVEMENTS');
+    const [x, y, w, h] = lay([60, 260, 600, 560], [560, 230, 800, 520]), cx = x + w / 2;
+    UI.panel(x, y, w, h, 28, 'rgba(16,22,52,.9)', '#e8b64a');
+    // 獎盃圖示（向量畫，不用新圖）
+    const ty = y + h * 0.36, bob = Math.sin(Game.time * 2) * 4;
+    ctx.save(); ctx.translate(cx, ty + bob); ctx.lineJoin = 'round';
+    ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#7a4a00'; ctx.lineWidth = 5;
+    ctx.beginPath(); ctx.moveTo(-46, -60); ctx.lineTo(46, -60); ctx.quadraticCurveTo(44, 10, 0, 22); ctx.quadraticCurveTo(-44, 10, -46, -60); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.lineWidth = 7; [-1, 1].forEach(k => { ctx.beginPath(); ctx.arc(k * 48, -36, 18, k < 0 ? Math.PI * 0.5 : -Math.PI * 0.5, k < 0 ? Math.PI * 1.5 : Math.PI * 0.5, k > 0); ctx.stroke(); });
+    ctx.fillStyle = '#ffd23f'; ctx.lineWidth = 5; ctx.fillRect(-9, 22, 18, 22); ctx.strokeRect(-9, 22, 18, 22);
+    ctx.beginPath(); ctx.rect(-36, 44, 72, 16); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(-20, -36, 7, 16, 0.2, 0, 7); ctx.fill();
+    ctx.restore();
+    UI.text('準備中', cx, y + h * 0.66, lay(44, 48), { fill: '#ffd23f', sw: 8 });
+    UI.text('成就功能即將推出，敬請期待！', cx, y + h * 0.66 + 62, lay(22, 24), { fill: '#cfd8ff', stroke: null, maxW: w - 60 });
     UI.begin(this);
     if (UI.button(this, '返回主選單', W / 2 - 140, lay(1076, 952), 280, 70, { back: true }) || Input.was('back')) App.goto('menu');
     UI.nav(this);
-    UI.hint('← → 切換樂曲');
     UI.copyright();
   }
 };
@@ -2117,38 +2072,18 @@ Screens.result = {
     UI.wrap(R.desc, x + 126, two ? y + 62 : y + 68, w - 166, 17, two ? 13 : 15, { fill: '#5a3a1a' });
     ctx.restore();
   },
-  sel: 0, n: 0, t: 0, r: null, qualifies: false, checked: false, submitted: false, newRecord: false, input: null,
+  sel: 0, n: 0, t: 0, r: null, newRecord: false,
   enter() {
-    this.r = Game.result; this.t = 0; this.sel = 0; this.checked = false; this.submitted = false; this.shownInput = false; this.stamped = false;
+    this.r = Game.result; this.t = 0; this.sel = 0; this.stamped = false;
     this.song = songById(this.r.song);
     this.rid = recId(this.song, Game.diff);   // 這一局難度的紀錄 id
-    this.newRecord = this.r.score > Save.best(this.rid);
+    this.newRecord = !!this.r.newRecord;      // 結束時已經比過自己的最高分（Game.finish）
     Sound.duck(false);
     SND.fanfare(A.ctx.currentTime + 0.2);
     const o = this.r.oko;
     chef.queue = []; chef.idlePose = o >= 8 ? 'cheer' : o >= 3 ? 'nice' : 'bad';
-    this.input = document.getElementById('nameInput');
-    if (LAND) {   // 姓名輸入框（HTML）：橫式放在右側按鈕欄（以畫布百分比定位；直式用 style.css 的位置）
-      const p = (v, t) => (v / t * 100) + '%';
-      Object.assign(this.input.style, { left: p(1180, W), top: p(350, H), width: p(400, W), height: p(72, H) });
-    }
-    this.input.value = Save.data.name || '';
-    this.input.onkeydown = e => { if (e.key === 'Enter') this.submit(); };
-    if (Online.enabled) Online.top(this.rid).catch(() => {});
   },
-  leave() { this.input.style.display = 'none'; this.input.blur(); chef.idlePose = 'wave'; },
-  submit() {
-    if (this.submitted) return;
-    this.submitted = true;
-    const nm = (this.input.value || '').trim().slice(0, 8) || 'PLAYER';
-    const r = this.r, entry = { name: nm, score: r.score, oko: r.oko, combo: r.maxCombo };
-    const id = this.rid, song = this.song.id, diff = Game.diff;   // 存進這個難度的排行榜
-    Save.add(entry, id);
-    Sound.play('confirm');
-    if (Online.enabled) {
-      Online.submit(entry, id).then(eid => App.goto('ranking', { entry, entryId: eid, song, diff })).catch(() => App.goto('ranking', { entry, song, diff }));
-    } else App.goto('ranking', { entry, song, diff });
-  },
+  leave() { chef.idlePose = 'wave'; },
   frame(dt) {
     this.t += dt;
     const r = this.r, t = this.t;
@@ -2183,25 +2118,13 @@ Screens.result = {
     ctx.restore();
 
     if (t < 1.6) { if (t > 0.4 && (Input.taps.length || Input.was('confirm'))) { this.t = 1.6; Input.taps.length = 0; Input.pressed.delete('confirm'); } return; }
-    if (!this.checked) { this.checked = true; this.qualifies = Online.enabled ? Online.qualifies(r.score, this.rid) : Save.qualifies(r.score, this.rid); }
     UI.begin(this);
-    const BX = lay(160, 1180), BY = i => lay(872 + i * 74, 340 + i * 96);
-    if (this.qualifies && !this.submitted) {
-      UI.text('進榜！請輸入你的姓名', BX + 200, lay(880, 300), 30, { fill: '#ffd23f', sw: 8 });
-      this.input.style.display = 'block';
-      if (!this.shownInput) { this.shownInput = true; if (!Input.touchMode) { this.input.focus(); this.input.select(); } }
-      if (UI.button(this, '登錄', BX - 30, lay(1060, 476), 220, 70, { c1: '#8dff8a', c2: '#2fc46a' })) this.submit();
-      if (UI.button(this, '略過', BX + 210, lay(1060, 476), 220, 70, { back: true })) App.goto('menu');
-      if (UI.button(this, '返回選擇樂曲', BX, lay(1146, 566), 400, 64)) App.goto('songs');
-    } else {
-      this.input.style.display = 'none';
-      if (UI.button(this, '再玩一次', BX, BY(0), 400, 64, { lacquer: true })) App.goto('game', { song: this.song });
-      if (UI.button(this, '返回選擇樂曲', BX, BY(1), 400, 64)) App.goto('songs');
-      if (UI.button(this, '排行榜', BX, BY(2), 400, 64)) App.goto('ranking', { song: this.song.id, diff: Game.diff });
-      if (UI.button(this, '回主選單', BX, BY(3), 400, 64, { back: true })) App.goto('menu');
-      // 成績卡右上角：分享成績圖（手機叫出分享選單，PC 下載圖片）
-      if (UI.button(this, '分享', x + w - 150, y + 34, 132, 52, { size: 24 })) Share.result(r, this.song);
-    }
+    const BX = lay(160, 1180), BY = i => lay(890 + i * 84, 360 + i * 110);   // 三顆按鈕
+    if (UI.button(this, '再玩一次', BX, BY(0), 400, 64, { lacquer: true })) App.goto('game', { song: this.song });
+    if (UI.button(this, '返回選擇樂曲', BX, BY(1), 400, 64)) App.goto('songs');
+    if (UI.button(this, '回主選單', BX, BY(2), 400, 64, { back: true })) App.goto('menu');
+    // 成績卡右上角：分享成績圖（手機叫出分享選單，PC 下載圖片）
+    if (UI.button(this, '分享', x + w - 150, y + 34, 132, 52, { size: 24 })) Share.result(r, this.song);
     UI.nav(this);
   }
 };

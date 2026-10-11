@@ -3,7 +3,6 @@
 // ===== 進入點：縮放、主迴圈、背景暫停 =====
 (function () {
   const stage = document.getElementById('stage');
-  const nameInput = document.getElementById('nameInput');
   const rotate = document.getElementById('rotate');
 
   let quality = 1;   // 自動畫質：手機變燙、持續掉幀時往下調（最低到 1 倍解析度），這次開啟期間不再調回
@@ -17,7 +16,6 @@
     if (LAND) RES = Math.min(Display.renderScale(), RES_MAX());   // PC 版：依設定的解析度繪製，再縮放到視窗大小
     cv.width = Math.round(W * RES);
     cv.height = Math.round(H * RES);
-    nameInput.style.fontSize = Math.round(34 * scale) + 'px';
   }
   window.applyPowerMode = resize;   // 設定切換省電模式時重新套用解析度
   window.addEventListener('resize', resize);
@@ -25,7 +23,6 @@
   resize();
   Display.applyWindow();   // 桌面版：視窗大小套用上次選的解析度
 
-  Online.init();
   Input.init(cv);
   rotate.textContent = tr('請將手機直立握持');
   document.documentElement.lang = { zh: 'zh-Hant', ja: 'ja', en: 'en' }[Save.data.lang] || 'zh-Hant';
@@ -87,5 +84,5 @@
   }
   requestAnimationFrame(loop);
 
-  window.__game = { App, Game, Screens, Input, Save, Sound, Online };
+  window.__game = { App, Game, Screens, Input, Save, Sound };
 })();

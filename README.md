@@ -13,35 +13,34 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 ```
 
 然後開啟 http://localhost:5173
-- 網址加 `?fast` 每段只有 3 小節（約 30～40 秒一局），方便測試結算與排行榜流程。
+- 網址加 `?fast` 每段只有 3 小節（約 30～40 秒一局），方便測試結算畫面。
 
 ## 資料夾結構
 
 | 路徑 | 說明 |
 | --- | --- |
 | `index.html` | 進入頁面 |
-| `css/style.css` | 版面、縮放、姓名輸入框 |
+| `css/style.css` | 版面、縮放 |
 | `js/config.js` | 全域參數（判定時間窗、計分、BPM、節奏型、食材、製作名單）— **調整難度改這裡** |
 | `js/songs.js` | 40 首樂曲（歌名、星級、各段 BPM／難度、編曲；最後的 `VOL_ORDER` 決定分集與排列）— **新增或調整樂曲改這裡** |
 | `js/game.js` | 遊戲核心（譜面產生、可暫停的樂曲時鐘、判定、主角姿勢、特效、HUD） |
 | `js/rhythm.js` | 節奏分析：每場的遊玩紀錄（時間差、準確度、分布）與統計、音感等級與建議 |
 | `js/share.js` | 分享成績圖（結算畫面「分享」：產生成績圖片，手機叫出分享選單、PC 下載） |
-| `js/screens.js` | 畫面管理與各畫面：開始（夜空）、開場演出、主選單、選曲、遊戲 / 暫停、操作說明、設定、排行榜、CREDIT、結算 |
+| `js/screens.js` | 畫面管理與各畫面：開始（夜空）、開場演出、主選單、選曲、遊戲 / 暫停、操作說明、設定、成就（預留）、商店、CREDIT、結算 |
+| `js/pets.js` | 陪伴寵物（坐在鐵板右上角，跟著節拍與打擊反應；寵物清單在 `js/config.js` 的 `PETS`） |
 | `js/audio.js` | 即時合成的樂器、音效與選單音樂（音量 0~5） |
 | `js/input.js` | 鍵盤 / 遊戲控制器 / 滑鼠與觸控 |
 | `js/ui.js` | 即時模式 UI（按鈕、面板、標題帶） |
 | `js/assets.js` | 圖片載入與繪圖小工具 |
-| `js/save.js` | 設定與本機排行榜（localStorage） |
+| `js/save.js` | 設定與成績（localStorage；HISCORE = 自己的最高分；存檔碼備份） |
 | `js/pwa.js`, `sw.js`, `manifest.json` | PWA：Service Worker（離線快取）、安裝提示、APP 設定 |
 | `js/i18n.js` | 中文／日本語／English 翻譯表（以中文原文為鍵，新增文字時在此補翻譯） |
-| `js/online.js`, `js/firebase-config.js` | 線上排行榜（選用） |
 | `assets/images/` | 遊戲用圖（已去背、裁切、壓縮） |
 | `assets/icons/` | APP 圖示（192／512／maskable／Apple／favicon） |
 | `assets/audio/` | 語音（開場「いらっしゃいませ！」、選曲「select song」）；音量與起始位置在 `js/audio.js` 的 `VOICES`。遊戲實際讀的是內嵌版 `js/voices.js`（file:// 開啟的桌面版也能播），換了音檔後執行 `tools/embed_voices.ps1` 重新產生 |
 | `assets/source/` | 原始圖片（企畫附圖、Excel 內的圖） |
 | `tools/` | `serve.ps1` 本機伺服器、`build.ps1` 封裝、`prep.html` + `prep_server.ps1` 素材前處理 |
 | `docs/企畫書.md` | 遊戲企畫 |
-| `firebase/firestore.rules` | 線上排行榜的 Firestore 規則 |
 | `prototypes/stack-flip/` | 早期雛形「疊料＋翻面」 |
 | `builds/` | 封裝發佈版本（zip），**不進 git** |
 
@@ -104,8 +103,8 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 選曲畫面：同一集的 10 首用上下選（鍵盤 ↑↓、手把十字鍵、滑鼠滾輪、手機上下滑動；清單像轉盤一樣捲動，甩得快會多轉幾首），← →（手機左右滑動）切換上一組／下一組；點下方的樂曲組名稱（鍵盤 X、手把 X）打開「選擇樂曲組」選單，所有組（內建曲目、VOL.1 ～ VOL.3…）一次列出、直接跳到任一組，顯示過關數與是否已購買（都停在同樣的編號）。
 
 - 每首歌分 5～6 段，每段 8 小節，最後一小節休息（SPEED UP），越後段樂器越多。
-- 排行榜每首歌各自一個（本機或 Firebase 集合 `leaderboard_<歌曲id>`）。
-- 新增樂曲：在 `js/songs.js` 的 `SONGS` 加一筆（`sections` 定義速度與節奏難度、`arrange()` 編寫一小節的音樂、`outro()` 結尾），放進 `VOL_ORDER`，並在 `js/save.js` 的 `SEED_SCALE` 與 `firebase/firestore.rules` 的集合清單補上。
+- HISCORE 是自己在每首歌、每種難度的最高分（存在本機，可用設定的「存檔備份」帶到其他裝置）。
+- 新增樂曲：在 `js/songs.js` 的 `SONGS` 加一筆（`sections` 定義速度與節奏難度、`arrange()` 編寫一小節的音樂、`outro()` 結尾），放進 `VOL_ORDER`。
 ## 操作
 
 | 操作 | 鍵盤 | 遊戲手把（Xbox 標準配置） | 手機 |
@@ -163,13 +162,3 @@ powershell -ExecutionPolicy Bypass -File tools\build.ps1 -Version 0.1.0
 
 會產生 `builds\DaioYaki_v0.1.0.zip`（只含遊戲執行需要的檔案，可上傳 itch.io 等平台）。`builds/` 內容不會被 git 追蹤。
 
-## 線上排行榜（Firebase Firestore，選用）
-
-`js/firebase-config.js` 留空時自動使用本機排行榜（存在瀏覽器）。要開啟全球排行榜：
-
-1. Firebase 主控台建立 Firestore Database。
-2. 「規則」貼上 `firebase/firestore.rules` 的內容並發布。
-3. 專案設定 → 一般 → 您的應用程式 → 新增網頁應用程式，把 SDK 設定貼進 `js/firebase-config.js`。
-4. 集合 `leaderboard` 會在第一筆成績送出時自動建立。
-
-`apiKey` 為公開資訊，安全性由 Firestore 規則把關。

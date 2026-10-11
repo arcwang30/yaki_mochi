@@ -3,7 +3,7 @@
 // ===== 全域參數（調整難度、計分、版面改這裡） =====
 const FONT = "'Mochiy Pop One','Microsoft JhengHei','PingFang TC',sans-serif";
 const QS = new URLSearchParams(location.search);
-const FAST = QS.has('fast');      // 網址加 ?fast：每段只有 3 小節，方便測試結算與排行榜
+const FAST = QS.has('fast');      // 網址加 ?fast：每段只有 3 小節，方便測試結算畫面
 
 // ---- 版面：手機直式 9:16（720x1280）／PC 橫式 16:9（1920x1080） ----
 // 桌面版（Electron，preload 會放 window.desktop）一律橫式；網頁版：觸控裝置直式、電腦視窗較寬時橫式。

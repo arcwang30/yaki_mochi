@@ -7,10 +7,10 @@ const LANGS = [['zh', '中文'], ['ja', '日本語'], ['en', 'English']];
 
 const I18N = {
   zh: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM', 'sub.shop': 'SHOP',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.achievements': 'ACHIEVEMENTS', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM', 'sub.shop': 'SHOP',
   },
   ja: {
-    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.ranking': 'RANKING', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM', 'sub.shop': 'SHOP',
+    'sub.start': 'START', 'sub.howto': 'HOW TO PLAY', 'sub.achievements': 'ACHIEVEMENTS', 'sub.settings': 'SETTINGS', 'sub.credits': 'CREDIT', 'sub.tutorial': 'TUTORIAL', 'sub.quit': 'QUIT', 'sub.rhythm': 'RHYTHM', 'sub.shop': 'SHOP',
     // 開始 / 主選單
     '節奏熱炒遊戲': 'リズム鉄板ゲーム', '開始遊戲': 'ゲーム開始', '操作說明': 'あそびかた', '排行榜': 'ランキング', '設定': 'せってい', 'CREDIT': 'クレジット',
     '十字鍵 選擇　A 決定　B 返回': '十字キー 選択　A 決定　B 戻る', '點選按鈕': 'ボタンをタップ', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ 選択　ENTER 決定　ESC 戻る',
@@ -117,6 +117,7 @@ const I18N = {
     '內建曲目': 'スタンダード', '追加樂曲': '追加楽曲', '選擇樂曲組': '楽曲パックを選ぶ', '已過關 {0}/{1}': 'クリア {0}/{1}', '目前': '選択中', '點一組切換・點外面關閉': 'タップで切り替え・外側で閉じる', '十字鍵 選擇　A 決定　B 關閉': '十字キー 選択　A 決定　B 閉じる', '方向鍵 選擇　ENTER 決定　ESC 關閉': '方向キー 選択　ENTER 決定　ESC 閉じる',
     '上下滑動選曲・點中間的歌開始・點樂曲組名稱切換': '上下スワイプで選曲・中央の曲をタップで開始・パック名で切り替え', '↑↓ 選曲　← → 切換　X 樂曲組　LB／RB 難度　A 開始　Y 教學　B 返回': '↑↓ 選曲　← → 切替　X パック　LB／RB 難易度　A 開始　Y チュートリアル　B 戻る', '↑↓ 選曲　← → 切換　X 樂曲組　Q／E 難度　ENTER 開始　T 教學': '↑↓ 選曲　← → 切替　X パック　Q／E 難易度　ENTER 開始　T チュートリアル', '免費': '無料', '免費開放中': '無料公開中', '✓ 已購買': '✓ 購入済み', '前往選曲': '曲を選ぶ', '已擁有：按「前往選曲」就能玩': '購入済み：「曲を選ぶ」ですぐ遊べます', '點曲目就可以試聽': '曲をタップで試聴',
     '← → 選擇　↑↓ 試聽曲目　Q E 分頁　X 恢復購買　ENTER 決定': '← → 選択　↑↓ 曲を試聴　Q E タブ　X 購入を復元　ENTER 決定', '← → 選擇　↑↓ 試聽曲目　Q E 分頁　ENTER 決定': '← → 選択　↑↓ 曲を試聴　Q E タブ　ENTER 決定',
+    '成就': '実績', '準備中': '準備中', '成就功能即將推出，敬請期待！': '実績機能はただいま準備中です。お楽しみに！', '每首歌的每種難度，都會記下你自己的最高分。': '曲ごと・難易度ごとに、自分の最高スコアが記録されます。',
     '陪伴寵物': 'おともペット', '不帶寵物': 'ペットなし', '一個人顧攤也很自在': 'ひとりで店番も気楽', '麻呂眉的看板犬，跟著節拍搖尾巴': 'まろ眉の看板犬、リズムに合わせてしっぽフリフリ', '招財貓': '招き猫', '招手招來客人與好成績': 'お客さんと高得点を招く', '狸貓': 'たぬき', '頭上頂著葉子的愛笑狸貓': '頭に葉っぱをのせた笑い上戸のたぬき', '章魚燒小章魚': 'たこ焼きダコ', '綁著頭巾的隔壁攤小幫手': 'ねじり鉢巻のおとなりの助っ人', '金魚': '金魚', '撈金魚撈到的小金魚，在水袋裡游來游去': '金魚すくいで取れた小さな金魚、袋の中をスイスイ', '月兔': '月うさぎ', '從月亮跑來逛夜市的白兔': '月から夜市に遊びに来た白うさぎ', '熊貓': 'パンダ', '圓滾滾的黑眼圈店員': 'まんまるクマ目の店員さん', '企鵝': 'ペンギン', '拍拍翅膀幫你打拍子': '羽をパタパタ、リズムを応援', '達摩': 'だるま', '跟著節拍搖搖晃晃，歡呼時畫上另一隻眼': 'リズムに合わせてゆらゆら、大喜びでもう片方の目が入る', '小雞': 'ひよこ', '剛從蛋殼探出頭的小雞': '卵からひょっこり顔を出したひよこ', '遊戲機': 'ゲーム機', '螢幕就是臉的掌上遊戲機，一起打出高分': '画面が顔の携帯ゲーム機、一緒にハイスコアを',
     '打擊音效': '打撃音','♪ 試聽': '♪ 試聴', '方向鍵 選擇　Q E 分頁　X 試聽　ENTER 套用': '方向キー 選択　Q E タブ　X 試聴　ENTER 適用', '方向鍵 選擇　Q E 分頁　ENTER 套用': '方向キー 選択　Q E タブ　ENTER 適用', '試聽': '試聴',
     '經典鐵板': 'クラシック鉄板', '咚！鐵板與菜刀的原味聲響': 'ドン！鉄板と包丁のおなじみの音', '和太鼓': '和太鼓', '咚、咔！祭典太鼓的節奏': 'ドン・カッ！お祭り太鼓のリズム',
@@ -135,7 +136,7 @@ const I18N = {
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': '打つボタンはどれでも OK。マウスなら画面のどこをクリックしても OK（右上のポーズボタンを除く）。ポーズから再開すると 3 拍カウントしてから元のリズムに戻ります。',
   },
   en: {
-    'sub.start': 'はじめる', 'sub.shop': 'みせ', 'sub.howto': 'あそびかた', 'sub.ranking': 'ランキング', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう', 'sub.quit': 'おわる', 'sub.rhythm': 'おんかん',
+    'sub.start': 'はじめる', 'sub.shop': 'みせ', 'sub.howto': 'あそびかた', 'sub.achievements': 'じっせき', 'sub.settings': 'せってい', 'sub.credits': 'クレジット', 'sub.tutorial': 'れんしゅう', 'sub.quit': 'おわる', 'sub.rhythm': 'おんかん',
     '節奏熱炒遊戲': 'Rhythm Teppan Game', '開始遊戲': 'PLAY', '操作說明': 'HOW TO', '排行榜': 'RANKING', '設定': 'SETTINGS', 'CREDIT': 'CREDITS',
     '十字鍵 選擇　A 決定　B 返回': 'D-pad: select   A: OK   B: back', '點選按鈕': 'Tap a button', '↑↓ 選擇　ENTER 決定　ESC 返回': '↑↓ select   ENTER: OK   ESC: back',
     '繼續遊戲': 'RESUME', '重新開始': 'RESTART', '回主選單': 'MAIN MENU', '返回選擇樂曲': 'SONG SELECT', '繼續後會先倒數 3 拍，再接回原本的節拍': 'Resuming counts in 3 beats, then picks up the beat',
@@ -232,6 +233,7 @@ const I18N = {
     '內建曲目': 'STANDARD', '追加樂曲': 'Song Packs', '選擇樂曲組': 'Choose a Song Pack', '已過關 {0}/{1}': 'Cleared {0}/{1}', '目前': 'NOW', '點一組切換・點外面關閉': 'Tap a pack to switch · tap outside to close', '十字鍵 選擇　A 決定　B 關閉': 'D-pad Select　A OK　B Close', '方向鍵 選擇　ENTER 決定　ESC 關閉': 'Arrows Select　ENTER OK　ESC Close',
     '上下滑動選曲・點中間的歌開始・點樂曲組名稱切換': 'Swipe up/down to pick · tap the center song to start · tap the pack name to switch', '↑↓ 選曲　← → 切換　X 樂曲組　LB／RB 難度　A 開始　Y 教學　B 返回': '↑↓ Song　← → Switch　X Packs　LB／RB Difficulty　A Start　Y Tutorial　B Back', '↑↓ 選曲　← → 切換　X 樂曲組　Q／E 難度　ENTER 開始　T 教學': '↑↓ Song　← → Switch　X Packs　Q／E Difficulty　ENTER Start　T Tutorial', '免費': 'Free', '免費開放中': 'Free for now', '✓ 已購買': '✓ Purchased', '前往選曲': 'PLAY SONGS', '已擁有：按「前往選曲」就能玩': 'Owned: tap PLAY SONGS to play', '點曲目就可以試聽': 'Tap a song to preview',
     '← → 選擇　↑↓ 試聽曲目　Q E 分頁　X 恢復購買　ENTER 決定': '← → Select　↑↓ Preview　Q E Tabs　X Restore　ENTER OK', '← → 選擇　↑↓ 試聽曲目　Q E 分頁　ENTER 決定': '← → Select　↑↓ Preview　Q E Tabs　ENTER OK',
+    '成就': 'ACHIEVEMENTS', '準備中': 'Coming Soon', '成就功能即將推出，敬請期待！': 'Achievements are on the way. Stay tuned!', '每首歌的每種難度，都會記下你自己的最高分。': 'Your own best score is saved for every song and difficulty.',
     '陪伴寵物': 'Pet Buddy', '不帶寵物': 'No Pet', '一個人顧攤也很自在': 'Running the stall solo', '麻呂眉的看板犬，跟著節拍搖尾巴': 'The stall dog, wagging to the beat', '招財貓': 'Lucky Cat', '招手招來客人與好成績': 'Beckons customers and high scores', '狸貓': 'Tanuki', '頭上頂著葉子的愛笑狸貓': 'A cheerful tanuki with a leaf on its head', '章魚燒小章魚': 'Takoyaki Octopus', '綁著頭巾的隔壁攤小幫手': 'The headband-wearing helper from next door', '金魚': 'Goldfish', '撈金魚撈到的小金魚，在水袋裡游來游去': 'A festival goldfish swimming in its water bag', '月兔': 'Moon Rabbit', '從月亮跑來逛夜市的白兔': 'A white rabbit visiting from the moon', '熊貓': 'Panda', '圓滾滾的黑眼圈店員': 'A round, sleepy-eyed shop helper', '企鵝': 'Penguin', '拍拍翅膀幫你打拍子': 'Flaps its wings to the beat', '達摩': 'Daruma', '跟著節拍搖搖晃晃，歡呼時畫上另一隻眼': 'Rocks to the beat and fills in its other eye when it cheers', '小雞': 'Chick', '剛從蛋殼探出頭的小雞': 'A chick peeking out of its eggshell', '遊戲機': 'Game Console', '螢幕就是臉的掌上遊戲機，一起打出高分': 'A handheld console whose screen is its face',
     '打擊音效': 'Hit Sounds','♪ 試聽': '♪ Listen', '方向鍵 選擇　Q E 分頁　X 試聽　ENTER 套用': 'Arrows Select　Q E Tabs　X Listen　ENTER Apply', '方向鍵 選擇　Q E 分頁　ENTER 套用': 'Arrows Select　Q E Tabs　ENTER Apply', '試聽': 'Listen',
     '經典鐵板': 'Classic Griddle', '咚！鐵板與菜刀的原味聲響': 'Thud! The original griddle and knife sounds', '和太鼓': 'Taiko', '咚、咔！祭典太鼓的節奏': 'Don, ka! Festival taiko drums',

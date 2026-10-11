@@ -309,7 +309,7 @@ const Game = {
     Sound.init(); Sound.stopBgm(); Sound.duck(false);
     this.song = song || this.song || SONGS[0];
     this.diff = tut ? 1 : curDiff();   // 難度：選曲畫面選的（新手教學一律普通）
-    this.rid = recId(this.song, this.diff);   // 這一局的紀錄 id（HISCORE、排行榜、獎章）
+    this.rid = recId(this.song, this.diff);   // 這一局的紀錄 id（HISCORE、獎章）
     if (!tut) { Save.data.lastSong = this.song.id; Save.store(); }
     bag = [];
     const t0 = A.ctx.currentTime + 0.6;
@@ -530,6 +530,7 @@ const Game = {
     R.fc = s.grades.BAD === 0 && n > 0; R.ag = s.grades.GREAT === n && n > 0;
     R.newFc = R.fc && !md.fc; R.newAg = R.ag && !md.ag;
     Save.data.medals[this.rid] = { r: Math.min(md.r === undefined ? 99 : md.r, R.rating), fc: !!(md.fc || R.fc), ag: !!(md.ag || R.ag) };
+    R.newRecord = Save.recordBest(this.rid, R);   // HISCORE：比自己最高分高就更新
     Rhythm.record(this.song, s, ratio);   // 節奏分析用的遊玩紀錄（裡面會存檔）
     App.goto('result');
   },

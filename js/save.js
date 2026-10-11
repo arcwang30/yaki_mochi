@@ -1,20 +1,16 @@
 'use strict';
 
-// ===== 本機存檔：設定與本機排行榜（localStorage；每首歌一個排行榜） =====
+// ===== 本機存檔：設定與成績（localStorage） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, voice: true, eco: false, lang: null, res: '1920x1080', bg: 'stall', hitSound: 'classic', pet: 'none', coins: 0, owned: null, tutorialDone: false, name: '', lastSong: null, boards: null,
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, voice: true, eco: false, lang: null, res: '1920x1080', bg: 'stall', hitSound: 'classic', pet: 'none', coins: 0, owned: null, tutorialDone: false, lastSong: null,
+    best: null,    // 自己的最佳成績（HISCORE）：{ 紀錄id: { score, oko, combo } }（紀錄 id 見 songs.js 的 recId）
     history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
     totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次
     diff: 1,       // 選曲畫面選的難度（0 簡單、1 普通、2 困難）
     medals: null,  // 曲目獎章：{ 歌曲id: { r: 最佳評價（RATINGS 的索引，越小越好）, fc: 全連擊, ag: 全 GREAT } }
   },
 
-  // 各曲預設排行榜的分數倍率（曲子越難、音符越多，分數越高）
-  SEED_SCALE: { tsukimi: 0.75, yatai: 1, swing: 1.05, funk: 1.12, hyper: 1.2, bossa: 0.75, chindon: 1, ska: 1.05, chip: 1.12, dnb: 1.2,
-    musicbox: 0.72, reggae: 0.75, citypop: 1, ondo: 1, samba: 1.05, surf: 1.05, disco: 1.12, boogie: 1.12, jrock: 1.2, hoedown: 1.2,
-    gamelan: 0.7, hawaii: 0.75, synthwave: 1, future: 1, anime: 1.06, britpop: 1.12, dancepunk: 1.14, thrash: 1.22, power: 1.2, wametal: 1.2,
-    enka: 0.72, blues: 0.75, polka: 1, tango: 1, celtic: 1.05, bhangra: 1.05, salsa: 1.12, klezmer: 1.12, flamenco: 1.2, gabber: 1.22 },
 
   load() {
     try {
@@ -26,12 +22,18 @@ const Save = {
   // 補齊缺的欄位、修正格式（讀檔與匯入存檔碼後都會呼叫）
   normalize() {
     const d = this.data;
-    if (!d.boards || typeof d.boards !== 'object' || Array.isArray(d.boards)) d.boards = {};
+    if (!d.best || typeof d.best !== 'object' || Array.isArray(d.best)) d.best = {};
     if (!Array.isArray(d.history)) d.history = [];
     if (!d.totals || typeof d.totals !== 'object') d.totals = { plays: 0, oko: 0, maxCombo: 0, songs: {} };
     if (!d.medals || typeof d.medals !== 'object') d.medals = {};
-    // 舊版只有一首歌的排行榜：搬到「屋台ばやし」
-    if (Array.isArray(d.board)) { if (d.board.length && !d.boards.yatai) d.boards.yatai = d.board; delete d.board; }
+    // 舊版的排行榜（boards／更舊的單一 board）：取玩家自己的最高分當成 HISCORE（預設名單 seed 不算），之後刪掉
+    const old = Object.assign({}, d.boards && typeof d.boards === 'object' ? d.boards : {}, Array.isArray(d.board) ? { yatai: d.board } : {});
+    for (const [id, list] of Object.entries(old)) {
+      const mine = (Array.isArray(list) ? list : []).filter(e => e && !e.seed && e.score > 0);
+      const top = mine.reduce((a, e) => (!a || e.score > a.score ? e : a), null);
+      if (top && (!d.best[id] || top.score > d.best[id].score)) d.best[id] = { score: top.score, oko: top.oko || 0, combo: top.combo || 0 };
+    }
+    delete d.boards; delete d.board; delete d.name;
     if (!RESOLUTIONS.includes(d.res)) d.res = RESOLUTIONS[0];
     if (!BACKGROUNDS.some(b => b.id === d.bg)) d.bg = 'stall';
     if (!HIT_SOUNDS.some(h => h.id === d.hitSound)) d.hitSound = 'classic';   // 打擊音效包
@@ -48,56 +50,21 @@ const Save = {
     try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) { /* ignore */ }
   },
 
-  // 預設排行榜（讓第一次玩的人也有目標）
-  seed(id) {
-    const names = ['TAKOYAKI', 'RAMEN', 'ONIGIRI', 'MOCHI', 'DANGO', 'TAIYAKI', 'GYOZA', 'UDON', 'SOBA', 'TEMPURA',
-      'SUSHI', 'KATSU', 'NABE', 'MISO', 'YAKITORI', 'DAIFUKU', 'MATCHA', 'KUNI', 'SAKURA', 'DARUMA'];
-    // 各難度的排行榜 id = 歌曲id（普通）、歌曲id_easy、歌曲id_hard
-    const m = String(id).match(/^(.*?)(_easy|_hard)?$/), k = (this.SEED_SCALE[m[1]] || 1) * (m[2] === '_easy' ? 0.7 : m[2] === '_hard' ? 1.25 : 1);
-    this.data.boards[id] = names.map((n, i) => ({ name: n, score: Math.round((52000 - i * 2400) * k / 100) * 100, oko: Math.max(1, Math.round((16 - i * 0.75) * k)), seed: true }));
+  // HISCORE = 自己這一首（這個難度）的最高分；沒玩過 = 0
+  best(id) { return (this.data.best[id] && this.data.best[id].score) || 0; },
+  // 記下這一局：比最高分高就更新。回傳是否刷新紀錄
+  recordBest(id, r) {
+    if (!(r.score > this.best(id))) return false;
+    this.data.best[id] = { score: r.score, oko: r.oko, combo: r.maxCombo };
     this.store();
-  },
-
-  board(id) {
-    const b = this.data.boards;
-    if (!Array.isArray(b[id]) || !b[id].length) this.seed(id);
-    return b[id];
-  },
-
-  sort(id) {
-    const b = this.board(id);
-    b.sort((x, y) => y.score - x.score);
-    b.length = Math.min(b.length, 20);
-  },
-
-  qualifies(score, id) {
-    const b = this.board(id);
-    return score > 0 && (b.length < 20 || score > b[b.length - 1].score);
-  },
-
-  add(entry, id) {
-    this.board(id).push(entry);
-    this.sort(id);
-    this.data.name = entry.name;
-    this.store();
-    return this.board(id).indexOf(entry);
-  },
-
-  // HISCORE = 該曲排行榜第一名（有線上排行榜時用線上的）
-  best(id) {
-    const c = Online.enabled && Online.cache[id];
-    const l = c && c.length ? c : this.board(id);
-    return l.length ? l[0].score : 0;
+    return true;
   },
 
   // ---- 存檔備份：匯出成一串「存檔碼」，在其他裝置或資料被清掉後貼回來還原 ----
-  // 排行榜裡的預設名單（seed）不匯出（還原時會重新產生），只留玩家自己的成績
+  // 舊版的存檔碼（含排行榜 boards）也能匯入：normalize() 會把裡面玩家自己的成績搬成 HISCORE
   CODE_HEAD: 'DAIOYAKI1.',
   exportCode() {
-    const d = JSON.parse(JSON.stringify(this.data)), boards = {};
-    for (const [id, b] of Object.entries(d.boards || {})) { const mine = (b || []).filter(e => !e.seed); if (mine.length) boards[id] = mine; }
-    d.boards = boards;
-    const json = JSON.stringify(d), bytes = new TextEncoder().encode(json);
+    const json = JSON.stringify(this.data), bytes = new TextEncoder().encode(json);
     let bin = ''; for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
     return this.CODE_HEAD + btoa(bin);
   },
@@ -108,16 +75,14 @@ const Save = {
       const at = code.indexOf(this.CODE_HEAD); if (at < 0) return null;
       const bin = atob(code.slice(at + this.CODE_HEAD.length)), bytes = Uint8Array.from(bin, c => c.charCodeAt(0));
       const d = JSON.parse(new TextDecoder().decode(bytes));
-      return d && typeof d === 'object' && d.boards && typeof d.boards === 'object' ? d : null;
+      return d && typeof d === 'object' && !Array.isArray(d) && (d.best || d.boards || d.history) ? d : null;
     } catch (e) { return null; }
   },
-  // 用存檔碼覆蓋目前的存檔（排行榜補回預設名單）
+  // 用存檔碼覆蓋目前的存檔
   importData(d) {
     const keep = { lang: this.data.lang, res: this.data.res };   // 語言、解析度跟著這台裝置
-    const mine = d.boards; d.boards = {};
     this.data = Object.assign({}, this.data, d, keep);
-    this.data.boards = {};
-    for (const [id, list] of Object.entries(mine)) { this.seed(id); this.data.boards[id].push(...list); this.sort(id); }
+    if (!d.best) this.data.best = {};   // 舊版存檔碼：從它的排行榜重建（normalize）
     this.normalize();
     this.store();
   },

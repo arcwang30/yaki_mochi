@@ -1668,16 +1668,15 @@ const MENU_SONG = SONGS.findIndex(s => s.id === 'yatai');
 const songById = id => SONGS.find(s => s.id === id) || SONGS[MENU_SONG];
 
 // ---- 難度（試作）：音樂不變，只改要打的音符；普通 = 原本的譜面 ----
-// suffix：紀錄（HISCORE、排行榜、獎章）用的 id 後綴（普通沒有後綴 → 原本的紀錄都算普通）
-// seed：預設排行榜的分數倍率
+// suffix：紀錄（HISCORE、獎章）用的 id 後綴（普通沒有後綴 → 原本的紀錄都算普通）
 // card：選曲畫面曲目卡的木板色調（multiply 疊在木紋上，像換一種木頭：普通 = 胡桃木、困難 = 紅木；null = 原木色）
 const DIFFS = [
-  { key: 'easy', name: '簡單', color: '#2e9a3e', card: null, delta: -1, suffix: '_easy', seed: 0.7 },
-  { key: 'normal', name: '普通', color: '#e07a10', card: '#e8c49c', delta: 0, suffix: '', seed: 1 },
-  { key: 'hard', name: '困難', color: '#c8321e', card: '#d9a196', delta: 1, suffix: '_hard', seed: 1.25 },
+  { key: 'easy', name: '簡單', color: '#2e9a3e', card: null, delta: -1, suffix: '_easy' },
+  { key: 'normal', name: '普通', color: '#e07a10', card: '#e8c49c', delta: 0, suffix: '' },
+  { key: 'hard', name: '困難', color: '#c8321e', card: '#d9a196', delta: 1, suffix: '_hard' },
 ];
 const curDiff = () => clamp(Save.data.diff === undefined ? 1 : Save.data.diff, 0, DIFFS.length - 1);
-// 歌名與小標（依語言；選曲、遊戲中、排行榜、結算、分享圖共用）：中文 = 中文歌名＋英文小標；日文 = 原本的日文歌名＋日文小標；英文 = 英文歌名＋英文曲風
+// 歌名與小標（依語言；選曲、遊戲中、結算、分享圖共用）：中文 = 中文歌名＋英文小標；日文 = 原本的日文歌名＋日文小標；英文 = 英文歌名＋英文曲風
 const songName = song => !song.sub ? song.title : Save.data.lang === 'zh' ? song.sub.zh : Save.data.lang === 'en' ? song.sub.en : song.title;
 const songSub = song => Save.data.lang === 'zh' ? song.sub.en + '・' + song.genre.en : Save.data.lang === 'en' ? song.genre.en : song.sub.ja + '・' + song.genre.ja;
 const recId = (song, d = curDiff()) => song.id + DIFFS[d].suffix;
