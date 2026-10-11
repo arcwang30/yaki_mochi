@@ -22,7 +22,8 @@ const Input = {
     Enter: ['confirm'], NumpadEnter: ['confirm'], Space: ['confirm'],
     Escape: ['back', 'pause'], Backspace: ['back'], KeyP: ['pause'],
     KeyT: ['tutorial'],   // 選曲畫面：直接開新手教學
-    KeyQ: ['diffPrev'], KeyE: ['diffNext'],   // 選曲畫面：切換難度
+    KeyQ: ['diffPrev'], KeyE: ['diffNext'],   // 選曲畫面：切換難度（商店：切換分頁）
+    KeyX: ['listen'],   // 商店：打擊音效再聽一次
   },
   // 遊戲中的打擊鍵（任一個都可以）
   HIT_KEYS: new Set(['Space', 'Enter', 'NumpadEnter', 'KeyF', 'KeyJ', 'KeyD', 'KeyK', 'KeyZ', 'KeyX']),
@@ -105,6 +106,7 @@ const Input = {
     // A / B / X / Y / LB / RB / LT / RT：遊戲中全部都是打擊鍵
     if (down.slice(0, 8).some(Boolean)) { this.pressed.add('anykey'); this.hit(undefined, undefined, t); }
     if (down[0]) this.pressed.add('confirm');                                   // A
+    if (down[2]) this.pressed.add('listen');                                    // X（商店：試聽）
     if (down[3]) this.pressed.add('tutorial');                                  // Y（選曲畫面：新手教學）
     if (down[4]) this.pressed.add('diffPrev');                                  // LB（選曲畫面：難度）
     if (down[5]) this.pressed.add('diffNext');                                  // RB

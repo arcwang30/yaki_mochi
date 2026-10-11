@@ -114,7 +114,11 @@ const I18N = {
     // PC 版（橫式）
     '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
     // 商店・店面背景
-    '商店': 'ショップ', '店面背景': '屋台の背景', '裝備': '装備', '裝備中': '装備中', '✓ 裝備中': '✓ 装備中', '已擁有': '所持済み', '購買': '購入', '{0} 遊戲幣': '{0} コイン', '遊戲幣 {0}': 'コイン {0}',
+    '打擊音效': '打撃音', '♪ 試聽': '♪ 試聴', '← → 瀏覽　Q E 分頁　X 試聽　ENTER 決定': '← → 見る　Q E タブ　X 試聴　ENTER 決定', '← → 瀏覽　Q E 分頁　ENTER 決定': '← → 見る　Q E タブ　ENTER 決定',
+    '經典鐵板': 'クラシック鉄板', '咚！鐵板與菜刀的原味聲響': 'ドン！鉄板と包丁のおなじみの音', '和太鼓': '和太鼓', '咚、咔！祭典太鼓的節奏': 'ドン・カッ！お祭り太鼓のリズム',
+    '8-bit 電玩': '8ビット', '嗶嗶！懷舊遊戲機的電子音': 'ピコッ！なつかしゲーム機の電子音', '電子雷射': 'エレクトロ', '咻碰！電音舞台的合成音效': 'ピュン！EDMステージのシンセ音',
+    '風鈴': '風鈴', '叮鈴～清涼的夏日鈴聲': 'チリン～涼しい夏の鈴の音', '貓咪': 'ネコ', '喵！每一下都是貓叫': 'ニャー！叩くたびにネコの声',
+    '商店': 'ショップ', '店面背景': '屋台の背景','裝備': '装備', '裝備中': '装備中', '✓ 裝備中': '✓ 装備中', '已擁有': '所持済み', '購買': '購入', '{0} 遊戲幣': '{0} コイン', '遊戲幣 {0}': 'コイン {0}',
     '遊戲幣不足': 'コインが足りません', '購買成功！': '購入しました！', '已裝備！': '装備しました！', '載入中…': '読み込み中…', '← → 瀏覽　↑↓ 選擇　ENTER 決定': '← → 見る　↑↓ 選択　ENTER 決定',
     '夜市屋台': '夜市の屋台', '經典的祭典夜市攤位': 'おなじみのお祭り屋台', '鋼鐵搖滾': 'メタル・ロック', '鐵皮、鎖鏈和音箱牆的搖滾攤': '鉄板と鎖とアンプの壁、ロックな屋台',
     '動物燈籠': 'どうぶつ提灯', '狐狸、貓咪、狸貓燈籠的可愛攤': 'キツネ・ネコ・タヌキ提灯のかわいい屋台', '喪屍夜市': 'ゾンビ夜市', '本店保證不含喪屍肉……大概': 'ゾンビ肉は使っていません……たぶん',
@@ -221,7 +225,11 @@ const I18N = {
     // PC version (landscape)
     '結束遊戲': 'QUIT GAME', '語音': 'Voice', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
     // Shop / stall style
-    '商店': 'SHOP', '店面背景': 'Stall Style', '裝備': 'EQUIP', '裝備中': 'EQUIPPED', '✓ 裝備中': '✓ Equipped', '已擁有': 'Owned', '購買': 'BUY', '{0} 遊戲幣': '{0} coins', '遊戲幣 {0}': 'Coins {0}',
+    '打擊音效': 'Hit Sounds', '♪ 試聽': '♪ Listen', '← → 瀏覽　Q E 分頁　X 試聽　ENTER 決定': '← → Browse　Q E Tabs　X Listen　ENTER OK', '← → 瀏覽　Q E 分頁　ENTER 決定': '← → Browse　Q E Tabs　ENTER OK',
+    '經典鐵板': 'Classic Griddle', '咚！鐵板與菜刀的原味聲響': 'Thud! The original griddle and knife sounds', '和太鼓': 'Taiko', '咚、咔！祭典太鼓的節奏': 'Don, ka! Festival taiko drums',
+    '8-bit 電玩': '8-bit', '嗶嗶！懷舊遊戲機的電子音': 'Bleep! Retro game console sounds', '電子雷射': 'Laser', '咻碰！電音舞台的合成音效': 'Pew! Synth sounds from the EDM stage',
+    '風鈴': 'Wind Chime', '叮鈴～清涼的夏日鈴聲': 'Ting~ Cool summer chimes', '貓咪': 'Kitty', '喵！每一下都是貓叫': 'Meow! Every hit is a cat',
+    '商店': 'SHOP', '店面背景': 'Stall Style','裝備': 'EQUIP', '裝備中': 'EQUIPPED', '✓ 裝備中': '✓ Equipped', '已擁有': 'Owned', '購買': 'BUY', '{0} 遊戲幣': '{0} coins', '遊戲幣 {0}': 'Coins {0}',
     '遊戲幣不足': 'Not enough coins', '購買成功！': 'Purchased!', '已裝備！': 'Equipped!', '載入中…': 'Loading…', '← → 瀏覽　↑↓ 選擇　ENTER 決定': '← → Browse　↑↓ Select　ENTER OK',
     '夜市屋台': 'Night Market', '經典的祭典夜市攤位': 'The classic festival stall', '鋼鐵搖滾': 'Steel Rock', '鐵皮、鎖鏈和音箱牆的搖滾攤': 'Steel, chains and a wall of amps',
     '動物燈籠': 'Animal Lanterns', '狐狸、貓咪、狸貓燈籠的可愛攤': 'Cute fox, cat and tanuki lanterns', '喪屍夜市': 'Zombie Market', '本店保證不含喪屍肉……大概': 'Guaranteed zombie-free meat… probably',

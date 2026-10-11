@@ -221,19 +221,81 @@ const SND = {
     nz(t, 0.16, 0.22, A.sfx, { f: 600, to: 3500, q: 1.5 });
     osc('sine', ING[type].cue, t, 0.07, 0.32, A.sfx, { to: ING[type].cue * 1.5 });
   },
-  hit(type, grade, dest = A.sfx) {
-    const t = A.ctx.currentTime;
-    SND.don(t, 0.85, dest);
-    const p = ING[type].pose;
-    if (p === 'knife') { nz(t, 0.03, 0.5, dest, { type: 'highpass', f: 4000 }); osc('triangle', 2100, t, 0.03, 0.14, dest); nz(t + 0.07, 0.03, 0.35, dest, { type: 'highpass', f: 4000 }); }
-    else if (p === 'spatula') { nz(t, 0.35, 0.3, dest, { f: 5200, q: 0.7 }); osc('square', 2600, t, 0.04, 0.05, dest); }
-    else { nz(t, 0.15, 0.5, dest, { type: 'lowpass', f: 800, to: 250 }); osc('sine', 320, t, 0.1, 0.2, dest, { to: 150 }); }
-    if (grade === 'GREAT') { osc('triangle', 1568, t + 0.02, 0.12, 0.12, dest); osc('triangle', 2093, t + 0.07, 0.15, 0.1, dest); }
+  // 打中食材：用裝備中的打擊音效包（商店試聽時 pack 指定要聽的那包）
+  hit(type, grade, dest = A.sfx, t = A.ctx.currentTime, pack = Save.data.hitSound) {
+    (HIT_PACKS[pack] || HIT_PACKS.classic)(t, ING[type].pose, grade === 'GREAT', dest);
   },
   bad() { const t = A.ctx.currentTime; osc('square', 190, t, 0.2, 0.1, A.sfx, { to: 110 }); nz(t, 0.12, 0.2, A.sfx, { f: 500, q: 2 }); },
   whiff() { const t = A.ctx.currentTime; nz(t, 0.09, 0.14, A.sfx, { f: 900, to: 2200, q: 1.2 }); },
   fanfare(t) { [587, 740, 880, 1175].forEach((f, i) => osc('triangle', f, t + i * 0.07, 0.25, 0.16, A.sfx)); },
   speedUp(t, bd) { [587, 659, 740, 880, 988, 1175].forEach((f, i) => osc('square', f, t + i * bd / 4, bd / 4, 0.05, A.sfx)); },
+};
+
+// 貓叫：鋸齒波經過會移動的共鳴峰（「ㄇ→ㄧ→ㄠ」），音高先上揚再落下
+function meow(t, f0, dur, v, dest) {
+  const C = A.ctx, os = C.createOscillator(), fl = C.createBiquadFilter(), fl2 = C.createBiquadFilter(), g = C.createGain();
+  os.type = 'sawtooth';
+  os.frequency.setValueAtTime(f0 * 0.85, t); os.frequency.exponentialRampToValueAtTime(f0 * 1.25, t + dur * 0.3);
+  os.frequency.exponentialRampToValueAtTime(f0 * 0.8, t + dur);
+  fl.type = 'bandpass'; fl.Q.value = 5;
+  fl.frequency.setValueAtTime(700, t); fl.frequency.exponentialRampToValueAtTime(2000, t + dur * 0.35); fl.frequency.exponentialRampToValueAtTime(900, t + dur);
+  fl2.type = 'lowpass'; fl2.frequency.value = 3500;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.02);
+  g.gain.setValueAtTime(v, t + dur * 0.6); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  os.connect(fl); fl.connect(fl2); fl2.connect(g); g.connect(dest); os.start(t); os.stop(t + dur + 0.05);
+  release(os, fl, fl2, g);
+}
+// 鈴聲：不成整數倍的泛音（金屬感），長餘韻
+function bell(t, f, dur, v, dest) {
+  [[1, 1], [2.76, 0.45], [5.4, 0.22], [8.93, 0.1]].forEach(([r, a]) => osc('sine', f * r, t, dur / Math.sqrt(r), v * a, dest, { att: 0.002 }));
+}
+
+// ---- 打擊音效包（js/config.js 的 HIT_SOUNDS）：(t, 處理動作 knife / spatula / sauce, 是否 GREAT, 輸出) ----
+// 每包的開頭都有清楚的起音（判定時機的回饋），音量和經典款差不多大
+const HIT_PACKS = {
+  classic(t, p, great, d) {
+    SND.don(t, 0.85, d);
+    if (p === 'knife') { nz(t, 0.03, 0.5, d, { type: 'highpass', f: 4000 }); osc('triangle', 2100, t, 0.03, 0.14, d); nz(t + 0.07, 0.03, 0.35, d, { type: 'highpass', f: 4000 }); }
+    else if (p === 'spatula') { nz(t, 0.35, 0.3, d, { f: 5200, q: 0.7 }); osc('square', 2600, t, 0.04, 0.05, d); }
+    else { nz(t, 0.15, 0.5, d, { type: 'lowpass', f: 800, to: 250 }); osc('sine', 320, t, 0.1, 0.2, d, { to: 150 }); }
+    if (great) { osc('triangle', 1568, t + 0.02, 0.12, 0.12, d); osc('triangle', 2093, t + 0.07, 0.15, 0.1, d); }
+  },
+  taiko(t, p, great, d) {   // 切 = 咔（鼓框）、炒 = 咚（鼓面）、淋醬 = 咚＋咔
+    if (p === 'knife') { SND.don(t, 0.45, d); SND.ka(t, 3, d); osc('square', 1150, t, 0.03, 0.18, d, { att: 0.001 }); SND.ka(t + 0.08, 1.8, d); }
+    else if (p === 'spatula') { SND.don(t, 1.1, d); nz(t, 0.08, 0.25, d, { type: 'lowpass', f: 1200 }); }
+    else { SND.don(t, 0.85, d); SND.ka(t + 0.04, 1.6, d); }
+    if (great) { SND.kane(t + 0.05, 2.6, d); SND.kane(t + 0.13, 1.7, d); }
+  },
+  chip(t, p, great, d) {   // 方波短音；GREAT = 吃到金幣
+    if (p === 'knife') { osc('square', 1320, t, 0.04, 0.4, d, { att: 0.001 }); osc('square', 1760, t + 0.05, 0.05, 0.36, d, { att: 0.001 }); }
+    else if (p === 'spatula') { [523, 659, 784].forEach((f, i) => osc('square', f, t + i * 0.03, 0.035, 0.38, d, { att: 0.001 })); }
+    else { osc('triangle', 330, t, 0.12, 1, d, { to: 82, bend: 0.1, att: 0.001 }); nz(t, 0.06, 0.5, d, { type: 'lowpass', f: 2000 }); }
+    osc('triangle', 110, t, 0.08, 0.9, d, { to: 55, att: 0.001 });   // 底下墊一點低音，打擊感比較紮實
+    if (great) { osc('square', 988, t + 0.03, 0.06, 0.24, d, { att: 0.001 }); osc('square', 1319, t + 0.09, 0.2, 0.24, d, { att: 0.001 }); }
+  },
+  laser(t, p, great, d) {   // 雷射「咻」、電子拍手、808 大鼓
+    osc('sine', 160, t, 0.16, 1.05, d, { to: 48, bend: 0.12, att: 0.001 });
+    if (p === 'knife') { osc('square', 2600, t, 0.09, 0.18, d, { to: 320, bend: 0.09, att: 0.001 }); }
+    else if (p === 'spatula') { osc('sawtooth', 1800, t, 0.12, 0.15, d, { to: 220, bend: 0.12, att: 0.001 }); nz(t, 0.06, 0.5, d, { type: 'highpass', f: 7000 }); }
+    else { nz(t, 0.09, 0.6, d, { f: 1500, q: 0.9 }); nz(t + 0.012, 0.09, 0.45, d, { f: 1700, q: 0.9 }); }
+    if (great) { osc('sine', 700, t + 0.03, 0.18, 0.22, d, { to: 2800, bend: 0.16 }); }
+  },
+  bell(t, p, great, d) {   // 風鈴（切 = 高、炒 = 中）、淋醬 = 木魚
+    nz(t, 0.02, 0.6, d, { type: 'highpass', f: 5000 });
+    if (p === 'knife') bell(t, 2093, 0.5, 0.24, d);
+    else if (p === 'spatula') bell(t, 1568, 0.6, 0.25, d);
+    else { osc('sine', 820, t, 0.08, 0.8, d, { to: 760, att: 0.001 }); nz(t, 0.03, 0.45, d, { f: 1800, q: 3 }); }
+    osc('sine', 130, t, 0.12, 0.85, d, { to: 70, att: 0.002 });
+    if (great) { bell(t + 0.06, 2637, 0.6, 0.13, d); bell(t + 0.12, 3136, 0.6, 0.1, d); }
+  },
+  cat(t, p, great, d) {   // 切 = 短促高音「咪」、炒 = 「喵」、淋醬 = 低沉「喵嗚」
+    nz(t, 0.025, 0.7, d, { type: 'lowpass', f: 1800 });   // 輕輕的肉球「啪」，起音清楚
+    osc('sine', 140, t, 0.1, 0.8, d, { to: 80, att: 0.002 });
+    if (p === 'knife') meow(t, 820, 0.16, 1.1, d);
+    else if (p === 'spatula') meow(t, 600, 0.24, 1.1, d);
+    else meow(t, 430, 0.32, 1.15, d);
+    if (great) meow(t + 0.12, 1100, 0.14, 0.6, d);
+  },
 };
 
 const Sound = {
