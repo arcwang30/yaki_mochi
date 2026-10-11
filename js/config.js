@@ -165,8 +165,8 @@ const COIN_SHOP = false;
 // ---- 製作名單 ----
 // 每個職稱可列多位
 const CREDITS = [
-  ['企劃', ['Arc Wang', '大王KUNI']],
-  ['特別感謝', ['Kelvin Lo', 'Bubu Lin']],
+  ['企劃', ['Arc Wang']],
+  ['特別感謝', ['大王KUNI', '大王燒', 'Kelvin Lo', 'Bubu Lin']],
 ];
 // 語音的授權標示（VOICEVOX 與角色利用規約要求，不可省略）：顯示在 CREDIT 畫面
 const VOICE_CREDIT = 'VOICEVOX:玄野武宏(CV:ガロ)';
