@@ -112,7 +112,7 @@ const I18N = {
     '點網址列右邊的「安裝」圖示 ⊕': 'アドレスバー右の「インストール」アイコン ⊕', '按「安裝」，桌面就會出現圖示': '「インストール」でデスクトップにアイコンが出ます',
     '請將手機直立握持': 'スマホを縦に持ってください',
     // PC 版（橫式）
-    '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
+    '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '樂曲': '楽曲', '全曲原創（AI 協助製作）': '全曲オリジナル（AI アシストで制作）', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
     // 商店・店面背景
     '內建曲目': 'スタンダード', '追加樂曲': '追加楽曲', '選擇樂曲組': '楽曲パックを選ぶ', '已過關 {0}/{1}': 'クリア {0}/{1}', '目前': '選択中', '點一組切換・點外面關閉': 'タップで切り替え・外側で閉じる', '十字鍵 選擇　A 決定　B 關閉': '十字キー 選択　A 決定　B 閉じる', '方向鍵 選擇　ENTER 決定　ESC 關閉': '方向キー 選択　ENTER 決定　ESC 閉じる',
     '上下滑動選曲・點中間的歌開始・點樂曲組名稱切換': '上下スワイプで選曲・中央の曲をタップで開始・パック名で切り替え', '↑↓ 選曲　← → 切換　X 樂曲組　LB／RB 難度　A 開始　Y 教學　B 返回': '↑↓ 選曲　← → 切替　X パック　LB／RB 難易度　A 開始　Y チュートリアル　B 戻る', '↑↓ 選曲　← → 切換　X 樂曲組　Q／E 難度　ENTER 開始　T 教學': '↑↓ 選曲　← → 切替　X パック　Q／E 難易度　ENTER 開始　T チュートリアル', '免費': '無料', '免費開放中': '無料公開中', '✓ 已購買': '✓ 購入済み', '前往選曲': '曲を選ぶ', '已擁有：按「前往選曲」就能玩': '購入済み：「曲を選ぶ」ですぐ遊べます', '點曲目就可以試聽': '曲をタップで試聴',
@@ -228,7 +228,7 @@ const I18N = {
     '點網址列右邊的「安裝」圖示 ⊕': 'Click the install icon ⊕ in the address bar', '按「安裝」，桌面就會出現圖示': 'Click "Install" — an icon appears on your desktop',
     '請將手機直立握持': 'Please hold your phone upright',
     // PC version (landscape)
-    '結束遊戲': 'QUIT GAME', '語音': 'Voice', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
+    '結束遊戲': 'QUIT GAME', '語音': 'Voice', '樂曲': 'Music', '全曲原創（AI 協助製作）': 'All original songs (made with AI assistance)', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
     // Shop / stall style
     '內建曲目': 'STANDARD', '追加樂曲': 'Song Packs', '選擇樂曲組': 'Choose a Song Pack', '已過關 {0}/{1}': 'Cleared {0}/{1}', '目前': 'NOW', '點一組切換・點外面關閉': 'Tap a pack to switch · tap outside to close', '十字鍵 選擇　A 決定　B 關閉': 'D-pad Select　A OK　B Close', '方向鍵 選擇　ENTER 決定　ESC 關閉': 'Arrows Select　ENTER OK　ESC Close',
     '上下滑動選曲・點中間的歌開始・點樂曲組名稱切換': 'Swipe up/down to pick · tap the center song to start · tap the pack name to switch', '↑↓ 選曲　← → 切換　X 樂曲組　LB／RB 難度　A 開始　Y 教學　B 返回': '↑↓ Song　← → Switch　X Packs　LB／RB Difficulty　A Start　Y Tutorial　B Back', '↑↓ 選曲　← → 切換　X 樂曲組　Q／E 難度　ENTER 開始　T 教學': '↑↓ Song　← → Switch　X Packs　Q／E Difficulty　ENTER Start　T Tutorial', '免費': 'Free', '免費開放中': 'Free for now', '✓ 已購買': '✓ Purchased', '前往選曲': 'PLAY SONGS', '已擁有：按「前往選曲」就能玩': 'Owned: tap PLAY SONGS to play', '點曲目就可以試聽': 'Tap a song to preview',
