@@ -377,8 +377,8 @@ Screens.shop = {
         const g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, it.color); g.addColorStop(1, 'rgba(0,0,0,.6)');
         ctx.fillStyle = it.color; ctx.fillRect(x, y, w, h); ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
         UI.text(it.name, x + w / 2, y + h * 0.42, Math.min(h * 0.42, w * 0.2), { fill: '#fff', stroke: 'rgba(0,0,0,.45)', sw: 6, raw: true });
-        const d = Math.min(9, w / 26);
-        it.songs.forEach((s, k) => { ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(x + w / 2 + (k - 4.5) * d * 2.2, y + h * 0.82, d * 0.8, 0, 7); ctx.fill(); });
+        const nd = it.songs.length, d = Math.min(9, w / (nd * 2.2 + 4));   // 點的大小跟著曲數（10 或 20 首）
+        it.songs.forEach((s, k) => { ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(x + w / 2 + (k - (nd - 1) / 2) * d * 2.2, y + h * 0.82, d * 0.8, 0, 7); ctx.fill(); });
         if (!Shop.owned(it.vol)) drawLock(x + w - 22, y + 24, 0.55);
       },
       state(it) { return Shop.owned(it.vol) ? 'owned' : 'locked'; },
@@ -626,17 +626,20 @@ Screens.shop = {
     UI.text(tr('追加樂曲 {0} 首', n), x + (owned ? 34 : 98) + (LAND ? 210 : 176), y + 60, LAND ? 24 : 20, { align: 'left', fill: '#ffe8b0', stroke: null, raw: true });
     if (Shop.isTest()) { UI.panel(x + w - 120, y + 34, 96, 38, 19, '#c8321e', '#fff'); UI.text('TEST', x + w - 72, y + 54, 20, { fill: '#fff', stroke: null, raw: true }); }
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 24, y + 100, w - 48, 2);
-    const top = y + 112, rh = (h - 112 - 56) / n;
+    // 曲數超過 10 首：分兩欄（每欄一半），字級縮小；星星改小
+    const cols = n > 10 ? 2 : 1, per = Math.ceil(n / cols), cw = (w - 32) / cols, top = y + 112, rh = (h - 112 - 56) / per, two = cols > 1;
     it.songs.forEach((s, k) => {
-      const ry = top + k * rh, cy = ry + rh / 2, on = k === this.vs;
-      if (on) { ctx.fillStyle = 'rgba(255,210,63,.16)'; rrect(x + 16, ry + 2, w - 32, rh - 4, 10); ctx.fill(); }
-      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(x + 46, cy, LAND ? 18 : 15, 0, 7); ctx.fill();
-      UI.text(String(s.no), x + 46, cy + 1, LAND ? 18 : 15, { fill: '#fff', stroke: '#3e2210', sw: 4, raw: true });
-      const nx = x + (LAND ? 84 : 74), starW = LAND ? 130 : 100;
-      UI.text((on ? '♪ ' : '') + songName(s), nx, cy - (LAND ? 11 : 9), LAND ? 26 : 21, { align: 'left', fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: w - (nx - x) - starW - 30 });
-      UI.text(songSub(s), nx, cy + (LAND ? 15 : 12), LAND ? 16 : 13, { align: 'left', fill: '#9fb0e0', stroke: null, raw: true, maxW: w - (nx - x) - starW - 30 });
-      drawStars(x + w - 30 - starW / 2, cy, s.stars, LAND ? 22 : 17);
-      if (UI.tapIn(x + 16, ry, w - 32, rh)) this.setVs(k);
+      const cx0 = x + 16 + Math.floor(k / per) * cw, ry = top + (k % per) * rh, cy = ry + rh / 2, on = k === this.vs;
+      if (on) { ctx.fillStyle = 'rgba(255,210,63,.16)'; rrect(cx0, ry + 2, cw - 4, rh - 4, 10); ctx.fill(); }
+      const dr = LAND ? (two ? 15 : 18) : (two ? 12 : 15);
+      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(cx0 + 30, cy, dr, 0, 7); ctx.fill();
+      UI.text(String(s.no), cx0 + 30, cy + 1, dr, { fill: '#fff', stroke: '#3e2210', sw: 3, raw: true });
+      const nx = cx0 + 30 + dr + 10, starW = two ? (LAND ? 90 : 60) : (LAND ? 130 : 100), tw = cw - (nx - cx0) - starW - 14;
+      const fs = two ? (LAND ? 21 : 16) : (LAND ? 26 : 21), ss = two ? (LAND ? 13 : 11) : (LAND ? 16 : 13), gap = two ? (LAND ? 11 : 8) : (LAND ? 13 : 11);
+      UI.text((on ? '♪ ' : '') + songName(s), nx, cy - gap, fs, { align: 'left', fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: tw });
+      UI.text(songSub(s), nx, cy + gap + 2, ss, { align: 'left', fill: '#9fb0e0', stroke: null, raw: true, maxW: tw });
+      drawStars(cx0 + cw - 10 - starW / 2, cy, s.stars, two ? (LAND ? 15 : 11) : (LAND ? 22 : 17));
+      if (UI.tapIn(cx0, ry, cw, rh)) this.setVs(k);
     });
     UI.text(owned ? tr('已擁有：按「前往選曲」就能玩') : tr('點曲目就可以試聽'), x + w / 2, y + h - 28, LAND ? 20 : 17, { fill: '#cfd8ff', stroke: null, raw: true, maxW: w - 60 });
   },
@@ -708,12 +711,12 @@ Screens.songs = {
   SLOTS: 5,   // 同時看得到 5 張卡；選中的那首固定在正中間（轉盤），清單上下捲動
   pos: 0, dragFrom: null,
   vol() { return SONGS[this.sel].vol; },
-  row() { return SONGS[this.sel].no - 1; },                       // 這一集裡的第幾首（0～9）
+  row() { return SONGS[this.sel].no - 1; },                       // 這一組裡的第幾首（0 起算）
   idxOf(vol, row) { return SONGS.findIndex(s => s.vol === vol && s.no === row + 1); },
   setVol(v) {   // ← →：切換內建曲目 / VOL.1 / VOL.2…（停在同樣的編號）
     const N = VOL_ORDER.length, nv = ((v % N) + N) % N;
     if (nv === this.vol()) return;
-    this.sel = this.idxOf(nv, this.row()); this.previewT = 0.3; this.bs.sel = -1;
+    this.sel = this.idxOf(nv, Math.min(this.row(), volSize(nv) - 1)); this.previewT = 0.3; this.bs.sel = -1;   // 組的曲數不同：超過就停在最後一首
     this.volT = 0; this.volDir = v > this.vol() ? 1 : -1;
     Sound.play('select');
   },
@@ -728,7 +731,7 @@ Screens.songs = {
   select(i) { if (i !== this.sel) { this.sel = i; this.previewT = 0.3; Sound.play('select'); } },
   // 切換難度（不循環：在簡單再往左、在困難再往右不動）
   setDiff(d) { d = clamp(d, 0, DIFFS.length - 1); if (d === curDiff()) return; Save.data.diff = d; Save.store(); Sound.play('select'); },
-  selectRow(r) { this.select(this.idxOf(this.vol(), clamp(r, 0, VOL_SIZE - 1))); },
+  selectRow(r) { this.select(this.idxOf(this.vol(), clamp(r, 0, volSize(this.vol()) - 1))); },
   // 開始遊戲；這首所在的 VOL 還沒買 → 改成購買
   start() {
     const song = SONGS[this.sel];
@@ -789,8 +792,8 @@ Screens.songs = {
       ctx.fillStyle = col; ctx.fillRect(x + 6, y + 6, cw - 12, th); ctx.fillStyle = g; ctx.fillRect(x + 6, y + 6, cw - 12, th);
       ctx.restore();
       UI.text(volName(v), x + cw / 2, y + 6 + th * 0.42, lay(34, 36), { fill: '#fff', stroke: 'rgba(0,0,0,.45)', sw: 6, raw: true, maxW: cw - 30 });
-      const dr = Math.min(7, (cw - 40) / 26);
-      songs.forEach((s, k) => { ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(x + cw / 2 + (k - 4.5) * dr * 2.4, y + 6 + th * 0.8, dr, 0, 7); ctx.fill(); });
+      const dr = Math.min(7, (cw - 40) / (songs.length * 2.4 + 2));   // 點的大小跟著曲數
+      songs.forEach((s, k) => { ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(x + cw / 2 + (k - (songs.length - 1) / 2) * dr * 2.4, y + 6 + th * 0.8, dr, 0, 7); ctx.fill(); });
       if (cur) { UI.panel(x + 14, y + 14, 70, 28, 14, '#2fc46a', '#fff'); UI.text('目前', x + 49, y + 29, 16, { stroke: null }); }
       if (!owned) drawLock(x + cw - 30, y + 34, 0.6);
       // 下半：過關數（這個難度拿過獎章的歌）／沒買的顯示價格
@@ -834,7 +837,7 @@ Screens.songs = {
     const drag = this.picker ? null : Input.dragY();
     if (drag && inList(drag.x, drag.y)) {
       if (this.dragFrom === null) this.dragFrom = this.pos;
-      this.pos = clamp(this.dragFrom - drag.dy / slot, -0.45, VOL_SIZE - 0.55);
+      this.pos = clamp(this.dragFrom - drag.dy / slot, -0.45, volSize(this.vol()) - 0.55);
       this.bs.sel = -1;
     }
     const de = Input.dragEnd;
@@ -845,7 +848,7 @@ Screens.songs = {
     } else if (!drag) this.dragFrom = null;
     if (this.dragFrom === null) this.pos += (this.row() - this.pos) * Math.min(1, dt * 14);   // 平滑轉到選中的那首
     // ---- 卡片：選中的盡量在正中間；到頭尾時清單不留空白（選中的卡移到上下緣） ----
-    const view = clamp(this.pos - 2, 0, VOL_SIZE - this.SLOTS);
+    const view = clamp(this.pos - 2, 0, volSize(this.vol()) - this.SLOTS);
     const vol = this.vol(), list = SONGS.filter(s => s.vol === vol);
     this.volT = Math.min(1, (this.volT === undefined ? 1 : this.volT) + dt / 0.25);
     // 切換 VOL 時整排從側邊滑進來；手指左右拖曳時清單跟著手指橫移
@@ -866,7 +869,7 @@ Screens.songs = {
     // 上下還有歌的提示箭頭
     const bob = Math.sin(Game.time * 4) * 4;
     if (view > 0.05) UI.text('▲', C.x + C.w / 2, top - 4 + bob, 22, { fill: '#ffd23f' });
-    if (view < VOL_SIZE - this.SLOTS - 0.05) UI.text('▼', C.x + C.w / 2, bottom + 6 - bob, 22, { fill: '#ffd23f' });
+    if (view < volSize(this.vol()) - this.SLOTS - 0.05) UI.text('▼', C.x + C.w / 2, bottom + 6 - bob, 22, { fill: '#ffd23f' });
     // ---- 樂曲組切換列：◀ 內建曲目 ▼ ●○○○ ▶（左右鍵 / 點箭頭：上一組・下一組；點名稱 / X 鍵：打開樂曲組選單） ----
     const py = lay(978, 944), cx = C.x + C.w / 2, NV = VOL_ORDER.length;
     // 做成按鈕的樣子：底下有影子、滑鼠移上去變亮、金色外框慢慢呼吸、右邊紅色圓鈕「▼」；按下時往下沉一點
@@ -898,7 +901,7 @@ Screens.songs = {
     }
     if (Input.was('down')) {
       if (this.bs.sel === TUT) { this.bs.sel = -1; Sound.play('select'); }
-      else if (this.row() < VOL_SIZE - 1) { this.bs.sel = -1; this.selectRow(this.row() + 1); }
+      else if (this.row() < volSize(this.vol()) - 1) { this.bs.sel = -1; this.selectRow(this.row() + 1); }
     }
     if (Input.was('tutorial')) { Sound.play('confirm'); App.goto('tutorial', { from: 'songs' }); }
     if (Input.was('confirm') && (this.bs.sel === -1 || this.bs.sel === 1)) this.start();   // 滑鼠停在「返回」「新手教學」上時不開始
@@ -952,12 +955,13 @@ Screens.songs = {
     UI.text(tr('追加樂曲 {0} 首', list.length), x + 154, y + 132, 24, { align: 'left', fill: '#ffe8b0', stroke: null, raw: true });
     if (Shop.isTest()) { UI.panel(x + w - 150, y + 30, 110, 40, 20, '#c8321e', '#fff'); UI.text('TEST', x + w - 95, y + 51, 22, { fill: '#fff', stroke: null, raw: true }); }
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 176, w - 80, 2);
-    // 曲目（兩欄）：正在試聽的那首亮起
+    // 曲目（兩欄，每欄一半）：正在試聽的那首亮起；曲數多時列距縮小
+    const per = Math.ceil(list.length / 2), rh = Math.min(52, 270 / per), fs = rh >= 40 ? 24 : 18, rr = rh >= 40 ? 14 : 10;
     list.forEach((s, k) => {
-      const tx = x + 60 + Math.floor(k / 5) * 370, ty = y + 222 + (k % 5) * 52, on = SONGS.indexOf(s) === this.sel;
-      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(tx + 14, ty, 14, 0, 7); ctx.fill();
-      UI.text(String(s.no), tx + 14, ty + 1, 16, { fill: '#fff', stroke: '#3e2210', sw: 4, raw: true });
-      UI.text(songName(s), tx + 40, ty, 24, { align: 'left', fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: 310 });
+      const tx = x + 60 + Math.floor(k / per) * 370, ty = y + 200 + rh / 2 + (k % per) * rh, on = SONGS.indexOf(s) === this.sel;
+      ctx.fillStyle = s.color; ctx.beginPath(); ctx.arc(tx + 14, ty, rr, 0, 7); ctx.fill();
+      UI.text(String(s.no), tx + 14, ty + 1, rr + 2, { fill: '#fff', stroke: '#3e2210', sw: 3, raw: true });
+      UI.text(songName(s), tx + 36, ty, fs, { align: 'left', fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: 310 });
     });
     ctx.fillStyle = 'rgba(232,182,74,.5)'; ctx.fillRect(x + 40, y + 476, w - 80, 2);
     UI.text(this.previewIdx === this.sel ? '♪ ' + tr('試聽中') + '：' + songName(SONGS[this.sel]) : tr('選歌就可以先試聽'), cx, y + 512, 22, { fill: '#cfd8ff', stroke: null, raw: true, maxW: w - 80 });

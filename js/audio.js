@@ -242,6 +242,36 @@ const SND = {
     env(g, t, 0.002, 0.6 * v, 0.24);
     os.connect(pre); pre.connect(sh); sh.connect(fl); fl.connect(g); g.connect(dest); os.start(t); os.stop(t + 0.32); release(os, pre, sh, fl, g);
   },
+  // ---- 各 VOL 追加曲用 ----
+  steeldrum(t, n, v = 1, dest = A.music) {   // 鋼鼓：明亮的金屬音（基音＋八度＋不整數泛音），短餘韻
+    const f = m2f(n);
+    voice('sine', f, t, 0.5, 0.12 * v, dest, { att: 0.003 });
+    voice('sine', f * 2, t, 0.3, 0.06 * v, dest, { att: 0.002 });
+    voice('triangle', f * 3.01, t, 0.12, 0.025 * v, dest, { att: 0.001 });
+  },
+  sanshin(t, n, v = 1, dest = A.music) {   // 三線：比三味線柔、蛇皮的「噗」一聲
+    const f = m2f(n);
+    voice('sawtooth', f * 1.02, t, 0.45, 0.07 * v, dest, { att: 0.002, lp: 2600, lpTo: 600, lpT: 0.3, q: 2 });
+    nz(t, 0.03, 0.12 * v, dest, { type: 'lowpass', f: 900 });
+  },
+  erhu(t, n, dur, v = 1, dest = A.music) {   // 二胡：從下面滑上來、深顫音、鼻音
+    voice('sawtooth', m2f(n), t, 0.12, 0.06 * v, dest, { att: 0.05, hold: Math.max(0, dur - 0.1), lp: 2200, q: 4, vib: 0.016, vibRate: 5.5, vibDelay: 0.08 });
+    voice('triangle', m2f(n), t, 0.12, 0.04 * v, dest, { att: 0.06, hold: Math.max(0, dur - 0.1), vib: 0.016, vibRate: 5.5, vibDelay: 0.08 });
+  },
+  darbuka(t, hi, v = 1, dest = A.music) {   // 達布卡鼓：dum（低）／tek（高、乾）
+    if (hi) { nz(t, 0.04, 0.45 * v, dest, { f: 3400, q: 2 }); osc('sine', 700, t, 0.03, 0.15 * v, dest); }
+    else { osc('sine', 140, t, 0.22, 0.8 * v, dest, { to: 90, bend: 0.08 }); nz(t, 0.03, 0.2 * v, dest, { type: 'lowpass', f: 500 }); }
+  },
+  oud(t, n, v = 1, dest = A.music) {   // 烏德琴：低沉撥弦、一撥音高往下掉
+    osc('triangle', m2f(n + 0.5), t, 0.5, 0.16 * v, dest, { to: m2f(n), bend: 0.04, att: 0.002 });
+    voice('sawtooth', m2f(n), t, 0.35, 0.03 * v, dest, { att: 0.002, lp: 1800, lpTo: 500, lpT: 0.25 });
+  },
+  guiro(t, v = 1, dest = A.music) { for (let i = 0; i < 4; i++) nz(t + i * 0.018, 0.016, 0.16 * v, dest, { f: 3000 + i * 300, q: 3 }); },   // 刮瓜：一串短刮聲
+  harpsi(t, notes, v = 1, dest = A.music) {   // 大鍵琴：撥弦，亮、短、帶一點八度
+    notes.forEach((n, i) => { const x = t + i * 0.008, f = m2f(n);
+      voice('sawtooth', f, x, 0.45, 0.04 * v, dest, { att: 0.001, lp: 5000, lpTo: 1400, lpT: 0.3 }); voice('square', f * 2, x, 0.15, 0.012 * v, dest, { att: 0.001, lp: 4000 }); });
+  },
+  crackle(t, dur, dest = A.music) { for (let i = 0; i < 6; i++) nz(t + Math.random() * dur, 0.004, 0.08 + Math.random() * 0.1, dest, { type: 'highpass', f: 3000 }); },   // 黑膠雜音
   don(t, v = 1, dest = A.music) { osc('sine', 150, t, 0.34, 0.9 * v, dest, { to: 58, bend: 0.2 }); osc('sine', 88, t, 0.5, 0.3 * v, dest); nz(t, 0.05, 0.5 * v, dest, { type: 'lowpass', f: 500 }); },
   ka(t, v = 1, dest = A.music) { nz(t, 0.045, 0.45 * v, dest, { f: 3300, q: 4 }); osc('square', 1150, t, 0.02, 0.06 * v, dest); },
   kane(t, v = 1, dest = A.music) { [1, 2.41, 3.93].forEach((r, i) => osc('sine', 1750 * r, t, 0.13, 0.06 * v / (i + 1), dest)); },

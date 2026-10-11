@@ -6,9 +6,9 @@
 //   之後加 ：steam（Steam DLC）、apple（App Store 內購）、google（Google Play 內購）
 // 沒有商店時（一般網頁版）不鎖任何一集，和以前一樣全部可以玩。
 const PAID_VOLS = {
-  1: { sku: 'vol1', songs: 10 },   // sku = 各商店裡這個商品的 ID（Steam 是 DLC 的 App ID，之後在 provider 裡對應）
-  2: { sku: 'vol2', songs: 10 },
-  3: { sku: 'vol3', songs: 10 },
+  1: { sku: 'vol1', songs: 20 },   // sku = 各商店裡這個商品的 ID（Steam 是 DLC 的 App ID，之後在 provider 裡對應）
+  2: { sku: 'vol2', songs: 20 },
+  3: { sku: 'vol3', songs: 20 },
 };
 
 // ---- 測試商店：購買約 1 秒後成功（模擬付款畫面）；網址加 &fail=1 一律「取消」，測試失敗流程 ----

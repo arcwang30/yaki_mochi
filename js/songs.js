@@ -430,10 +430,11 @@ const MUSICBOX = {
   CHORD: [[65, 69, 72], [62, 65, 69], [58, 62, 65], [60, 64, 67], [65, 69, 72], [57, 60, 64], [58, 62, 65], [60, 64, 67]],
   ROOT: [41, 38, 34, 36, 41, 33, 34, 36],
   MEL: [
-    [77, null, 81, null, 84, null, 81, null], [82, null, 81, null, 77, null, null, null],
-    [74, null, 77, null, 81, null, 79, 77], [79, null, null, null, 72, null, null, null],
-    [77, 79, 81, null, 84, null, 86, null], [84, null, 81, null, 77, null, 81, null],
-    [82, null, 81, 79, 77, null, 76, null], [77, null, null, null, null, null, null, null],
+    // 音樂盒的三音一組往下撥（3+3+2），像發條轉動
+    [84, 81, 77, 84, 81, 77, 79, null], [74, null, 77, null, 81, null, null, null],
+    [82, 77, 74, 82, 77, 74, 76, null], [79, 76, 72, null, 76, null, null, null],
+    [84, 81, 77, 84, 81, 77, 76, 77], [81, null, 76, null, 72, null, 69, null],
+    [74, 77, 82, 86, 82, 77, 76, 74], [72, null, 76, null, 77, null, null, null],
   ],
 };
 // ---------- 南国屋台レゲエ（雷鬼，G 大調） ----------
@@ -441,10 +442,11 @@ const REGGAE = {
   CHORD: [[55, 59, 62], [55, 60, 64], [57, 62, 66], [55, 60, 64], [52, 55, 59], [55, 60, 64], [57, 62, 66], [55, 59, 62]],
   ROOT: [43, 48, 50, 48, 40, 48, 50, 43],
   MEL: [
-    [71, null, 74, null, 76, null, 74, null], [72, null, 71, null, 67, null, null, null],
-    [69, null, 71, 72, 74, null, 72, null], [71, null, null, null, 69, null, null, null],
-    [71, null, 67, null, 71, null, 74, null], [76, null, 74, null, 72, null, 71, null],
-    [69, null, 71, null, 72, null, 74, 72], [71, null, null, null, null, null, null, null],
+    // 反拍起句、同音連打（慵懶的雷鬼唱腔），句尾才往上揚
+    [null, 74, null, 74, null, 72, 71, null], [72, null, null, null, null, 76, 79, null],
+    [null, 78, null, 78, null, 76, 74, null], [76, null, 72, null, null, null, null, null],
+    [null, 71, null, 71, null, 67, 64, null], [64, null, 67, null, 72, null, 76, null],
+    [74, null, null, 78, 81, null, 78, null], [79, null, null, null, null, null, null, null],
   ],
 };
 // ---------- 夜市シティポップ（城市流行，C 大調七和弦） ----------
@@ -495,10 +497,11 @@ const DISCO = {
   CHORD: [[55, 58, 62], [51, 55, 58], [58, 62, 65], [53, 57, 60], [55, 58, 62], [51, 55, 58], [58, 62, 65], [54, 57, 60, 62]],
   ROOT: [43, 39, 46, 41, 43, 39, 46, 38],
   MEL: [
-    [79, null, 77, 79, 82, null, 79, null], [75, null, 74, 75, 79, null, 75, null],
-    [77, null, 74, 77, 82, null, 81, 77], [77, null, 76, null, 77, null, 81, null],
-    [86, null, 84, 82, 79, null, 82, null], [84, null, 82, 79, 75, null, 79, null],
-    [77, 79, 82, 86, 84, 82, 81, 77], [79, null, null, null, null, null, null, null],
+    // 迪斯可弦樂的八度跳躍＋同音連擊（不走歐陸節拍的上下爬）
+    [67, 79, null, 67, 79, null, 77, 79], [null, 75, null, 74, null, 70, null, null],
+    [70, 82, null, 70, 82, null, 81, 82], [null, 81, null, 77, null, 72, null, null],
+    [74, null, 74, 74, null, 77, null, 79], [79, null, 79, 79, null, 82, null, 84],
+    [86, null, 84, null, 82, null, 77, null], [78, null, null, 74, null, null, 72, null],
   ],
 };
 // ---------- 鉄板ブギウギ（布基烏基，C 藍調） ----------
@@ -846,10 +849,11 @@ const FUTURE = {
   CHORD: [[62, 65, 69, 72], [58, 62, 65, 69], [65, 69, 72, 76], [60, 64, 67, 72], [62, 65, 69, 72], [58, 62, 65, 69], [60, 65, 67, 72], [60, 64, 67, 70]],
   ROOT: [38, 34, 41, 36, 38, 34, 36, 36],
   MEL: [
-    [74, null, 77, null, null, 79, null, 77], [74, null, 72, null, null, 70, null, null],
-    [72, null, 74, null, null, 77, null, 79], [81, null, null, 79, null, 77, null, null],
-    [86, null, 84, null, null, 81, null, 79], [77, null, 79, null, null, 81, null, null],
-    [79, null, 77, null, null, 76, null, 72], [74, null, null, null, null, null, null, null],
+    // 3+2+3 的長短切分（切片人聲）：一句往下、下一句往上翻
+    [81, null, null, 79, null, 77, null, null], [74, null, null, 77, null, 81, null, null],
+    [84, null, null, 81, null, 79, null, null], [76, null, null, 79, null, 84, null, null],
+    [86, null, null, 84, null, 81, null, null], [82, null, null, 81, null, 77, null, null],
+    [79, null, 81, null, 84, null, 86, null], [88, null, null, null, 84, null, null, null],
   ],
 };
 // ---------- 鉄板ヒーロー！（動漫片頭曲，D 大調 → 高潮升 E 大調） ----------
@@ -1308,17 +1312,6 @@ const SALSA = {
     [74, null, 77, 79, null, 83, null, 79], [84, null, null, null, null, null, null, null],
   ],
 };
-// ---------- クレズマー屋台（克萊茲默，D 弗萊吉什音階） ----------
-const KLEZMER = {
-  CHORD: [[62, 66, 69], [62, 66, 69], [62, 67, 70], [62, 66, 69], [60, 63, 67], [62, 66, 69], [62, 67, 70], [62, 66, 69]],
-  ROOT: [38, 38, 43, 38, 36, 38, 43, 38],
-  MEL: [
-    [74, 75, 78, null, 79, 78, 75, 74], [78, null, 81, null, 79, 78, null, null],
-    [79, 81, 82, null, 81, 79, 78, 79], [81, null, 78, null, 75, null, 74, null],
-    [86, 84, 82, 81, 82, null, 81, 79], [78, 79, 81, null, 79, 78, 75, null],
-    [74, 75, 78, 79, 81, 79, 78, 75], [74, null, null, null, null, null, null, null],
-  ],
-};
 // ---------- フラメンコ鉄板ルンバ（佛朗明哥倫巴，A 弗里吉亞、安達魯西亞終止） ----------
 const FLAMENCO = {
   CHORD: [[57, 60, 64, 69], [55, 59, 62, 67], [53, 57, 60, 65], [52, 56, 59, 64], [57, 60, 64, 69], [55, 59, 62, 67], [53, 57, 60, 65], [52, 56, 59, 64]],
@@ -1336,10 +1329,11 @@ const GABBER = {
   CHORD: [[57, 60, 64], [53, 57, 60], [60, 64, 67], [55, 59, 62], [57, 60, 64], [53, 57, 60], [55, 59, 62], [52, 56, 59]],
   ROOT: [45, 41, 48, 43, 45, 41, 43, 40],
   MEL: [
-    [81, null, 81, null, 84, null, 83, null], [81, null, 77, null, 76, null, null, null],
-    [79, null, 79, null, 84, null, 83, null], [79, null, 76, null, 74, null, null, null],
-    [81, null, 84, 86, 88, null, 86, 84], [84, null, 81, null, 77, null, 79, null],
-    [79, 81, 83, 84, 83, null, 79, null], [80, null, null, null, null, null, null, null],
+    // 硬核的同音連發（碰碰—碰—碰）＋半音往下溜，最後用 E 大和弦往上衝
+    [81, 81, null, 81, null, 81, 80, null], [77, null, null, 77, null, 77, 76, null],
+    [79, 79, null, 79, null, 79, 77, null], [74, null, 76, null, 77, null, 79, null],
+    [84, 84, null, 84, null, 83, 81, null], [81, null, 77, null, 81, null, 84, null],
+    [86, null, 84, null, 83, null, 79, null], [76, null, 80, null, 83, null, 88, null],
   ],
 };
 
@@ -1553,36 +1547,6 @@ SONGS.push(
     },
   },
   {
-    id: 'klezmer', title: 'クレズマー屋台', stars: 4, color: '#7a9aff',
-    sub: { zh: '克萊茲默屋台', ja: 'Klezmer Yatai', en: 'Klezmer Yatai' },
-    genre: { zh: '克萊茲默・單簧管・手風琴', ja: 'クレズマー', en: 'Klezmer Clarinet' },
-    sections: [{ bpm: 122, lv: [1] }, { bpm: 128, lv: [1, 2] }, { bpm: 136, lv: [2] }, { bpm: 144, lv: [2, 3] }, { bpm: 152, lv: [3] }, { bpm: 160, lv: [3] }],
-    patterns: [   // 反拍的「恰」很重要
-      null,
-      [[0, 2, 3], [1, 2, 3], [0, 1, 3], [0, 2]],
-      [[0, 1, 2, 3], [0, 0.5, 1, 2], [1, 2, 3], [0, 1, 2, 2.5]],
-      [[0, 0.5, 1, 2, 3], [0, 1, 2, 3], [0, 0.5, 1, 2], [0, 1, 2, 2.5, 3]],
-    ],
-    arrange(ms, add) {
-      const K = KLEZMER, mi = ms.idx % 8, ch = K.CHORD[mi], r = K.ROOT[mi], rest = ms.kind === 'rest';
-      [[0, 0], [2, 7], [4, 0], [6, 7]].forEach(([s, k]) => add(ms.at(s), (x, d) => SND.tuba(x, r + k, ms.bd * 0.7, 1.1, d)));
-      [1, 3, 5, 7].forEach(s => add(ms.at(s), (x, d) => SND.accordion(x, ch, ms.sd * 0.8, 0.9, d)));   // 反拍和弦
-      [0, 4].forEach(s => add(ms.at(s), (x, d) => SND.kick(x, 0.55, d)));
-      [2, 6].forEach(s => add(ms.at(s), (x, d) => SND.snare(x, 0.45, d)));
-      if (ms.sec >= 2) [1, 3, 5, 7].forEach(s => add(ms.at(s), (x, d) => SND.hat(x, 0.5, d)));
-      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => SND.clarinet(x, [62, 63, 66, 67, 69, 70, 72, 74][k % 8] + (k >= 8 ? 12 : 0), ms.bd / 4, 1, d));   // 單簧管音階快跑
-      melody(K.MEL[mi], ms, add, (x, n, dur, d) => {
-        SND.clarinet(x, n, dur, 1.7, d);
-        if (ms.sec >= 2) SND.accordion(x, [n - 12], dur, 0.7, d);
-        if (ms.sec >= 4) SND.fiddle(x, n, dur, 0.8, d);
-      });
-    },
-    outro(ms, add) {
-      [74, 78, 81, 86].forEach((n, i) => add(ms.at(i), (x, d) => SND.clarinet(x, n, ms.sd, 1.6, d)));
-      add(ms.at(4), (x, d) => { SND.accordion(x, [62, 66, 69, 74], 1.2, 1.3, d); SND.clarinet(x, 86, 1.2, 1.6, d); SND.tuba(x, 38, 1.2, 1.2, d); SND.kick(x, 0.8, d); SND.crash(x, 0.7, d); });
-    },
-  },
-  {
     id: 'flamenco', title: 'フラメンコ鉄板ルンバ', stars: 5, color: '#ff3a3a',
     sub: { zh: '佛朗明哥鐵板倫巴', ja: 'Flamenco Teppan Rumba', en: 'Flamenco Teppan Rumba' },
     genre: { zh: '佛朗明哥・吉他・拍手', ja: 'フラメンコ', en: 'Flamenco Rumba' },
@@ -1647,19 +1611,749 @@ SONGS.push(
   },
 );
 
+// ================= 各 VOL 追加 10 首（2～5 星；每首自己的曲風與打擊節奏型） =================
+// 共用：依星級產生 6 段（BPM 從 b0 漸快到 b1；節奏難度的級數同各集同星級的歌）
+const SEC_LV = { 2: [[0], [0, 1], [1], [1, 2], [2], [2, 3]], 3: [[1], [1], [1], [1, 2], [2], [2, 3]], 4: [[1], [1], [1, 2], [2], [2, 3], [3]], 5: [[2], [2], [2, 3], [3], [3], [3]] };
+const secs = (stars, b0, b1) => SEC_LV[stars].map((lv, i) => ({ bpm: Math.round(b0 + (b1 - b0) * i / 5), lv }));
+// 共用的打擊節奏型（每首挑一種手感）：BACK 反拍 2、4 拍／SYNC 切分／RUN 八分音符奔跑／OFF 反拍／HALF 半速／DRIVE 一路衝
+const PT = {
+  BACK: [[[1, 3], [0, 2], [1], [3]], [[0, 1, 3], [1, 2, 3], [1, 3, 3.5], [0, 1, 2]], [[0, 1, 2, 3], [1, 1.5, 3], [0, 1, 3, 3.5], [1, 2, 3, 3.5]], [[0, 1, 1.5, 3, 3.5], [0, 1, 2, 3, 3.5], [0.5, 1, 2, 3]]],
+  SYNC: [[[0, 2], [0, 1.5], [2, 3.5], [0, 3]], [[0, 1.5, 2], [0, 1, 2.5], [1.5, 2, 3], [0, 1.5, 3]], [[0, 1.5, 2, 3.5], [0, 0.5, 1.5, 3], [0, 1, 1.5, 2.5]], [[0, 0.5, 1.5, 2, 3.5], [0, 1.5, 2, 3.5], [0, 0.5, 1.5, 3, 3.5], [0, 1.5, 2.5, 3]]],
+  RUN: [[[0, 2], [0, 1, 2], [2, 3], [0, 3]], [[0, 1, 2], [0, 2, 2.5], [0, 0.5, 2], [1, 2, 3]], [[0, 1, 2, 3], [0, 0.5, 1, 2], [0, 2, 2.5, 3], [0, 1, 2, 2.5]], [[0, 0.5, 1, 2, 3], [0, 1, 2, 3], [0, 1, 1.5, 2, 3], [0, 0.5, 2, 3]]],
+  OFF: [[[0.5, 2.5], [0, 2.5], [1.5, 3.5], [0, 1.5]], [[0.5, 1.5, 2.5], [0, 1.5, 3], [0.5, 2, 2.5], [0, 2.5, 3.5]], [[0.5, 1.5, 2.5, 3.5], [0, 0.5, 1.5, 2.5], [0, 1.5, 2, 3.5]], [[0, 0.5, 1.5, 2.5, 3.5], [0.5, 1.5, 2.5, 3.5], [0, 0.5, 1.5, 2, 3.5], [0, 1.5, 2, 3.5]]],
+  HALF: [[[0], [0, 2], [2], [0, 3]], [[0, 2, 3], [0, 1.5, 2], [0, 2.5]], [[0, 1.5, 2, 3], [0, 0.5, 2, 3.5], [0, 2, 2.5, 3]], [[0, 0.5, 1.5, 2, 3], [0, 1.5, 2, 2.5, 3.5], [0, 0.5, 2, 3, 3.5]]],
+  DRIVE: [null, [[0, 1, 2, 3], [0, 2, 3], [0, 1, 2]], [[0, 1, 2, 3, 3.5], [0, 0.5, 1, 2, 3], [0, 1, 2, 2.5, 3]], [[0, 0.5, 1, 2, 3], [0, 1, 2, 3], [0, 1, 1.5, 2, 3], [0, 1, 2, 3.5]]],
+};
+// 在小節的第 s 個八分音符（陣列）上排同一個聲音
+const beatAt = (ms, add, steps, fn) => steps.forEach(s => add(ms.at(s), (x, d) => fn(x, d, s)));
+// 每小節共用的過門：rest 小節最後兩拍小鼓漸強
+const fillSnare = (ms, add) => { for (let k = 8; k < 16; k++) add(t16(ms, k), (x, d) => SND.snare(x, 0.2 + k * 0.03, d)); };
+
+// ---------------- VOL.1 追加 ----------------
+const SOUL = {   // C 大調 I-IV-ii-V（Motown）；旋律開頭跳五度、句尾停在屬音（下一圈再解決）
+  CHORD: [[60, 64, 67], [60, 65, 69], [62, 65, 69, 72], [59, 62, 65, 67], [60, 64, 67], [60, 65, 69], [57, 60, 64], [55, 59, 62, 65]],
+  ROOT: [48, 41, 38, 43, 48, 41, 45, 43],
+  MEL: [[67, 72, null, 72, 74, null, 76, null], [77, null, 76, 77, 81, null, null, null], [77, null, 74, null, 72, 74, null, null], [71, null, 74, null, 79, null, null, null],
+    [67, 72, null, 72, 74, null, 76, 79], [81, null, 79, null, 77, null, 76, null], [76, null, 72, null, 69, null, 72, null], [74, null, 71, null, 67, null, null, null]],
+};
+const BOOMBAP = {   // A 小調 Am7-Dm7
+  CHORD: [[57, 60, 64, 67], [57, 60, 64, 67], [62, 65, 69, 72], [62, 65, 69, 72], [57, 60, 64, 67], [57, 60, 64, 67], [55, 59, 62, 65], [52, 56, 59, 62]],
+  ROOT: [45, 45, 50, 50, 45, 45, 43, 40],
+  // 爵士取樣般的短樂句：前半句、休息、後半句往下（兩小節一問一答）
+  MEL: [[69, null, 72, 74, null, 72, null, null], [null, null, 76, null, 74, 72, 69, null], [74, null, 77, 79, null, 77, null, null], [null, null, 81, null, 79, 77, 74, null],
+    [81, null, null, 79, null, null, 76, null], [null, 76, 74, null, 72, null, null, null], [71, null, 74, null, 77, null, 79, null], [80, null, null, null, 76, null, null, null]],
+};
+const GOSPEL = {   // F 大調（12/8 的搖擺手拍）
+  CHORD: [[57, 60, 65], [58, 62, 65], [57, 60, 65], [60, 64, 67, 70], [57, 60, 65], [58, 62, 65], [60, 64, 67], [57, 60, 65]],
+  ROOT: [41, 46, 41, 48, 41, 46, 48, 41],
+  MEL: [[69, null, 72, null, 74, null, 72, null], [74, null, 77, null, 74, null, null, null], [72, null, 69, null, 67, null, 65, null], [67, null, null, null, 64, null, null, null],
+    [69, null, 72, null, 77, null, 76, null], [74, null, 72, null, 74, null, 77, null], [76, null, 74, null, 72, null, 70, null], [69, null, null, null, null, null, null, null]],
+};
+const AFRO = {   // D 多利安（一個和弦的循環）
+  CHORD: [[62, 65, 69, 72], [62, 65, 69, 72], [67, 71, 74], [62, 65, 69, 72], [62, 65, 69, 72], [62, 65, 69, 72], [67, 71, 74], [64, 67, 71]],
+  ROOT: [38, 38, 43, 38, 38, 38, 43, 40],
+  BASS: [0, null, null, 0, null, 7, 10, null],   // 切分的低音
+  // 銅管的短促 riff（同音兩下＋切分），五聲音階
+  MEL: [[74, 74, null, 77, null, 74, null, null], [null, 72, null, 69, 72, null, 74, null], [74, 74, null, 77, null, 79, null, null], [null, 81, null, 79, 77, null, 74, null],
+    [86, null, null, 84, null, 81, null, 79], [81, null, 79, null, 77, null, null, null], [79, 79, null, 81, null, 84, null, 81], [79, null, null, null, 76, null, null, null]],
+};
+const KPOP = {   // F# 小調（流行舞曲）
+  CHORD: [[57, 61, 66], [57, 62, 66], [57, 61, 64], [56, 59, 64], [57, 61, 66], [57, 62, 66], [56, 61, 64], [56, 59, 63]],
+  ROOT: [42, 38, 45, 40, 42, 38, 40, 44],
+  MEL: [[78, null, 78, 76, null, 73, null, 76], [74, null, 73, null, 71, null, 73, null], [76, null, 76, 78, null, 81, null, 78], [76, null, null, null, 71, null, null, null],
+    [81, null, 80, 78, null, 76, 78, null], [81, null, 83, null, 81, null, 78, null], [76, 78, 80, null, 78, null, 76, null], [78, null, null, null, null, null, null, null]],
+};
+const TRANCE = {   // A 小調（Am-F-C-G）
+  CHORD: [[57, 60, 64], [53, 57, 60], [60, 64, 67], [55, 59, 62], [57, 60, 64], [53, 57, 60], [60, 64, 67], [55, 59, 62]],
+  ROOT: [45, 41, 48, 43, 45, 41, 48, 43],
+  MEL: [[76, null, null, 76, 79, null, 76, null], [77, null, null, 77, 76, null, 72, null], [79, null, null, 79, 84, null, 79, null], [79, null, 77, null, 74, null, null, null],
+    [81, null, null, 81, 84, null, 81, null], [81, null, 79, null, 77, null, 76, null], [76, null, 79, null, 84, null, 83, null], [81, null, null, null, null, null, null, null]],
+};
+const ESWING = {   // D 小調（搖擺爵士＋四拍大鼓）
+  CHORD: [[62, 65, 69], [62, 65, 69], [58, 62, 65], [57, 61, 64, 67], [62, 65, 69], [62, 65, 69], [55, 58, 62], [57, 61, 64, 67]],
+  ROOT: [38, 38, 46, 45, 38, 38, 43, 45],
+  MEL: [[74, null, 77, null, 74, 73, 74, null], [81, null, 77, null, 74, null, null, null], [70, null, 74, null, 77, 76, 74, null], [73, null, 76, null, 79, null, 76, null],
+    [86, null, 84, null, 81, null, 77, null], [74, null, 77, null, 81, null, 79, null], [79, null, 77, null, 74, null, 70, null], [69, null, null, 73, 74, null, null, null]],
+};
+const BIGBEAT = {   // E 小調（破音低音＋警報主旋律）
+  ROOT: [40, 40, 43, 40, 40, 40, 45, 43],
+  MEL: [[76, null, 76, null, 79, null, 76, 74], [76, null, null, null, 71, null, null, null], [76, null, 76, null, 79, null, 81, null], [79, null, 78, null, 76, null, null, null],
+    [83, null, 81, null, 79, null, 81, 83], [84, null, 83, null, 81, null, 79, null], [78, null, 79, null, 81, null, 83, null], [76, null, null, null, null, null, null, null]],
+};
+const PUNK = {   // A 大調（強力和弦三和弦循環）
+  ROOT: [45, 45, 50, 52, 45, 45, 50, 52],
+  MEL: [[76, null, 76, null, 76, 78, 76, null], [73, null, 73, null, 71, null, 69, null], [74, null, 74, null, 74, 76, 78, null], [76, null, null, null, 76, null, null, null],
+    [81, null, 81, null, 80, 78, 76, null], [78, null, 78, null, 76, null, 74, null], [73, null, 74, null, 76, null, 78, null], [81, null, null, null, null, null, null, null]],
+};
+
+SONGS.push(
+  {
+    id: 'soul', title: 'ソウル屋台', stars: 2, color: '#e8a050',
+    sub: { zh: '靈魂屋台', ja: 'Soul Yatai', en: 'Soul Yatai' }, genre: { zh: '靈魂樂・Motown', ja: 'ソウル', en: 'Motown Soul' },
+    sections: secs(2, 100, 132), patterns: PT.BACK,
+    arrange(ms, add) {
+      const S = SOUL, mi = ms.idx % 8, ch = S.CHORD[mi], r = S.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 4], (x, d) => SND.kick(x, 0.7, d)); beatAt(ms, add, [2, 6], (x, d) => { SND.snare(x, 0.6, d); SND.clap(x, d); });
+      beatAt(ms, add, [2, 6], (x, d) => SND.tamb(x, 1, d));
+      beatAt(ms, add, [0, 1, 3, 4, 6, 7], (x, d, s) => SND.walk(x, r - 12 + [0, 12, 0, 7, 0, 12, 0, 10][s], ms.sd * 0.9, 1.1, d));   // 忙碌的 Motown 低音
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.organ(x, ch, ms.sd * 0.7, 0.7, d));
+      if (ms.sec >= 2) beatAt(ms, add, [3, 7], (x, d) => SND.brass(x, ch.map(n => n + 12), ms.sd * 0.6, 0.9, d));
+      if (rest) fillSnare(ms, add);
+      melody(S.MEL[mi], ms, add, (x, n, dur, d) => { SND.vox(x, n, dur, 1.2, d); if (ms.sec >= 4) SND.sax(x, n - 12, dur, 0.7, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.brass(x, [72, 76, 79, 84], 1.2, 1.2, d); SND.vox(x, 84, 1.2, 1.2, d); SND.walk(x, 36, 1.2, 1.1, d); SND.crash(x, 0.8, d); SND.kick(x, 0.8, d); }); },
+  },
+  {
+    id: 'boombap', title: 'ブーンバップ屋台', stars: 2, color: '#8a7a6a', swing: 0.58,
+    sub: { zh: '嘻哈屋台', ja: 'Boom Bap Yatai', en: 'Boom Bap Yatai' }, genre: { zh: '嘻哈・Boom bap', ja: 'ブーンバップ', en: 'Boom Bap Hip-Hop' },
+    sections: secs(2, 96, 128), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const B = BOOMBAP, mi = ms.idx % 8, ch = B.CHORD[mi], r = B.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.kick(x, 0.9, d)); beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.8, d));
+      beatAt(ms, add, [0, 1, 2, 3, 4, 5, 6, 7], (x, d, s) => SND.hat(x, s % 2 ? 0.4 : 0.7, d));
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.sub(x, r - 12, ms.sd * 1.2, 1, d));
+      add(ms.at(0), (x, d) => SND.epiano(x, ch, 0.8, d, ms.bd * 2)); if (ms.sec >= 1) add(ms.at(4), (x, d) => SND.epiano(x, ch, 0.6, d, ms.bd * 1.5));
+      if (ms.sec >= 2 && mi % 2 === 1) add(ms.at(7), (x, d) => SND.scratch(x, 1.2, d));
+      if (rest) beatAt(ms, add, [4, 5, 6, 7], (x, d) => SND.scratch(x, 1.3, d));
+      melody(B.MEL[mi], ms, add, (x, n, dur, d) => { SND.bell(x, n, 1.1, d); if (ms.sec >= 3) SND.chop(x, n, dur, 0.6, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.epiano(x, [57, 60, 64, 67, 71], 1, d, 1.6); SND.sub(x, 33, 1.4, 1, d); SND.kick(x, 0.9, d); SND.scratch(x, 1.4, d); }); },
+  },
+  {
+    id: 'gospel', title: '鉄板ゴスペル', stars: 2, color: '#f0d070', swing: 0.66,
+    sub: { zh: '鐵板福音', ja: 'Teppan Gospel', en: 'Teppan Gospel' }, genre: { zh: '福音合唱・風琴', ja: 'ゴスペル', en: 'Gospel Choir' },
+    sections: secs(2, 98, 130), patterns: PT.BACK,
+    arrange(ms, add) {
+      const G = GOSPEL, mi = ms.idx % 8, ch = G.CHORD[mi], r = G.ROOT[mi], rest = ms.kind === 'rest';
+      add(ms.at(0), (x, d) => SND.choir(x, ch, ms.bd * 3.8, 1, d));
+      add(ms.at(0), (x, d) => SND.organ(x, ch.map(n => n - 12), ms.bd * 3.6, 0.6, d));
+      beatAt(ms, add, [0, 4], (x, d) => SND.walk(x, r - 12, ms.bd * 1.5, 1, d));
+      beatAt(ms, add, [2, 6], (x, d) => { SND.clap(x, d); SND.tamb(x, 0.9, d); });
+      if (ms.sec >= 1) beatAt(ms, add, [0, 4], (x, d) => SND.kick(x, 0.55, d));
+      if (ms.sec >= 2) beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.piano(x, ch.map(n => n + 12), 0.55, d, 0.25));
+      if (rest) beatAt(ms, add, [4, 5, 6, 7], (x, d) => SND.clap(x, d));
+      melody(G.MEL[mi], ms, add, (x, n, dur, d) => { SND.vox(x, n, dur, 1.3, d); if (ms.sec >= 4) SND.choir(x, [n + 12], dur, 0.6, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.choir(x, [53, 57, 60, 65, 69], 2.4, 1.3, d); SND.organ(x, [41, 53], 2.2, 0.8, d); SND.vox(x, 77, 2, 1.3, d); }); },
+  },
+  {
+    id: 'afrobeat', title: 'アフロ鉄板ビート', stars: 3, color: '#e85a2a',
+    sub: { zh: '非洲鐵板節拍', ja: 'Afro Teppan Beat', en: 'Afro Teppan Beat' }, genre: { zh: '非洲節拍・銅管', ja: 'アフロビート', en: 'Afrobeat' },
+    sections: secs(3, 112, 148), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const F = AFRO, mi = ms.idx % 8, ch = F.CHORD[mi], r = F.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.kick(x, 0.8, d)); beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.5, d));
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.shaker(x, s % 2 ? 0.8 : 0.5, d));
+      beatAt(ms, add, [0, 2, 3, 5, 6], (x, d, s) => SND.agogo(x, s === 0 || s === 3, 0.8, d));   // 牛鈴的固定型
+      F.BASS.forEach((k, s) => { if (k !== null) add(ms.at(s), (x, d) => SND.slap(x, r + k, 1.1, d)); });
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.scratch(x, 0.8, d));   // 吉他刷「切」
+      if (ms.sec >= 1) beatAt(ms, add, [0, 4], (x, d) => SND.organ(x, ch, ms.bd * 1.6, 0.6, d));
+      if (ms.sec >= 3) beatAt(ms, add, [1, 7], (x, d) => SND.brass(x, ch.map(n => n + 12), ms.sd * 0.6, 1, d));
+      if (rest) fillSnare(ms, add);
+      melody(F.MEL[mi], ms, add, (x, n, dur, d) => { SND.sax(x, n, dur, 1.4, d); if (ms.sec >= 2) SND.trumpet(x, n + 12, dur, 0.7, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.brass(x, [62, 65, 69, 74], 1.2, 1.3, d); SND.slap(x, 38, 1.2, d); SND.kick(x, 0.9, d); SND.crash(x, 0.8, d); }); },
+  },
+  {
+    id: 'kpop', title: 'K-POP鉄板ダンス', stars: 4, color: '#ff6ab0',
+    sub: { zh: 'K-POP 鐵板舞曲', ja: 'K-Pop Teppan Dance', en: 'K-Pop Teppan Dance' }, genre: { zh: 'K-POP 舞曲', ja: 'K-POP', en: 'K-Pop Dance' },
+    sections: secs(4, 122, 160), patterns: PT.OFF,
+    arrange(ms, add) {
+      const K = KPOP, mi = ms.idx % 8, ch = K.CHORD[mi], r = K.ROOT[mi], rest = ms.kind === 'rest';
+      if (!rest) beatAt(ms, add, [0, 2, 4, 6], (x, d) => SND.kick(x, 0.95, d));
+      beatAt(ms, add, [2, 6], (x, d) => { SND.clap(x, d); SND.snare(x, 0.4, d); });
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.hat(x, 0.6, d, true));
+      beatAt(ms, add, [0, 1, 3, 4, 6], (x, d, s) => SND.synbass(x, r - 12 + (s === 1 || s === 6 ? 12 : 0), ms.sd * 0.8, 1.1, d));
+      if (ms.sec >= 1) beatAt(ms, add, [0, 3, 6], (x, d) => SND.brass(x, ch.map(n => n + 12), ms.sd * 0.5, 0.9, d));   // 合成器銅管 hit
+      if (ms.sec >= 3) add(ms.at(0), (x, d) => SND.pad(x, ch, ms.bd * 4, 0.6, d, 'sawtooth'));
+      if (rest) { add(ms.start, (x, d) => SND.riser(x, ms.bd * 4, d)); fillSnare(ms, add); }
+      melody(K.MEL[mi], ms, add, (x, n, dur, d) => { SND.vox(x, n, dur, 1.2, d); if (ms.sec >= 2) SND.chop(x, n + 12, dur, 0.5, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.brass(x, [66, 69, 73, 78], 1.2, 1.2, d); SND.kick(x, 1, d); SND.crash(x, 1, d); SND.vox(x, 78, 1.2, 1.2, d); SND.synbass(x, 30, 1.2, 1.1, d); }); },
+  },
+  {
+    id: 'trance', title: '夜市トランス', stars: 4, color: '#6ad0ff',
+    sub: { zh: '夜市迷幻舞曲', ja: 'Night Market Trance', en: 'Night Market Trance' }, genre: { zh: 'Trance（電音）', ja: 'トランス', en: 'Uplifting Trance' },
+    sections: secs(4, 126, 162), patterns: PT.RUN,
+    arrange(ms, add) {
+      const T = TRANCE, mi = ms.idx % 8, ch = T.CHORD[mi], r = T.ROOT[mi], rest = ms.kind === 'rest';
+      if (!rest) beatAt(ms, add, [0, 2, 4, 6], (x, d) => SND.kick(x, 1, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => { SND.sub(x, r - 12, ms.sd * 0.8, 1.1, d); SND.hat(x, 0.6, d, true); });   // 反拍低音
+      if (ms.sec >= 1) beatAt(ms, add, [2, 6], (x, d) => SND.clap(x, d));
+      if (ms.sec >= 1) for (let i = 0; i < 16; i++) { const n = ch[[0, 1, 2, 1][i % 4]] + 12; add(ms.start + i * ms.bd / 4, (x, d) => SND.pluck(x, n, 0.8, d)); }
+      add(ms.at(0), (x, d) => SND.pad(x, ch, ms.bd * 4, 0.8, d, 'sawtooth'));
+      if (rest) { add(ms.start, (x, d) => SND.riser(x, ms.bd * 4, d)); fillSnare(ms, add); }
+      melody(T.MEL[mi], ms, add, (x, n, dur, d) => { SND.supersaw(x, n, dur, 1.1, d); if (ms.sec >= 4) SND.supersaw(x, n - 12, dur, 0.5, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.supersaw(x, 81, 1.6, 1.2, d); SND.supersaw(x, 76, 1.6, 0.8, d); SND.pad(x, [57, 60, 64], 2, 1, d, 'sawtooth'); SND.sub(x, 33, 1.4, 1, d); SND.crash(x, 1, d); SND.kick(x, 1, d); }); },
+  },
+  {
+    id: 'eswing', title: 'エレクトロ・スウィング屋台', stars: 4, color: '#d8b04a', swing: 0.64,
+    sub: { zh: '電子搖擺屋台', ja: 'Electro Swing Yatai', en: 'Electro Swing Yatai' }, genre: { zh: '電子搖擺', ja: 'エレクトロスウィング', en: 'Electro Swing' },
+    sections: secs(4, 118, 156), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const E = ESWING, mi = ms.idx % 8, ch = E.CHORD[mi], r = E.ROOT[mi], rest = ms.kind === 'rest';
+      if (!rest) beatAt(ms, add, [0, 2, 4, 6], (x, d) => SND.kick(x, 0.95, d));
+      beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.7, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.ride(x, 0.7, d));
+      beatAt(ms, add, [0, 2, 4, 6], (x, d, s) => SND.walk(x, r - 12 + [0, 4, 7, 9][s / 2], ms.bd * 0.9, 1.2, d));   // 走路低音
+      beatAt(ms, add, [1, 5], (x, d) => SND.piano(x, ch.map(n => n + 12), 0.7, d, 0.2));
+      if (ms.sec >= 2) add(ms.at(0), (x, d) => SND.crackle(x, ms.bd * 4, d));
+      if (ms.sec >= 3) beatAt(ms, add, [3, 7], (x, d) => SND.brass(x, ch.map(n => n + 12), ms.sd * 0.5, 0.9, d));
+      if (rest) fillSnare(ms, add);
+      melody(E.MEL[mi], ms, add, (x, n, dur, d) => { SND.trumpet(x, n, dur, 1.6, d); if (ms.sec >= 2) SND.clarinet(x, n - 12, dur, 0.9, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.brass(x, [62, 65, 69, 74], 1.3, 1.2, d); SND.trumpet(x, 86, 1.3, 1.5, d); SND.walk(x, 26, 1.2, 1.2, d); SND.crash(x, 0.8, d); }); },
+  },
+  {
+    id: 'bigbeat', title: 'ビッグビート鉄板', stars: 5, color: '#ff4a2a',
+    sub: { zh: '大節拍鐵板', ja: 'Big Beat Teppan', en: 'Big Beat Teppan' }, genre: { zh: 'Big beat（碎拍電子）', ja: 'ビッグビート', en: 'Big Beat Breaks' },
+    sections: secs(5, 144, 176), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const B = BIGBEAT, mi = ms.idx % 8, r = B.ROOT[mi], rest = ms.kind === 'rest';
+      // 碎拍鼓組（breakbeat）
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.kick(x, 1, d)); beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.9, d)); beatAt(ms, add, [7], (x, d) => SND.snare(x, 0.35, d));
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.hat(x, s % 2 ? 0.45 : 0.7, d));
+      beatAt(ms, add, [0, 3, 4, 6], (x, d) => SND.dguitar(x, [r - 12, r - 5], ms.sd * 0.9, 0.7, d, { mute: true }));   // 破音低音
+      if (ms.sec >= 2 && mi % 4 === 3) add(ms.at(6), (x, d) => SND.scratch(x, 1.5, d));
+      if (ms.sec >= 3) beatAt(ms, add, [0, 4], (x, d) => SND.crash(x, 0.4, d));
+      if (rest) { add(ms.start, (x, d) => SND.riser(x, ms.bd * 4, d)); fillSnare(ms, add); }
+      melody(B.MEL[mi], ms, add, (x, n, dur, d) => { SND.synlead(x, n, dur, 1.2, d); if (ms.sec >= 4) SND.glead(x, n - 12, dur, 0.6, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.dguitar(x, [28, 35, 40], 1.6, 1.1, d); SND.synlead(x, 88, 1.4, 1.2, d); SND.crash(x, 1.2, d); SND.kick(x, 1, d); }); },
+  },
+  {
+    id: 'punk', title: 'パンク屋台', stars: 5, color: '#ff3a8a',
+    sub: { zh: '龐克屋台', ja: 'Punk Yatai', en: 'Punk Yatai' }, genre: { zh: '龐克搖滾', ja: 'パンク', en: 'Punk Rock' },
+    sections: secs(5, 150, 182), patterns: PT.DRIVE,
+    arrange(ms, add) {
+      const P = PUNK, mi = ms.idx % 8, r = P.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 4], (x, d) => SND.kick(x, 1, d)); beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.9, d));
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => { SND.hat(x, 0.55, d, s % 2 === 1); SND.dguitar(x, [r, r + 7, r + 12], ms.sd * 0.85, 0.6, d); SND.sub(x, r - 12, ms.sd * 0.8, 0.8, d); });   // 全下刷強力和弦
+      if (mi === 0) add(ms.at(0), (x, d) => SND.crash(x, 1, d));
+      if (rest) fillSnare(ms, add);
+      melody(P.MEL[mi], ms, add, (x, n, dur, d) => { SND.vox(x, n, dur, 1.3, d); if (ms.sec >= 3) SND.glead(x, n + 12, dur, 0.5, d); });
+    },
+    outro(ms, add) { [0, 1, 2, 3].forEach(s => add(ms.at(s), (x, d) => { SND.dguitar(x, [45, 52, 57], ms.sd, 0.8, d); SND.snare(x, 0.8, d); })); add(ms.at(4), (x, d) => { SND.dguitar(x, [45, 52, 57, 61], 1.6, 1.1, d); SND.crash(x, 1.2, d); SND.kick(x, 1, d); }); },
+  },
+);
+
+// ---------------- VOL.2 追加 ----------------
+const CALYPSO = {   // F 大調（鋼鼓）
+  CHORD: [[57, 60, 65], [58, 62, 65], [60, 64, 67, 70], [57, 60, 65], [57, 60, 65], [58, 62, 65], [60, 64, 67, 70], [57, 60, 65]],
+  ROOT: [41, 46, 48, 41, 41, 46, 48, 41],
+  MEL: [[77, null, 77, 79, null, 81, 79, null], [77, null, 74, null, 70, null, null, null], [76, null, 76, 77, null, 79, 77, null], [76, null, 72, null, 69, null, null, null],
+    [81, null, 81, 82, null, 84, 82, null], [81, null, 77, null, 74, null, 77, null], [79, null, 76, null, 72, null, 76, null], [77, null, null, null, null, null, null, null]],
+};
+const OKINAWA = {   // 琉球音階（C E F G B）
+  CHORD: [[60, 64, 67], [60, 64, 67], [65, 69, 72], [67, 71, 74], [60, 64, 67], [65, 69, 72], [67, 71, 74], [60, 64, 67]],
+  ROOT: [48, 48, 53, 55, 48, 53, 55, 48],
+  MEL: [[72, null, 71, 72, 76, null, 72, null], [71, null, 67, null, 64, null, null, null], [65, null, 67, 71, 72, null, 71, null], [67, null, null, null, 64, null, null, null],
+    [76, null, 77, 76, 72, null, 71, null], [72, null, 76, null, 77, null, 79, null], [76, null, 72, null, 71, null, 67, null], [72, null, null, null, null, null, null, null]],
+};
+const MINYUE = {   // D 宮調五聲音階（D E F# A B）
+  CHORD: [[62, 66, 69], [62, 66, 69], [59, 62, 66], [57, 62, 66], [62, 66, 69], [59, 62, 66], [57, 61, 64], [62, 66, 69]],
+  ROOT: [38, 38, 47, 45, 38, 47, 45, 38],
+  PENT: [62, 64, 66, 69, 71, 74, 76, 78, 81, 83],
+  MEL: [[74, null, 76, 78, 81, null, 78, null], [76, null, 74, null, 71, null, null, null], [69, null, 71, 74, 76, null, 74, null], [71, null, 69, null, 66, null, null, null],
+    [81, null, 83, 81, 78, null, 76, null], [78, null, 81, null, 83, null, 81, null], [78, null, 76, 74, 71, null, 69, null], [74, null, null, null, null, null, null, null]],
+};
+const ARABIC = {   // D 庫爾德音階（D Eb F G A Bb C）：長音起句、句中的迴音（turn）裝飾
+  ROOT: [38, 38, 46, 38, 43, 46, 38, 38],
+  MAQSUM: [[0, false], [1, true], [3, true], [4, false], [6, true]],   // dum tek - tek dum - tek -
+  MEL: [[81, null, null, null, 79, 77, 79, null], [77, 75, 77, null, 74, null, null, null], [70, null, 74, null, 77, null, 82, null], [81, 82, 81, 79, 77, null, null, null],
+    [79, null, 81, 82, 84, null, 82, 81], [82, null, 79, null, 75, null, 77, null], [74, null, 75, null, 77, 79, 77, 75], [74, null, null, null, null, null, null, null]],
+};
+const CUMBIA = {   // A 小調（手風琴＋刮瓜）
+  CHORD: [[57, 60, 64], [57, 60, 64], [56, 59, 64], [56, 59, 64], [57, 60, 64], [55, 59, 62], [53, 57, 60], [56, 59, 64]],
+  ROOT: [45, 45, 40, 40, 45, 43, 41, 40],
+  MEL: [[76, null, 76, 74, null, 72, 74, null], [76, null, null, 71, null, null, null, null], [76, null, 76, 77, null, 76, 74, null], [71, null, null, 68, null, null, null, null],
+    [81, null, 81, 79, null, 77, 76, null], [79, null, 77, null, 74, null, 71, null], [72, null, 74, null, 76, null, 77, null], [76, null, null, null, null, null, null, null]],
+};
+const BAROQUE = {   // D 大調（對位的八分音符；大鍵琴）
+  CHORD: [[62, 66, 69], [57, 61, 64], [59, 62, 66], [54, 57, 61], [55, 59, 62], [50, 54, 57], [55, 59, 62], [57, 61, 64]],
+  ROOT: [50, 45, 47, 42, 43, 38, 43, 45],   // 卡農式的下行低音
+  MEL: [[78, 76, 74, 76, 78, 81, 78, 74], [76, 74, 73, 74, 76, 78, 76, 73], [74, 73, 71, 73, 74, 78, 74, 71], [73, 71, 69, 71, 73, 76, 73, 69],
+    [71, 69, 67, 69, 71, 74, 71, 67], [69, 67, 66, 67, 69, 74, 69, 66], [67, 69, 71, 74, 76, 74, 71, 67], [69, null, null, null, 73, null, null, null]],
+};
+const RAGTIME = {   // C 大調（切分的右手＋oom-pah 左手）
+  CHORD: [[60, 64, 67], [60, 64, 67], [62, 66, 69, 72], [62, 66, 69, 72], [55, 59, 62, 65], [55, 59, 62, 65], [60, 64, 67], [55, 59, 62, 65]],
+  ROOT: [36, 36, 38, 38, 43, 43, 36, 43],
+  MEL: [[76, 77, null, 79, null, 76, 72, null], [74, 76, null, 77, null, 74, 72, null], [74, 76, null, 78, null, 81, 78, null], [76, 74, null, 72, null, 69, 66, null],
+    [79, 77, null, 74, null, 71, 74, null], [77, 76, null, 74, null, 72, 71, null], [72, 74, null, 76, 79, null, 84, null], [79, null, null, null, null, null, null, null]],
+};
+const KALINKA = {   // A 小調（越來越快的俄羅斯舞曲）
+  CHORD: [[57, 60, 64], [57, 60, 64], [52, 56, 59], [57, 60, 64], [57, 60, 64], [55, 59, 62], [52, 56, 59], [57, 60, 64]],
+  ROOT: [45, 45, 40, 45, 45, 43, 40, 45],
+  MEL: [[76, 74, 72, 74, 76, null, 76, null], [76, 74, 72, 74, 71, null, 71, null], [76, 74, 72, 74, 76, null, 79, null], [77, 76, 74, 72, 71, null, 69, null],
+    [81, null, 79, 77, 76, null, 74, null], [79, null, 77, 76, 74, null, 72, null], [74, 76, 77, 76, 74, 72, 71, null], [69, null, null, null, null, null, null, null]],
+};
+const BALKAN = {   // G 小調（銅管樂隊）
+  CHORD: [[55, 58, 62], [55, 58, 62], [51, 55, 58], [50, 54, 57, 60], [55, 58, 62], [53, 57, 60], [51, 55, 58], [50, 54, 57]],
+  ROOT: [43, 43, 39, 38, 43, 41, 39, 38],
+  MEL: [[79, 78, 79, 81, 82, null, 79, null], [78, null, 75, null, 74, null, null, null], [79, 78, 79, 81, 82, 84, 82, null], [81, null, 78, null, 74, null, null, null],
+    [86, 84, 82, 81, 82, null, 79, null], [81, 79, 77, 75, 77, null, 74, null], [75, 74, 72, null, 70, null, 69, null], [67, null, null, null, null, null, null, null]],
+};
+const SAMUL = {   // 韓國五聲（太平簫）
+  ROOT: [45, 45, 45, 45, 50, 50, 45, 45],
+  MEL: [[76, null, 74, 76, 81, null, 79, null], [76, null, 74, null, 72, null, null, null], [76, null, 79, 81, 84, null, 81, null], [79, null, 76, null, 74, null, null, null],
+    [84, null, 81, 79, 76, null, 79, null], [81, null, 79, null, 76, null, 74, null], [72, null, 74, null, 76, null, 79, null], [76, null, null, null, null, null, null, null]],
+  JANGGU: [[0, 'dong'], [2, 'deok'], [3, 'deok'], [4, 'dong'], [5, 'deok'], [6, 'deok']],   // 長鼓：dong（雙面）／deok（細棒）
+};
+
+SONGS.push(
+  {
+    id: 'calypso', title: 'カリプソ鉄板', stars: 2, color: '#3ad0c0',
+    sub: { zh: '鐵板卡利普索', ja: 'Calypso Teppan', en: 'Calypso Teppan' }, genre: { zh: '加勒比海 Calypso・鋼鼓', ja: 'カリプソ', en: 'Caribbean Steel Drum' },
+    sections: secs(2, 100, 134), patterns: PT.OFF,
+    arrange(ms, add) {
+      const C = CALYPSO, mi = ms.idx % 8, ch = C.CHORD[mi], r = C.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 3, 4, 7], (x, d) => SND.kick(x, 0.6, d)); beatAt(ms, add, [2, 6], (x, d) => SND.rim(x, 0.8, d));
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.shaker(x, s % 2 ? 0.8 : 0.4, d));
+      beatAt(ms, add, [0, 3, 4, 6], (x, d, s) => SND.walk(x, r - 12 + (s === 4 ? 7 : 0), ms.sd * 1.1, 1.1, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.uke(x, ch, 0.9, d, false));
+      if (ms.sec >= 2) beatAt(ms, add, [2, 5], (x, d) => SND.conga(x, true, 0.8, d));
+      if (rest) beatAt(ms, add, [4, 5, 6, 7], (x, d, s) => SND.steeldrum(x, ch[s % 3] + 12, 1, d));
+      melody(C.MEL[mi], ms, add, (x, n, dur, d) => { SND.steeldrum(x, n, 1.8, d); if (ms.sec >= 3) SND.steeldrum(x, n - 12, 0.9, d); });
+    },
+    outro(ms, add) { [0, 1, 2, 3].forEach(i => add(ms.at(i), (x, d) => SND.steeldrum(x, [77, 81, 84, 89][i], 1.6, d))); add(ms.at(4), (x, d) => { SND.uke(x, [57, 60, 65, 69], 1.2, d); SND.walk(x, 29, 1.2, 1.1, d); }); },
+  },
+  {
+    id: 'okinawa', title: '島唄屋台', stars: 2, color: '#4ab0e0', swing: 0.62,
+    sub: { zh: '島唄屋台', ja: 'Shima-uta Yatai', en: 'Okinawan Island Song' }, genre: { zh: '沖繩島唄・三線', ja: '沖縄民謡', en: 'Okinawan Sanshin' },
+    sections: secs(2, 98, 132), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const O = OKINAWA, mi = ms.idx % 8, ch = O.CHORD[mi], r = O.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 4], (x, d) => SND.don(x, 0.6, d)); beatAt(ms, add, [3, 7], (x, d) => SND.ka(x, 0.6, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.wood(x, false, d));   // 三板（響板）
+      if (ms.sec >= 1) beatAt(ms, add, [2, 6], (x, d) => SND.clap(x, d));   // 指笛的手拍
+      beatAt(ms, add, [0, 4], (x, d) => SND.walk(x, r - 12, ms.bd * 1.4, 1, d));
+      if (ms.sec >= 2) add(ms.at(0), (x, d) => SND.pad(x, ch, ms.bd * 4, 0.5, d));
+      if (rest) beatAt(ms, add, [4, 5, 6, 7], (x, d, s) => SND.sanshin(x, [72, 71, 67, 64][s - 4], 1, d));
+      melody(O.MEL[mi], ms, add, (x, n, dur, d) => { SND.sanshin(x, n, 1.8, d); if (ms.sec >= 3) SND.flute(x, n + 12, dur, 0.6, d); });
+    },
+    outro(ms, add) { [72, 76, 79, 84].forEach((n, i) => add(ms.at(i), (x, d) => SND.sanshin(x, n, 1.6, d))); add(ms.at(4), (x, d) => { SND.don(x, 1, d); SND.pad(x, [60, 64, 67], 1.6, 0.8, d); }); },
+  },
+  {
+    id: 'minyue', title: '屋台民楽', stars: 3, color: '#d83a3a',
+    sub: { zh: '屋台國樂', ja: 'Yatai Folk Orchestra', en: 'Chinese Folk Orchestra' }, genre: { zh: '中國民樂・二胡・古箏', ja: '中国民楽', en: 'Erhu & Guzheng' },
+    sections: secs(3, 112, 148), patterns: PT.RUN,
+    arrange(ms, add) {
+      const M = MINYUE, mi = ms.idx % 8, ch = M.CHORD[mi], r = M.ROOT[mi], rest = ms.kind === 'rest';
+      // 古箏：五聲音階的分散和弦
+      for (let s = 0; s < 8; s++) { const n = M.PENT[(s * 2 + mi) % 7] ; add(ms.at(s), (x, d) => SND.koto(x, n, 0.75, d)); }
+      beatAt(ms, add, [0, 4], (x, d) => SND.don(x, 0.6, d)); beatAt(ms, add, [2, 6], (x, d) => SND.ka(x, 0.7, d));
+      if (ms.sec >= 1) beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.kane(x, 0.5, d));   // 小鈸
+      beatAt(ms, add, [0, 4], (x, d) => SND.walk(x, r - 12, ms.bd * 1.5, 1, d));
+      if (mi === 7 && ms.sec >= 1) add(ms.at(6), (x, d) => SND.gong(x, 45, 0.6, d));
+      if (rest) for (let k = 0; k < 8; k++) add(ms.at(k), (x, d) => SND.koto(x, M.PENT[9 - k], 0.9, d));   // 古箏刮奏
+      melody(M.MEL[mi], ms, add, (x, n, dur, d) => { SND.erhu(x, n, dur, 1.6, d); if (ms.sec >= 3) SND.flute(x, n + 12, dur, 0.6, d); });
+    },
+    outro(ms, add) { for (let k = 0; k < 8; k++) add(t16(ms, k), (x, d) => SND.koto(x, MINYUE.PENT[k + 1], 0.9, d)); add(ms.at(4), (x, d) => { SND.erhu(x, 74, 1.6, 1.6, d); SND.gong(x, 38, 1, d); SND.walk(x, 26, 1.4, 1, d); }); },
+  },
+  {
+    id: 'arabic', title: 'ベリーダンス夜市', stars: 3, color: '#b04ad0',
+    sub: { zh: '肚皮舞夜市', ja: 'Belly Dance Bazaar', en: 'Belly Dance Bazaar' }, genre: { zh: '阿拉伯肚皮舞・烏德琴', ja: 'アラビアン', en: 'Arabic Belly Dance' },
+    sections: secs(3, 114, 148), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const Q = ARABIC, mi = ms.idx % 8, r = Q.ROOT[mi], rest = ms.kind === 'rest';
+      Q.MAQSUM.forEach(([s, hi]) => add(ms.at(s), (x, d) => SND.darbuka(x, hi, 1, d)));   // 達布卡鼓的 maqsum 節奏
+      if (ms.sec >= 1) beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.kane(x, 0.6, d));   // 指鈸
+      beatAt(ms, add, [0, 3, 4], (x, d) => SND.oud(x, r - 12, 1.2, d));
+      if (ms.sec >= 2) add(ms.at(0), (x, d) => SND.strings(x, r + 12, ms.bd * 3.8, 0.8, d));
+      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => SND.darbuka(x, k % 4 !== 0, 0.5 + k * 0.03, d));   // 鼓的滾奏
+      melody(Q.MEL[mi], ms, add, (x, n, dur, d) => { SND.oud(x, n, 1.5, d); SND.clarinet(x, n, dur, 1, d); });
+    },
+    outro(ms, add) { [0, 1, 3].forEach(s => add(ms.at(s), (x, d) => SND.darbuka(x, s > 0, 1.1, d))); add(ms.at(4), (x, d) => { SND.oud(x, 50, 1.6, d); SND.clarinet(x, 74, 1.4, 1.2, d); SND.darbuka(x, false, 1.2, d); SND.kane(x, 1, d); }); },
+  },
+  {
+    id: 'cumbia', title: 'クンビア屋台', stars: 3, color: '#5ac04a',
+    sub: { zh: '昆比亞屋台', ja: 'Cumbia Yatai', en: 'Cumbia Yatai' }, genre: { zh: 'Cumbia・手風琴・刮瓜', ja: 'クンビア', en: 'Colombian Cumbia' },
+    sections: secs(3, 108, 142), patterns: PT.OFF,
+    arrange(ms, add) {
+      const C = CUMBIA, mi = ms.idx % 8, ch = C.CHORD[mi], r = C.ROOT[mi], rest = ms.kind === 'rest';
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.guiro(x, s % 2 ? 0.6 : 1, d));   // 刮瓜：一直刮
+      beatAt(ms, add, [0, 4], (x, d, s) => SND.walk(x, r - 12 + (s ? 7 : 0), ms.bd * 1.2, 1.2, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.accordion(x, ch, ms.sd * 0.6, 0.8, d));
+      beatAt(ms, add, [2, 6], (x, d) => SND.conga(x, true, 0.9, d)); beatAt(ms, add, [3, 7], (x, d) => SND.conga(x, false, 0.8, d));
+      if (ms.sec >= 2) beatAt(ms, add, [0, 4], (x, d) => SND.kick(x, 0.5, d));
+      if (rest) beatAt(ms, add, [4, 5, 6, 7], (x, d) => SND.conga(x, true, 1, d));
+      melody(C.MEL[mi], ms, add, (x, n, dur, d) => { SND.accordion(x, [n], dur, 1.8, d); if (ms.sec >= 3) SND.flute(x, n + 12, dur, 0.6, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.accordion(x, [57, 60, 64, 69], 1.2, 1.4, d); SND.walk(x, 33, 1.2, 1.2, d); SND.conga(x, false, 1, d); SND.guiro(x, 1, d); }); },
+  },
+  {
+    id: 'baroque', title: 'バロック鉄板', stars: 4, color: '#c8a070',
+    sub: { zh: '巴洛克鐵板', ja: 'Baroque Teppan', en: 'Baroque Teppan' }, genre: { zh: '巴洛克・大鍵琴・弦樂', ja: 'バロック', en: 'Baroque Harpsichord' },
+    sections: secs(4, 122, 158), patterns: PT.RUN,
+    arrange(ms, add) {
+      const B = BAROQUE, mi = ms.idx % 8, ch = B.CHORD[mi], r = B.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 2, 4, 6], (x, d, s) => SND.walk(x, r - 12 + (s === 4 ? 12 : 0), ms.bd * 0.9, 1.6, d));   // 數字低音（大提琴）
+      beatAt(ms, add, [0, 4], (x, d) => SND.harpsi(x, ch, 2.2, d));
+      if (ms.sec >= 1) add(ms.at(0), (x, d) => ch.forEach(n => SND.strings(x, n, ms.bd * 3.8, 1, d)));
+      if (ms.sec >= 3) beatAt(ms, add, [0, 4], (x, d) => SND.don(x, 0.35, d));   // 定音鼓
+      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => SND.harpsi(x, [ch[k % 3] + 12 + (k >> 2) * 2], 0.8, d));
+      melody(B.MEL[mi], ms, add, (x, n, dur, d) => { SND.harpsi(x, [n], 3, d); if (ms.sec >= 2) SND.harpsi(x, [n - 12], 1.5, d); if (ms.sec >= 4) SND.strings(x, n + 12, dur, 0.5, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.harpsi(x, [50, 57, 62, 66, 69, 74], 1.5, d); [62, 66, 69].forEach(n => SND.strings(x, n, 1.8, 0.9, d)); SND.walk(x, 26, 1.6, 1, d); SND.don(x, 0.6, d); }); },
+  },
+  {
+    id: 'ragtime', title: 'ラグタイム屋台', stars: 4, color: '#a07a50',
+    sub: { zh: '拉格泰姆屋台', ja: 'Ragtime Yatai', en: 'Ragtime Yatai' }, genre: { zh: 'Ragtime 鋼琴', ja: 'ラグタイム', en: 'Ragtime Piano' },
+    sections: secs(4, 120, 156), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const R = RAGTIME, mi = ms.idx % 8, ch = R.CHORD[mi], r = R.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 4], (x, d, s) => SND.piano(x, [r - 12 + (s ? 7 : 0), r + (s ? 7 : 0)], 3.2, d, 0.3));   // 左手 oom
+      beatAt(ms, add, [2, 6], (x, d) => SND.piano(x, ch, 2.5, d, 0.2));                                          // 左手 pah
+      if (ms.sec >= 2) { beatAt(ms, add, [0, 4], (x, d) => SND.kick(x, 0.35, d)); beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.3, d)); }
+      if (ms.sec >= 3) beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.ride(x, 0.5, d));
+      if (rest) beatAt(ms, add, [4, 5, 6, 7], (x, d, s) => SND.piano(x, [ch[s % 3] + 12, ch[s % 3] + 24], 2, d, 0.15));
+      melody(R.MEL[mi], ms, add, (x, n, dur, d) => { SND.piano(x, [n, n + 12], 3.6, d, Math.min(0.5, dur)); });
+    },
+    outro(ms, add) { [0, 1, 2].forEach(s => add(ms.at(s), (x, d) => SND.piano(x, [84 - s * 5, 72 - s * 5], 1.1, d, 0.2))); add(ms.at(4), (x, d) => SND.piano(x, [36, 48, 60, 64, 67, 72], 1.3, d, 1.4)); },
+  },
+  {
+    id: 'kalinka', title: 'カリンカ鉄板', stars: 5, color: '#e8483a',
+    sub: { zh: '卡林卡鐵板', ja: 'Kalinka Teppan', en: 'Kalinka Teppan' }, genre: { zh: '俄羅斯民謠・巴拉萊卡', ja: 'ロシア民謡', en: 'Russian Balalaika' },
+    sections: secs(5, 140, 180), patterns: PT.RUN,
+    arrange(ms, add) {
+      const K = KALINKA, mi = ms.idx % 8, ch = K.CHORD[mi], r = K.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 4], (x, d, s) => { SND.tuba(x, r - 12 + (s ? 7 : 0), ms.bd * 0.8, 1.6, d); SND.kick(x, 0.7, d); });
+      beatAt(ms, add, [2, 6], (x, d) => { SND.accordion(x, ch, ms.sd * 0.8, 1, d); SND.snare(x, 0.5, d); });
+      for (let k = 0; k < 16; k += 2) add(t16(ms, k), (x, d) => SND.banjo(x, ch[(k >> 1) % 3] + 12, 0.9, d));   // 巴拉萊卡快速撥奏
+      if (ms.sec >= 2) beatAt(ms, add, [3, 7], (x, d) => SND.clap(x, d));   // 「嘿！」的拍手
+      if (rest) fillSnare(ms, add);
+      melody(K.MEL[mi], ms, add, (x, n, dur, d) => { SND.accordion(x, [n], dur, 2.1, d); if (ms.sec >= 3) SND.fiddle(x, n + 12, dur, 0.8, d); });
+    },
+    outro(ms, add) { [0, 1, 2, 3].forEach(s => add(ms.at(s), (x, d) => { SND.banjo(x, [69, 72, 76, 81][s], 1, d); SND.clap(x, d); })); add(ms.at(4), (x, d) => { SND.accordion(x, [57, 60, 64, 69], 1.2, 1.4, d); SND.tuba(x, 33, 1.2, 1.2, d); SND.crash(x, 0.8, d); }); },
+  },
+  {
+    id: 'balkan', title: 'バルカン・ブラス屋台', stars: 5, color: '#c87a20',
+    sub: { zh: '巴爾幹銅管屋台', ja: 'Balkan Brass Yatai', en: 'Balkan Brass Yatai' }, genre: { zh: '巴爾幹銅管樂隊', ja: 'バルカン・ブラス', en: 'Balkan Brass Band' },
+    sections: secs(5, 146, 178), patterns: PT.OFF,
+    arrange(ms, add) {
+      const B = BALKAN, mi = ms.idx % 8, ch = B.CHORD[mi], r = B.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 2, 4, 6], (x, d, s) => { SND.tuba(x, r - 12 + (s % 4 ? 7 : 0), ms.sd * 0.9, 1.3, d); SND.kick(x, 0.7, d); });
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => { SND.brass(x, ch, ms.sd * 0.5, 0.9, d); SND.snare(x, 0.45, d); });   // 反拍的銅管「恰」
+      if (ms.sec >= 2) beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.hat(x, 0.6, d, true));
+      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => SND.snare(x, 0.3 + k * 0.03, d));
+      melody(B.MEL[mi], ms, add, (x, n, dur, d) => { SND.trumpet(x, n, dur, 1.7, d); SND.clarinet(x, n + 12, dur, 0.6, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.brass(x, [55, 58, 62, 67], 1.3, 1.4, d); SND.trumpet(x, 79, 1.3, 1.6, d); SND.tuba(x, 31, 1.2, 1.3, d); SND.crash(x, 1, d); SND.kick(x, 1, d); }); },
+  },
+  {
+    id: 'samul', title: 'サムルノリ鉄板', stars: 5, color: '#4a7ad8',
+    sub: { zh: '四物遊戲鐵板', ja: 'Samulnori Teppan', en: 'Samulnori Teppan' }, genre: { zh: '韓國四物打擊・長鼓', ja: 'サムルノリ', en: 'Korean Samulnori' },
+    sections: secs(5, 140, 176), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const S = SAMUL, mi = ms.idx % 8, r = S.ROOT[mi], rest = ms.kind === 'rest';
+      S.JANGGU.forEach(([s, k]) => add(ms.at(s), (x, d) => (k === 'dong' ? SND.don(x, 0.8, d) : SND.ka(x, 0.9, d))));   // 長鼓
+      beatAt(ms, add, [0, 4], (x, d) => SND.kick(x, 0.6, d));   // 北（大鼓）
+      for (let k = 0; k < 16; k += (ms.sec >= 2 ? 1 : 2)) add(t16(ms, k), (x, d) => SND.kane(x, k % 4 === 0 ? 1.1 : 0.55, d));   // 小鑼（꽹과리）
+      if (mi % 2 === 0) add(ms.at(0), (x, d) => SND.gong(x, 45, 0.5, d));   // 鉦（징）
+      beatAt(ms, add, [0, 3, 4], (x, d) => SND.walk(x, r - 12, ms.sd * 1.2, 0.9, d));
+      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => (k % 2 ? SND.ka(x, 0.6 + k * 0.02, d) : SND.don(x, 0.5 + k * 0.02, d)));
+      melody(S.MEL[mi], ms, add, (x, n, dur, d) => { SND.clarinet(x, n + 12, dur, 1.5, d); SND.fue(x, m2f(n), dur, d); });   // 太平簫（嗩吶般的尖亮音）
+    },
+    outro(ms, add) { for (let k = 0; k < 8; k++) add(t16(ms, k), (x, d) => SND.don(x, 0.6 + k * 0.05, d)); add(ms.at(4), (x, d) => { SND.gong(x, 40, 1.4, d); SND.kick(x, 1, d); SND.clarinet(x, 88, 1.3, 1.4, d); }); },
+  },
+);
+
+// ---------------- VOL.3 追加 ----------------
+const TRAP = {   // C 小調（半速：小鼓在第 3 拍）
+  ROOT: [36, 36, 39, 39, 41, 41, 43, 43],
+  // 高音區的陰暗鈴聲（3+3+2），C 小調和聲小調，最後停在 G 大和弦的導音
+  MEL: [[84, null, null, 87, null, null, 86, null], [84, null, null, 79, null, null, null, null], [84, null, null, 87, null, null, 91, null], [89, null, null, 87, null, null, 86, null],
+    [84, null, null, 80, null, null, 79, null], [77, null, null, 80, null, null, 84, null], [86, null, null, 83, null, null, 79, null], [83, null, null, null, 79, null, null, null]],
+};
+const VAPOR = {   // Eb 大七和弦的慢搖（Vaporwave）
+  CHORD: [[63, 67, 70, 74], [60, 63, 67, 70], [56, 60, 63, 67], [58, 62, 65, 68], [63, 67, 70, 74], [60, 63, 67, 70], [56, 60, 63, 67], [58, 62, 65, 69]],
+  ROOT: [39, 36, 44, 46, 39, 36, 44, 46],
+  MEL: [[79, null, null, null, 77, null, 75, null], [74, null, null, null, 70, null, null, null], [72, null, 75, null, 79, null, 77, null], [77, null, null, null, 74, null, null, null],
+    [82, null, null, 79, 77, null, 75, null], [75, null, 74, null, 70, null, 72, null], [72, null, 75, null, 80, null, 79, null], [79, null, null, null, null, null, null, null]],
+};
+const GARAGE = {   // G 小調（2-step）
+  CHORD: [[58, 62, 65, 69], [58, 62, 65, 69], [55, 58, 62, 65], [57, 60, 64, 67], [58, 62, 65, 69], [58, 62, 65, 69], [55, 58, 62, 65], [54, 57, 62]],
+  ROOT: [43, 43, 39, 45, 43, 43, 39, 38],
+  MEL: [[74, null, 77, null, null, 74, null, 72], [70, null, null, 69, null, 67, null, null], [74, null, 77, null, null, 79, null, 77], [76, null, null, 74, null, 72, null, null],
+    [79, null, 81, null, null, 82, null, 81], [79, null, null, 77, null, 74, null, null], [72, null, 74, null, 77, null, 78, null], [79, null, null, null, null, null, null, null]],
+};
+const HOUSE = {   // A 小調（鋼琴和弦）
+  CHORD: [[57, 60, 64, 69], [57, 60, 64, 69], [53, 57, 60, 65], [55, 59, 62, 67], [57, 60, 64, 69], [57, 60, 64, 69], [53, 57, 60, 65], [52, 56, 59, 64]],
+  ROOT: [45, 45, 41, 43, 45, 45, 41, 40],
+  // 浩室女聲的長音：撐住一整拍半、再大跳上去
+  MEL: [[76, null, null, null, null, null, 81, null], [79, null, 76, null, null, null, null, null], [77, null, null, null, null, null, 84, null], [83, null, 79, null, null, null, null, null],
+    [81, null, null, 83, 84, null, 83, 81], [79, null, null, 81, 79, null, 76, null], [77, null, 81, null, 84, null, 81, null], [80, null, null, null, 83, null, null, null]],
+};
+const GLITCH = {   // E 小調（斷斷續續的切片）
+  ROOT: [40, 40, 43, 43, 45, 45, 47, 47],
+  // 連續分解和弦的電玩音（上上下下），每兩小節換和弦
+  MEL: [[76, 79, 83, 79, 76, 79, 83, null], [88, null, null, null, 86, null, 83, null], [79, 83, 86, 83, 79, 83, 86, null], [91, null, null, null, 88, null, 86, null],
+    [81, 84, 88, 84, 81, 84, 88, null], [86, null, 84, null, 81, null, 79, null], [83, 87, 90, 87, 83, 87, 90, null], [90, null, 87, null, 83, null, 78, null]],
+  STUTTER: [0, 0, 1, 0, 0, 1, 0, 1],   // 哪幾小節要「卡帶」重複
+};
+const MATHROCK = {   // D 大調（點弦分散和弦）
+  CHORD: [[62, 66, 69, 74], [59, 62, 66, 71], [55, 59, 62, 67], [57, 61, 64, 69], [62, 66, 69, 74], [59, 62, 66, 71], [55, 59, 64, 67], [57, 61, 64, 69]],
+  ROOT: [38, 35, 43, 45, 38, 35, 43, 45],
+  KICK: [[0, 3, 6], [0, 2, 5], [0, 3, 5, 7], [0, 3, 6]],   // 不對稱的大鼓
+  MEL: [[78, null, 76, 78, null, 81, null, 78], [74, null, null, 73, null, 71, null, null], [79, null, 78, 79, null, 83, null, 79], [76, null, null, 74, null, 73, null, null],
+    [81, null, 79, 81, null, 86, null, 81], [83, null, 81, null, 78, null, 74, null], [79, null, 78, null, 76, null, 73, null], [74, null, null, null, null, null, null, null]],
+};
+const INDUSTRIAL = {   // C# 小調（金屬撞擊）
+  ROOT: [37, 37, 37, 40, 37, 37, 42, 40],
+  MEL: [[73, null, 73, null, 76, null, 73, null], [72, null, null, null, 68, null, null, null], [73, null, 73, null, 76, null, 78, null], [76, null, 75, null, 73, null, null, null],
+    [80, null, 80, null, 81, null, 80, null], [78, null, 76, null, 75, null, 73, null], [72, null, 73, null, 75, null, 76, null], [73, null, null, null, null, null, null, null]],
+};
+const JERSEY = {   // F 小調（Jersey club 的三連發大鼓）
+  CHORD: [[60, 65, 68], [61, 65, 68], [63, 67, 70], [60, 64, 67], [60, 65, 68], [61, 65, 68], [63, 67, 70], [60, 64, 67]],
+  ROOT: [41, 37, 39, 36, 41, 37, 39, 36],
+  KICK: [0, 4, 8, 10, 12],   // 16 分音符位置：碰、碰、碰碰碰
+  // 一個長音停住、後半拍連珠炮四個音往下滾（澤西俱樂部的急停急衝）
+  MEL: [[77, null, null, null, 80, 79, 77, 75], [77, null, null, null, 80, null, 77, null], [79, null, null, null, 82, 80, 79, 77], [76, null, null, null, 79, null, 84, null],
+    [84, null, null, null, 87, 85, 84, 80], [85, null, null, null, 80, null, 77, null], [82, null, null, null, 79, 82, 87, null], [88, null, null, null, 84, null, 79, null]],
+};
+
+SONGS.push(
+  {
+    id: 'trap', title: 'トラップ屋台', stars: 2, color: '#8a5ad8',
+    sub: { zh: '陷阱屋台', ja: 'Trap Yatai', en: 'Trap Yatai' }, genre: { zh: 'Trap（電音）・808', ja: 'トラップ', en: 'Trap 808' },
+    sections: secs(2, 100, 136), patterns: PT.HALF,
+    arrange(ms, add) {
+      const T = TRAP, mi = ms.idx % 8, r = T.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 3], (x, d) => { SND.kick(x, 0.9, d); SND.b808(x, r - 12, ms.bd * 1.4, 1, d); });
+      add(ms.at(4), (x, d) => { SND.snare(x, 0.8, d); SND.clap(x, d); });   // 半速：小鼓在第 3 拍
+      for (let k = 0; k < 16; k += 2) add(t16(ms, k), (x, d) => SND.hat(x, 0.6, d));
+      if (ms.sec >= 2) [13, 14, 15].forEach(k => add(t16(ms, k), (x, d) => SND.hat(x, 0.45, d)));   // 鈸的滾奏
+      if (rest) { for (let k = 8; k < 16; k++) add(t16(ms, k), (x, d) => SND.hat(x, 0.3 + k * 0.03, d)); add(ms.start, (x, d) => SND.riser(x, ms.bd * 4, d)); }
+      melody(T.MEL[mi], ms, add, (x, n, dur, d) => { SND.bell(x, n, 1.2, d); if (ms.sec >= 3) SND.pluck(x, n - 12, 0.8, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.b808(x, 24, 1.6, 1.1, d); SND.bell(x, 84, 1.2, d); SND.bell(x, 79, 1, d); SND.kick(x, 1, d); }); },
+  },
+  {
+    id: 'vapor', title: 'ヴェイパー夜市', stars: 2, color: '#ff8ad8',
+    sub: { zh: '蒸氣波夜市', ja: 'Vapor Night Market', en: 'Vapor Night Market' }, genre: { zh: 'Vaporwave（慢速電子）', ja: 'ヴェイパーウェイヴ', en: 'Vaporwave' },
+    sections: secs(2, 96, 128), patterns: PT.BACK,
+    arrange(ms, add) {
+      const V = VAPOR, mi = ms.idx % 8, ch = V.CHORD[mi], r = V.ROOT[mi], rest = ms.kind === 'rest';
+      add(ms.at(0), (x, d) => SND.crackle(x, ms.bd * 4, d));
+      beatAt(ms, add, [0, 5], (x, d) => SND.kick(x, 0.7, d)); beatAt(ms, add, [2, 6], (x, d) => SND.gsnare(x, 0.9, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.hat(x, 0.4, d));
+      add(ms.at(0), (x, d) => SND.epiano(x, ch, 0.9, d, ms.bd * 3.6));
+      beatAt(ms, add, [0, 3, 6], (x, d) => SND.synbass(x, r - 12, ms.sd * 1.4, 1, d));
+      if (ms.sec >= 2) add(ms.at(0), (x, d) => SND.pad(x, ch, ms.bd * 4, 0.6, d));
+      if (rest) beatAt(ms, add, [4, 5, 6, 7], (x, d, s) => SND.epiano(x, [ch[s % 4] + 12], 0.8, d, 0.3));
+      melody(V.MEL[mi], ms, add, (x, n, dur, d) => { SND.sax(x, n, dur, 1.3, d); if (ms.sec >= 4) SND.chop(x, n + 12, dur, 0.4, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.epiano(x, [51, 55, 58, 62, 67], 1, d, 2); SND.sax(x, 79, 1.8, 1.2, d); SND.synbass(x, 27, 1.6, 1, d); SND.crackle(x, 2, d); }); },
+  },
+  {
+    id: 'garage', title: 'UKガラージ屋台', stars: 2, color: '#5ad0a0', swing: 0.6,
+    sub: { zh: '英倫車庫屋台', ja: 'UK Garage Yatai', en: 'UK Garage Yatai' }, genre: { zh: 'UK Garage（2-step）', ja: 'UKガラージ', en: '2-Step Garage' },
+    sections: secs(2, 104, 136), patterns: PT.OFF,
+    arrange(ms, add) {
+      const G = GARAGE, mi = ms.idx % 8, ch = G.CHORD[mi], r = G.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 5], (x, d) => SND.kick(x, 0.9, d)); beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.7, d));   // 2-step：大鼓跳過第 3 拍
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.hat(x, s % 2 ? 0.7 : 0.35, d, s % 2 === 1));
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.sub(x, r - 12, ms.sd * 1.2, 1.1, d));
+      beatAt(ms, add, [1, 4], (x, d) => SND.organ(x, ch, ms.sd * 0.5, 0.8, d));   // 管風琴 stab
+      if (ms.sec >= 2) beatAt(ms, add, [3, 7], (x, d) => SND.chop(x, ch[2] + 12, ms.sd, 0.7, d));
+      if (rest) fillSnare(ms, add);
+      melody(G.MEL[mi], ms, add, (x, n, dur, d) => { SND.vox(x, n, dur, 1.2, d); if (ms.sec >= 3) SND.epiano(x, [n - 12], 0.6, d, dur); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.organ(x, [55, 58, 62, 65], 1.4, 1, d); SND.vox(x, 79, 1.4, 1.2, d); SND.sub(x, 31, 1.2, 1.1, d); SND.kick(x, 0.9, d); }); },
+  },
+  {
+    id: 'house', title: '夜市ハウス', stars: 3, color: '#4ab0ff',
+    sub: { zh: '夜市浩室', ja: 'Night Market House', en: 'Night Market House' }, genre: { zh: 'House・鋼琴和弦', ja: 'ハウス', en: 'Piano House' },
+    sections: secs(3, 116, 148), patterns: PT.OFF,
+    arrange(ms, add) {
+      const H = HOUSE, mi = ms.idx % 8, ch = H.CHORD[mi], r = H.ROOT[mi], rest = ms.kind === 'rest';
+      if (!rest) beatAt(ms, add, [0, 2, 4, 6], (x, d) => SND.kick(x, 1, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.hat(x, 0.7, d, true)); beatAt(ms, add, [2, 6], (x, d) => SND.clap(x, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.sub(x, r - 12, ms.sd * 0.8, 1, d));
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.piano(x, ch, 1, d, 0.25));   // House 鋼琴 stab（切分）
+      if (ms.sec >= 3) add(ms.at(0), (x, d) => SND.strings(x, ch[0] + 12, ms.bd * 3.8, 0.6, d));
+      if (rest) { add(ms.start, (x, d) => SND.riser(x, ms.bd * 4, d)); fillSnare(ms, add); }
+      melody(H.MEL[mi], ms, add, (x, n, dur, d) => { SND.vox(x, n, dur, 1.2, d); if (ms.sec >= 2) SND.piano(x, [n + 12], 0.5, d, dur); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.piano(x, [45, 57, 60, 64, 69], 1.3, d, 1.6); SND.vox(x, 81, 1.4, 1.2, d); SND.sub(x, 33, 1.2, 1, d); SND.kick(x, 1, d); SND.crash(x, 0.8, d); }); },
+  },
+  {
+    id: 'glitch', title: 'グリッチホップ屋台', stars: 3, color: '#3ae0e0', swing: 0.58,
+    sub: { zh: '故障嘻哈屋台', ja: 'Glitch Hop Yatai', en: 'Glitch Hop Yatai' }, genre: { zh: 'Glitch hop（故障電子）', ja: 'グリッチホップ', en: 'Glitch Hop' },
+    sections: secs(3, 110, 146), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const G = GLITCH, mi = ms.idx % 8, r = G.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.kick(x, 0.95, d)); beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.85, d));
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.hat(x, s % 2 ? 0.4 : 0.6, d));
+      beatAt(ms, add, [0, 3, 5, 6], (x, d) => SND.b808(x, r - 12, ms.sd * 1.1, 0.9, d));
+      if (G.STUTTER[mi] && ms.sec >= 1) for (let k = 12; k < 16; k++) add(t16(ms, k), (x, d) => { SND.chop(x, r + 24, ms.bd / 4, 0.7, d); SND.snare(x, 0.4, d); });   // 卡帶般的重複
+      if (ms.sec >= 2) add(ms.at(7), (x, d) => SND.scratch(x, 1.2, d));
+      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => SND.chop(x, r + 24 + (k % 4) * 2, ms.bd / 4, 0.4 + k * 0.03, d));
+      melody(G.MEL[mi], ms, add, (x, n, dur, d) => { SND.marimba(x, n, 1.7, d); SND.epiano(x, [n - 12], 0.7, d, Math.min(dur, 0.6)); });   // 柔和的馬林巴＋電鋼琴（不用 8-bit 方波）
+    },
+    outro(ms, add) { for (let k = 0; k < 6; k++) add(t16(ms, k), (x, d) => SND.chop(x, 64 + k, 0.08, 0.8, d)); add(ms.at(4), (x, d) => { SND.b808(x, 28, 1.4, 1, d); SND.marimba(x, 76, 1.6, d); SND.epiano(x, [64, 71, 76], 0.8, d, 1.2); SND.kick(x, 1, d); }); },
+  },
+  {
+    id: 'mathrock', title: 'マスロック鉄板', stars: 4, color: '#f0a040',
+    sub: { zh: '數學搖滾鐵板', ja: 'Math Rock Teppan', en: 'Math Rock Teppan' }, genre: { zh: '數學搖滾・點弦吉他', ja: 'マスロック', en: 'Math Rock Tapping' },
+    sections: secs(4, 124, 160), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const M = MATHROCK, mi = ms.idx % 8, ch = M.CHORD[mi], r = M.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, M.KICK[mi % 4], (x, d) => SND.kick(x, 0.9, d)); beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.7, d));
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.ride(x, 0.45, d));
+      for (let k = 0; k < 16; k++) { const n = ch[[0, 2, 1, 3, 2, 1][k % 6]] + 12; add(t16(ms, k), (x, d) => SND.twang(x, n, ms.bd / 4, 0.55, d)); }   // 點弦（6 個一組，和 4 拍錯開）
+      beatAt(ms, add, [0, 3, 6], (x, d) => SND.walk(x, r - 12, ms.sd * 1.4, 1, d));
+      if (rest) fillSnare(ms, add);
+      melody(M.MEL[mi], ms, add, (x, n, dur, d) => { SND.glead(x, n, dur, 1, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { [62, 66, 69, 74, 78].forEach((n, i) => SND.twang(x + i * 0.05, n, 1.2, 0.8, d)); SND.walk(x, 26, 1.4, 1, d); SND.crash(x, 0.9, d); SND.kick(x, 0.9, d); }); },
+  },
+  {
+    id: 'industrial', title: 'インダストリアル屋台', stars: 4, color: '#9aa0a8',
+    sub: { zh: '工業電子屋台', ja: 'Industrial Yatai', en: 'Industrial Yatai' }, genre: { zh: '工業電子・金屬撞擊', ja: 'インダストリアル', en: 'Industrial Electronic' },
+    sections: secs(4, 120, 158), patterns: PT.RUN,
+    arrange(ms, add) {
+      const I = INDUSTRIAL, mi = ms.idx % 8, r = I.ROOT[mi], rest = ms.kind === 'rest';
+      if (!rest) beatAt(ms, add, [0, 2, 4, 6], (x, d) => SND.gkick(x, 0.6, d));
+      beatAt(ms, add, [2, 6], (x, d) => { SND.snare(x, 0.8, d); SND.metallo(x, 88, 0.5, d, 0.3); });   // 金屬撞擊
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.kane(x, 0.5, d));
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.dguitar(x, [r - 12], ms.sd * 0.7, 0.85, d, { mute: true }));   // 機械般的低音
+      if (ms.sec >= 2) beatAt(ms, add, [3], (x, d) => SND.reese(x, r, ms.bd * 2, 0.8, d));
+      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => SND.metallo(x, 76 + (k % 4) * 3, 0.4 + k * 0.03, d, 0.2));
+      melody(I.MEL[mi], ms, add, (x, n, dur, d) => { SND.synlead(x, n, dur, 1.5, d); if (ms.sec >= 3) SND.dguitar(x, [n - 24], dur, 0.4, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.dguitar(x, [25, 32, 37], 1.6, 1.1, d); SND.metallo(x, 85, 1.5, d, 1); SND.gkick(x, 1, d); SND.crash(x, 1, d); }); },
+  },
+  {
+    id: 'jersey', title: 'ジャージークラブ屋台', stars: 5, color: '#ffa03a',
+    sub: { zh: '澤西俱樂部屋台', ja: 'Jersey Club Yatai', en: 'Jersey Club Yatai' }, genre: { zh: 'Jersey club（三連發大鼓）', ja: 'ジャージークラブ', en: 'Jersey Club' },
+    sections: secs(5, 140, 172), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const J = JERSEY, mi = ms.idx % 8, ch = J.CHORD[mi], r = J.ROOT[mi], rest = ms.kind === 'rest';
+      if (!rest) J.KICK.forEach(k => add(t16(ms, k), (x, d) => SND.kick(x, 1, d)));   // 碰、碰、碰碰碰
+      beatAt(ms, add, [2, 6], (x, d) => SND.clap(x, d)); beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.hat(x, 0.5, d));
+      if (ms.sec >= 1) [2, 7, 11, 14].forEach(k => add(t16(ms, k), (x, d) => SND.chop(x, ch[2] + 12, ms.bd / 4, 0.6, d)));   // 床彈簧般的人聲切片
+      beatAt(ms, add, [0, 4, 5], (x, d) => SND.b808(x, r - 12, ms.sd * 1.1, 0.9, d));
+      if (ms.sec >= 3) add(ms.at(0), (x, d) => SND.pad(x, ch, ms.bd * 4, 0.5, d, 'sawtooth'));
+      if (rest) for (let k = 0; k < 16; k++) add(t16(ms, k), (x, d) => SND.kick(x, 0.35 + k * 0.03, d));
+      melody(J.MEL[mi], ms, add, (x, n, dur, d) => { SND.pluck(x, n, 1.5, d); SND.vox(x, n, dur, 0.8, d); });
+    },
+    outro(ms, add) { [0, 2, 4, 5, 6].forEach(k => add(t16(ms, k), (x, d) => SND.kick(x, 1, d))); add(ms.at(4), (x, d) => { SND.chop(x, 80, 0.6, 1, d); SND.b808(x, 29, 1.4, 1, d); SND.vox(x, 77, 1.2, 1.1, d); SND.crash(x, 1, d); }); },
+  },
+);
+
+
+// ---------------- 換曲（明亮、好入耳的新曲） ----------------
+const NEWJACK = {   // C 大調七和弦（Cmaj7－Am7－Dm7－G7）；搖擺的同音兩下＋往下收
+  CHORD: [[60, 64, 67, 71], [57, 60, 64, 67], [62, 65, 69, 72], [55, 59, 62, 65], [60, 64, 67, 71], [57, 60, 64, 67], [53, 57, 60, 64], [55, 59, 62, 65]],
+  ROOT: [48, 45, 50, 43, 48, 45, 41, 43],
+  MEL: [[76, null, 79, 79, null, 76, null, null], [72, null, 76, 76, null, 72, 69, null], [77, null, 81, 81, null, 77, null, null], [79, null, 77, 74, null, 71, null, null],
+    [84, null, 83, 84, null, 79, null, null], [81, null, 79, 81, null, 76, null, null], [77, 79, 81, null, 84, null, 81, null], [79, null, null, null, 74, null, 71, null]],
+};
+const DIXIE = {   // F 大調（1920 年代熱爵士：小號主奏、單簧管、斑鳩琴、低音號）
+  CHORD: [[57, 60, 65], [57, 60, 65], [55, 58, 60, 64], [57, 60, 65], [58, 62, 65], [57, 60, 65], [55, 60, 64, 70], [57, 60, 65]],
+  ROOT: [41, 41, 48, 41, 46, 41, 48, 41],
+  MEL: [[72, 74, 76, 77, null, 81, null, 77], [76, null, 77, null, 72, null, null, null], [70, 72, 74, 76, null, 79, null, 76], [77, null, 76, 77, 81, null, null, null],
+    [82, null, 81, 82, 86, null, 82, null], [81, null, 79, 77, 76, null, 77, null], [79, 81, 82, null, 79, null, 76, null], [77, null, null, null, null, null, null, null]],
+};
+const BOUNCE = {   // G 大調（G－D－Em－C）；彈跳的分解和弦主旋律
+  CHORD: [[55, 59, 62], [54, 57, 62], [52, 55, 59], [48, 52, 55, 60], [55, 59, 62], [54, 57, 62], [52, 55, 59], [48, 52, 55, 60]],
+  ROOT: [43, 38, 40, 36, 43, 38, 40, 36],
+  MEL: [[79, null, 83, null, 86, 83, null, 79], [78, null, 81, null, 86, 81, null, 78], [76, null, 79, null, 83, 79, null, 76], [76, null, 79, 81, 84, null, 81, null],
+    [83, null, 86, null, 91, 86, null, 83], [81, null, 86, null, 90, 86, null, 81], [79, null, 83, null, 88, 83, null, 79], [84, null, 81, null, 79, null, null, null]],
+};
+const HYPERPOP = {   // E 大調（E－C#m－A－B）；甜亮的高音、大跳
+  CHORD: [[64, 68, 71], [61, 64, 68], [57, 61, 64], [59, 63, 66], [64, 68, 71], [61, 64, 68], [57, 61, 64], [59, 63, 66]],
+  ROOT: [40, 37, 45, 47, 40, 37, 45, 47],
+  MEL: [[83, 80, 76, 80, 83, null, 88, null], [85, null, 80, null, 76, null, 73, null], [81, 76, 73, 76, 81, null, 85, null], [83, null, 87, null, 90, null, 87, null],
+    [88, null, 88, 87, 85, null, 83, null], [80, null, 80, 81, 83, null, 85, null], [81, null, 83, null, 85, null, 88, 90], [87, null, null, null, 83, null, null, null]],
+};
+
+SONGS.push(
+  {
+    id: 'newjack', title: 'ニュージャック鉄板', stars: 3, color: '#ff8a4a', swing: 0.6,
+    sub: { zh: '新傑克搖擺鐵板', ja: 'New Jack Teppan', en: 'New Jack Teppan' }, genre: { zh: 'New Jack Swing（搖擺節奏藍調）', ja: 'ニュージャックスウィング', en: 'New Jack Swing' },
+    sections: secs(3, 108, 142), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const N = NEWJACK, mi = ms.idx % 8, ch = N.CHORD[mi], r = N.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.kick(x, 0.95, d)); beatAt(ms, add, [2, 6], (x, d) => { SND.snare(x, 0.8, d); SND.clap(x, d); });
+      for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.hat(x, s % 2 ? 0.45 : 0.7, d));
+      beatAt(ms, add, [0, 3, 4, 6], (x, d, s) => SND.synbass(x, r - 12 + (s === 6 ? 12 : 0), ms.sd * 0.9, 1.1, d));
+      beatAt(ms, add, [1, 5], (x, d) => SND.brass(x, ch.map(n => n + 12), ms.sd * 0.5, 1, d));   // 亮亮的銅管 stab
+      if (ms.sec >= 1) add(ms.at(0), (x, d) => SND.epiano(x, ch, 0.7, d, ms.bd * 1.8));
+      if (ms.sec >= 3) beatAt(ms, add, [3, 7], (x, d) => SND.tamb(x, 0.8, d));
+      if (rest) fillSnare(ms, add);
+      melody(N.MEL[mi], ms, add, (x, n, dur, d) => { SND.vox(x, n, dur, 1.3, d); if (ms.sec >= 2) SND.synlead(x, n + 12, dur, 0.45, d); });
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.brass(x, [72, 76, 79, 83], 1.2, 1.2, d); SND.vox(x, 84, 1.2, 1.2, d); SND.synbass(x, 36, 1.2, 1.1, d); SND.kick(x, 0.9, d); SND.crash(x, 0.8, d); }); },
+  },
+  {
+    id: 'dixie', title: 'ディキシー屋台', stars: 4, color: '#f0c040', swing: 0.62,
+    sub: { zh: '迪克西蘭屋台', ja: 'Dixieland Yatai', en: 'Dixieland Yatai' }, genre: { zh: '1920 年代熱爵士（Dixieland）', ja: 'ディキシーランド', en: 'Dixieland Hot Jazz' },
+    sections: secs(4, 124, 160), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const X = DIXIE, mi = ms.idx % 8, ch = X.CHORD[mi], r = X.ROOT[mi], rest = ms.kind === 'rest';
+      beatAt(ms, add, [0, 2, 4, 6], (x, d, s) => SND.tuba(x, r - 12 + (s % 4 ? 7 : 0), ms.bd * 0.8, 1.4, d));   // 低音號 oom-pah
+      beatAt(ms, add, [0, 2, 4, 6], (x, d, s) => SND.uke(x, ch.map(n => n + 12), s % 4 ? 1 : 1.4, d));        // 斑鳩琴刷四拍
+      beatAt(ms, add, [2, 6], (x, d) => SND.snare(x, 0.4, d)); for (let s = 0; s < 8; s++) add(ms.at(s), (x, d) => SND.ride(x, 0.35, d));
+      if (ms.sec >= 2) beatAt(ms, add, [0, 4], (x, d) => SND.kick(x, 0.45, d));
+      if (rest) beatAt(ms, add, [4, 5, 6, 7], (x, d, s) => SND.trumpet(x, [77, 81, 84, 89][s - 4], ms.sd, 1.4, d));
+      melody(X.MEL[mi], ms, add, (x, n, dur, d) => {
+        SND.trumpet(x, n, dur, 1.7, d);
+        if (ms.sec >= 1) SND.clarinet(x, n + 12, dur, 0.7, d);   // 單簧管在上面飄
+        if (ms.sec >= 3) SND.brass(x, [n - 12], dur, 0.7, d);   // 長號在下面
+      });
+    },
+    outro(ms, add) { [0, 1, 2].forEach(s => add(ms.at(s), (x, d) => SND.uke(x, [69, 72, 77], 1.4, d))); add(ms.at(4), (x, d) => { SND.trumpet(x, 89, 1.4, 1.6, d); SND.clarinet(x, 84, 1.4, 1, d); SND.tuba(x, 29, 1.2, 1.4, d); SND.crash(x, 0.7, d); }); },
+  },
+  {
+    id: 'bounce', title: 'バウンス鉄板', stars: 3, color: '#3ad0ff',
+    sub: { zh: '彈跳鐵板', ja: 'Bounce Teppan', en: 'Bounce Teppan' }, genre: { zh: 'Melbourne Bounce（彈跳電音）', ja: 'メルボルン・バウンス', en: 'Melbourne Bounce' },
+    sections: secs(3, 118, 148), patterns: PT.OFF,
+    arrange(ms, add) {
+      const B = BOUNCE, mi = ms.idx % 8, ch = B.CHORD[mi], r = B.ROOT[mi], rest = ms.kind === 'rest';
+      if (!rest) beatAt(ms, add, [0, 2, 4, 6], (x, d) => SND.kick(x, 1, d));
+      beatAt(ms, add, [1, 3, 5, 7], (x, d) => { SND.hat(x, 0.6, d, true); SND.sub(x, r - 12, ms.sd * 0.7, 1, d); });   // 反拍低音（乾淨的方波，不破音）
+      beatAt(ms, add, [2, 6], (x, d) => SND.clap(x, d));
+      if (ms.sec >= 2) add(ms.at(0), (x, d) => SND.pad(x, ch, ms.bd * 4, 0.6, d));
+      if (ms.sec >= 3) beatAt(ms, add, [1, 3, 5, 7], (x, d) => SND.pluck(x, ch[1] + 12, 0.7, d));
+      if (rest) { add(ms.start, (x, d) => SND.riser(x, ms.bd * 4, d)); fillSnare(ms, add); }
+      melody(B.MEL[mi], ms, add, (x, n, dur, d) => { SND.pluck(x, n, 1.6, d); SND.flute(x, n, Math.min(dur, 0.25), 0.7, d); });   // 彈跳的撥音＋口哨般的亮音
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.pluck(x, 91, 1.4, d); SND.pad(x, [55, 59, 62, 67], 1.6, 1, d); SND.sub(x, 31, 1.2, 1, d); SND.kick(x, 1, d); SND.crash(x, 0.9, d); }); },
+  },
+  {
+    id: 'hyperpop', title: 'ハイパーポップ屋台', stars: 5, color: '#ff7ae0',
+    sub: { zh: '超流行屋台', ja: 'Hyperpop Yatai', en: 'Hyperpop Yatai' }, genre: { zh: 'Hyperpop（甜亮電子流行）', ja: 'ハイパーポップ', en: 'Hyperpop' },
+    sections: secs(5, 148, 178), patterns: PT.SYNC,
+    arrange(ms, add) {
+      const H = HYPERPOP, mi = ms.idx % 8, ch = H.CHORD[mi], r = H.ROOT[mi], rest = ms.kind === 'rest';
+      // 切分的碎拍（不是四拍大鼓）
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.kick(x, 0.9, d)); beatAt(ms, add, [2, 6], (x, d) => { SND.snare(x, 0.7, d); SND.clap(x, d); });
+      for (let k = 0; k < 16; k += (ms.sec >= 3 ? 1 : 2)) add(t16(ms, k), (x, d) => SND.hat(x, k % 4 === 2 ? 0.55 : 0.35, d));
+      beatAt(ms, add, [0, 3, 5], (x, d) => SND.b808(x, r - 12, ms.sd * 1.2, 0.8, d));
+      beatAt(ms, add, [1, 4, 7], (x, d) => SND.supersaw(x, ch[2] + 12, ms.sd * 0.6, 0.6, d));   // 亮晶晶的和弦切片
+      if (ms.sec >= 2) beatAt(ms, add, [0, 4], (x, d) => SND.bell(x, ch[0] + 24, 0.7, d));
+      if (rest) { add(ms.start, (x, d) => SND.riser(x, ms.bd * 4, d)); for (let k = 8; k < 16; k++) add(t16(ms, k), (x, d) => SND.chop(x, ch[k % 3] + 24, ms.bd / 4, 0.5, d)); }
+      melody(H.MEL[mi], ms, add, (x, n, dur, d) => { SND.chop(x, n, dur, 1, d); SND.supersaw(x, n, dur, 0.8, d); });   // 高音人聲切片＋超鋸齒
+    },
+    outro(ms, add) { add(ms.at(0), (x, d) => { SND.supersaw(x, 88, 1.6, 1.2, d); SND.supersaw(x, 83, 1.6, 0.8, d); SND.bell(x, 100, 1, d); SND.b808(x, 28, 1.4, 1, d); SND.crash(x, 1, d); SND.kick(x, 1, d); }); },
+  },
+);
 // ---- 曲目排列：第 0 組 = 內建曲目（一開始就能玩、不收費、不算 VOL 系列）；之後是追加的 VOL.1、VOL.2、VOL.3（各 10 首）；每組依星級由易到難 ----
 // song.vol = 第幾組（0 = 內建曲目）；畫面上的名稱用 volName()
 const VOL_ORDER = [
   ['tsukimi', 'bossa', 'yatai', 'chindon', 'swing', 'ska', 'funk', 'chip', 'hyper', 'dnb'],                       // 內建曲目
-  ['musicbox', 'reggae', 'citypop', 'ondo', 'samba', 'surf', 'disco', 'boogie', 'jrock', 'hoedown'],              // VOL.1
-  ['enka', 'blues', 'polka', 'tango', 'celtic', 'bhangra', 'salsa', 'klezmer', 'flamenco', 'gabber'],             // VOL.2
-  ['gamelan', 'hawaii', 'synthwave', 'future', 'anime', 'britpop', 'dancepunk', 'thrash', 'power', 'wametal'],    // VOL.3
+  ['musicbox', 'reggae', 'citypop', 'ondo', 'soul', 'boombap', 'gospel', 'samba', 'surf', 'afrobeat', 'newjack', 'disco', 'boogie', 'kpop', 'trance', 'eswing', 'jrock', 'hoedown', 'bigbeat', 'punk'],   // VOL.1
+  ['enka', 'blues', 'polka', 'tango', 'calypso', 'okinawa', 'celtic', 'bhangra', 'minyue', 'arabic', 'cumbia', 'salsa', 'dixie', 'baroque', 'ragtime', 'flamenco', 'gabber', 'kalinka', 'balkan', 'samul'],   // VOL.2
+  ['gamelan', 'hawaii', 'synthwave', 'future', 'trap', 'vapor', 'garage', 'anime', 'bounce', 'house', 'glitch', 'britpop', 'dancepunk', 'mathrock', 'industrial', 'thrash', 'power', 'wametal', 'hyperpop', 'jersey'],   // VOL.3
 ];
 {
   const all = SONGS.splice(0);
   VOL_ORDER.forEach((ids, v) => ids.forEach((id, k) => { const s = all.find(x => x.id === id); s.vol = v; s.no = k + 1; SONGS.push(s); }));
 }
-const VOL_SIZE = 10;
+const volSize = v => VOL_ORDER[v].length;   // 每組幾首（內建曲目 10 首、各 VOL 20 首）
 const volName = v => (v === 0 ? tr('內建曲目') : 'VOL.' + v);
 const VOL_COLORS = ['#e8a040', '#2a8ad6', '#2a9a6a', '#8a3ad6'];   // 各組的代表色（樂曲組選單、商店卡片）
 
