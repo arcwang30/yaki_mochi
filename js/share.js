@@ -8,6 +8,7 @@ const Share = {
   W: 1080, H: 1350,
 
   result(r, song) {
+    Achieve.unlock('first_share');
     const c = this.card(r, song);
     const url = c.toDataURL('image/png'), name = `daioyaki-${song.id}-${r.score}.png`;
     const R = RATINGS[r.rating];

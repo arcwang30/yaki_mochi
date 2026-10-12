@@ -30,6 +30,7 @@ const App = {
     } else if (this.fade > 0) this.fade = Math.max(0, this.fade - dt / 0.22);
     if (this.cur) this.cur.frame(dt);
     if (this.fade > 0) { ctx.fillStyle = `rgba(8,10,30,${this.fade})`; ctx.fillRect(0, 0, W, H); }
+    Achieve.draw(dt);   // 成就解鎖通知（蓋在所有畫面最上面）
   },
 };
 
@@ -312,6 +313,7 @@ Screens.menu = {
     this.TAGS.forEach(([label, sub, dest], k) => {
       if (UI.button(this, label, 24 + k * 136, 1122, 128, 94, { tag: true, sub, size: 25, ropeH: 24 })) App.goto(dest);   // 5 塊木札
     });
+    this.achBadge(24 + this.achIdx() * 136 + 118, 1124);
     this.shopButton(24, 40, 128, 86);
     this.nav();
     UI.navHint();
@@ -331,11 +333,20 @@ Screens.menu = {
     this.TAGS.forEach(([label, sub, dest], k) => {
       if (UI.button(this, label, 1430, top + 150 + k * 100, 380, 84, { sub, size: 32 })) App.goto(dest);
     });
+    this.achBadge(1430 + 370, top + 150 + this.achIdx() * 100 + 6);
     if (DESKTOP_APP && UI.button(this, '結束遊戲', 1430, top + 150 + this.TAGS.length * 100, 380, 84, { sub: 'sub.quit', size: 32, back: true })) window.desktop.quit();
     this.shopButton(52, 46, 156, 100);
     UI.nav(this);
     UI.navHint();
     UI.copyright();
+  },
+  // 「成就」木札右上角：新解鎖的數量（進成就畫面看過就消失）
+  achIdx() { return this.TAGS.findIndex(t => t[2] === 'achievements'); },
+  achBadge(x, y) {
+    const n = Achieve.newCount(); if (!n) return;
+    const r = 15 + Math.sin(Game.time * 5) * 1.5;
+    ctx.fillStyle = '#e8302a'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke();
+    UI.text(String(Math.min(n, 99)), x, y + 1, 17, { fill: '#fff', stroke: null, raw: true });
   },
   // 左上角獨立的「商店」木札（直式、橫式都排在最後一個：直式 = 6、橫式在 UI.nav 的最後）
   // 位置在角落不顯眼，加上提示效果：掛在竹竿上、燈火光暈一明一暗、每隔一陣子晃一下、周圍小星星閃爍；
@@ -543,6 +554,7 @@ Screens.shop = {
       this.say('購買成功！');
     }
     Save.data[c.key] = item.id; Save.store(); Sound.play('confirm'); this.say('已套用！');
+    Achieve.unlock('shop_first'); Achieve.check();   // 商店收藏類成就（COIN_SHOP 打開才會解鎖）
   },
   state(c, it) { return c.state ? c.state(it) : Save.data[c.key] === it.id ? 'on' : CoinShop.owned(c.kind, it) ? 'owned' : 'locked'; },
 
@@ -1170,7 +1182,7 @@ Screens.tutorial = {
   goodHits() { const g = Game.s.grades; return g.GREAT + g.NICE + g.GOOD; },
   progress() { const st = this.STEPS[this.step]; return Math.min(st.goal, (st.oko ? Game.s.oko : this.goodHits()) - this.base); },
   // 完成教學：之後按「開始遊戲」就直接進選曲
-  complete() { if (!Save.data.tutorialDone) { Save.data.tutorialDone = true; Save.store(); } },
+  complete() { if (!Save.data.tutorialDone) { Save.data.tutorialDone = true; Save.store(); } Achieve.check(); },
   exit(dest) { this.complete(); App.goto(dest); },
   pause() { Game.pause(); this.sel = 0; Sound.play('pause'); },
 
@@ -1551,7 +1563,7 @@ Screens.settings = {
   },
   setLang(l) {
     if (Save.data.lang === l) return;
-    Save.data.lang = l; Save.store(); Sound.play('confirm');
+    Save.data.lang = l; Save.store(); Sound.play('confirm'); Achieve.onLang(l);
     document.getElementById('rotate').textContent = tr('請將手機直立握持');
   },
   setRes(r) {
@@ -1719,7 +1731,7 @@ Screens.calibrate = {
     if (A.ctx && !this.result && now > this.t0 + this.BEATS * bd + 0.4) {
       if (this.errs.length >= 6) {
         const s = this.errs.slice().sort((a, b) => a - b), med = s[s.length >> 1];
-        this.result = { ms: clamp(Math.round(med * 100) * 10, -200, 400) };   // 以 10ms 為單位
+        this.result = { ms: clamp(Math.round(med * 100) * 10, -200, 400) }; Achieve.unlock('calibrate');   // 以 10ms 為單位
       } else this.result = { fail: true };
       this.sel = 0;
     }
@@ -1819,30 +1831,91 @@ Screens.install = {
   }
 };
 
-// ---------- 成就（預留：目前只有按鈕與「準備中」畫面，內容之後再做） ----------
+// ---------- 成就：上方總覽（已解鎖數、各等級）＋依分類列出全部成就（拖曳／滾輪／↑↓ 捲動） ----------
+// 規格：docs/成就表.md；成就資料與判定：js/achieve.js
 Screens.achievements = {
-  sel: 0, n: 0,
-  frame() {
-    menuBackdrop(0.7);
+  sel: 0, n: 0, scroll: 0, target: 0, dragFrom: null, fresh: [],
+  ROW: lay(104, 96), HEAD: 50,
+  enter() {
+    this.sel = 0; this.scroll = this.target = 0; this.dragFrom = null;
+    this.fresh = Save.data.achNew.slice();   // 這次進來才標「新」，之後就算看過了
+    if (Save.data.achNew.length) { Save.data.achNew = []; Save.store(); }
+  },
+  frame(dt) {
+    menuBackdrop(0.72);
     UI.header('成就', 'ACHIEVEMENTS');
-    const [x, y, w, h] = lay([60, 260, 600, 560], [560, 230, 800, 520]), cx = x + w / 2;
-    UI.panel(x, y, w, h, 28, 'rgba(16,22,52,.9)', '#e8b64a');
-    // 獎盃圖示（向量畫，不用新圖）
-    const ty = y + h * 0.36, bob = Math.sin(Game.time * 2) * 4;
-    ctx.save(); ctx.translate(cx, ty + bob); ctx.lineJoin = 'round';
-    ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#7a4a00'; ctx.lineWidth = 5;
-    ctx.beginPath(); ctx.moveTo(-46, -60); ctx.lineTo(46, -60); ctx.quadraticCurveTo(44, 10, 0, 22); ctx.quadraticCurveTo(-44, 10, -46, -60); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.lineWidth = 7; [-1, 1].forEach(k => { ctx.beginPath(); ctx.arc(k * 48, -36, 18, k < 0 ? Math.PI * 0.5 : -Math.PI * 0.5, k < 0 ? Math.PI * 1.5 : Math.PI * 0.5, k > 0); ctx.stroke(); });
-    ctx.fillStyle = '#ffd23f'; ctx.lineWidth = 5; ctx.fillRect(-9, 22, 18, 22); ctx.strokeRect(-9, 22, 18, 22);
-    ctx.beginPath(); ctx.rect(-36, 44, 72, 16); ctx.fill(); ctx.stroke();
-    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(-20, -36, 7, 16, 0.2, 0, 7); ctx.fill();
+    const list = Achieve.list(), N = list.length, got = Achieve.unlockedCount();
+    // ---- 總覽：已解鎖 x / N、進度條、各等級數量 ----
+    const [sx, sy, sw] = lay([30, 186, 660], [360, 186, 1200]), sh = 74;
+    UI.panel(sx, sy, sw, sh, 22, 'rgba(16,22,52,.9)', '#e8b64a');
+    UI.text(tr('已解鎖 {0} / {1}', got, N), sx + 24, sy + 26, 24, { align: 'left', fill: '#ffd23f', stroke: null, raw: true });
+    const bw = lay(250, 520);
+    ctx.fillStyle = 'rgba(255,255,255,.15)'; rrect(sx + 24, sy + 46, bw, 12, 6); ctx.fill();
+    ctx.fillStyle = '#ffd23f'; rrect(sx + 24, sy + 46, Math.max(12, bw * got / N), 12, 6); ctx.fill();
+    Object.keys(ACH_TIERS).forEach((k, i) => {
+      const all = list.filter(a => a.tier === k), n = all.filter(a => Achieve.done(a.id)).length, tx = sx + sw - lay(370, 520) + i * lay(92, 130);
+      achMedal(tx + 16, sy + sh / 2, 16, k, n > 0);
+      UI.text(n + '/' + all.length, tx + 38, sy + sh / 2 + 1, 18, { align: 'left', fill: '#fff', stroke: null, raw: true });
+    });
+    if (COIN_SHOP) UI.text(tr('成就獎勵 {0} 遊戲幣', list.filter(a => Achieve.done(a.id)).reduce((s, a) => s + ACH_TIERS[a.tier].coins, 0)), sx + 24 + bw + 20, sy + 26, 18, { align: 'left', fill: '#fff27a', stroke: null, raw: true });
+    // ---- 清單（分類標題＋成就列） ----
+    const [lx, ly, lw, lh] = lay([30, 274, 660, 880], [360, 274, 1200, 690]);
+    const rows = [];
+    ACH_CATS.forEach((c, ci) => { const as = list.filter(a => a.cat === ci); if (as.length) { rows.push({ head: c, n: as.filter(a => Achieve.done(a.id)).length, of: as.length }); as.forEach(a => rows.push({ a })); } });
+    const total = rows.reduce((s, r) => s + (r.head ? this.HEAD : this.ROW), 0), maxS = Math.max(0, total - lh);
+    // 捲動：拖曳跟著手指；滾輪、↑↓ 一次一列；平滑移動
+    const drag = Input.dragY();
+    if (drag && UI.inside(drag.x, drag.y, lx, ly, lw, lh)) { if (this.dragFrom === null) this.dragFrom = this.target; this.target = this.dragFrom - drag.dy; }
+    else this.dragFrom = null;
+    if (Input.was('down')) this.target += this.ROW * 2;
+    if (Input.was('up')) this.target -= this.ROW * 2;
+    this.target = clamp(this.target, 0, maxS);
+    this.scroll += (this.target - this.scroll) * Math.min(1, dt * 14);
+    ctx.save(); ctx.beginPath(); ctx.rect(lx - 6, ly, lw + 12, lh); ctx.clip();
+    let y = ly - this.scroll;
+    for (const r of rows) {
+      const h = r.head ? this.HEAD : this.ROW;
+      if (y + h > ly - 4 && y < ly + lh + 4) {
+        if (r.head) {
+          UI.text(tr(r.head), lx + 8, y + 30, 22, { align: 'left', fill: '#ffe8b0', sw: 5 });
+          UI.text(r.n + ' / ' + r.of, lx + lw - 8, y + 30, 18, { align: 'right', fill: '#cfd8ff', stroke: null, raw: true });
+        } else this.row(r.a, lx, y + 4, lw, h - 10);
+      }
+      y += h;
+    }
     ctx.restore();
-    UI.text('準備中', cx, y + h * 0.66, lay(44, 48), { fill: '#ffd23f', sw: 8 });
-    UI.text('成就功能即將推出，敬請期待！', cx, y + h * 0.66 + 62, lay(22, 24), { fill: '#cfd8ff', stroke: null, maxW: w - 60 });
-    UI.begin(this);
-    if (UI.button(this, '返回主選單', W / 2 - 140, lay(1076, 952), 280, 70, { back: true }) || Input.was('back')) App.goto('menu');
-    UI.nav(this);
-    UI.copyright();
+    if (maxS > 0) {   // 右側捲軸
+      const th = Math.max(40, lh * lh / total), ty = ly + (lh - th) * (this.scroll / maxS);
+      ctx.fillStyle = 'rgba(255,255,255,.12)'; rrect(lx + lw + 10, ly, 6, lh, 3); ctx.fill();
+      ctx.fillStyle = 'rgba(255,210,63,.7)'; rrect(lx + lw + 10, ty, 6, th, 3); ctx.fill();
+    }
+    UI.begin(this); this.sel = 0;
+    if (UI.button(this, '返回主選單', W / 2 - 140, lay(1176, 992), 280, 66, { back: true }) || Input.was('back')) App.goto('menu');
+    UI.hint(Input.touchMode ? '上下滑動捲動' : '↑↓ 捲動　ESC 返回');
+  },
+  // 一列成就：等級獎牌、名稱、條件；右邊是進度條或達成日期
+  row(a, x, y, w, h) {
+    const done = Achieve.done(a.id), secret = a.hidden && !done, T = ACH_TIERS[a.tier];
+    UI.panel(x, y, w, h, 18, done ? 'rgba(40,34,20,.92)' : 'rgba(16,22,52,.88)', done ? T.color : 'rgba(255,255,255,.22)');
+    achMedal(x + 46, y + h / 2, lay(28, 26), a.tier, done);
+    const tx = x + 92, right = lay(170, 300);
+    UI.text(secret ? '？？？' : Achieve.name(a), tx, y + h * 0.36, lay(25, 26), { align: 'left', fill: done ? '#fff' : '#dfe6ff', stroke: null, raw: true, maxW: w - 92 - right - 16 });
+    UI.text(secret ? tr('隱藏成就：達成後揭曉') : Achieve.desc(a), tx, y + h * 0.72, lay(17, 18), { align: 'left', fill: done ? '#ffe8b0' : '#9aa6d0', stroke: null, raw: true, maxW: w - 92 - right - 16 });
+    const rx = x + w - right, cy = y + h / 2;
+    if (done) {
+      const d = new Date(Save.data.achievements[a.id]);
+      UI.text('✓ ' + tr('已達成'), x + w - 20, cy - 10, 20, { align: 'right', fill: '#8dff8a', stroke: null, raw: true });
+      UI.text(d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate(), x + w - 20, cy + 16, 15, { align: 'right', fill: '#cfd8ff', stroke: null, raw: true });
+      if (this.fresh.includes(a.id)) { UI.panel(x + w - 66, y - 8, 52, 26, 13, '#e8302a', '#fff'); UI.text(tr('新'), x + w - 40, y + 5, 15, { fill: '#fff', stroke: null, raw: true }); }
+    } else if (a.prog && !secret) {
+      const [c, g] = a.prog();
+      if (g > 1) {
+        const bw = right - 30;
+        ctx.fillStyle = 'rgba(255,255,255,.14)'; rrect(rx, cy + 4, bw, 10, 5); ctx.fill();
+        ctx.fillStyle = T.color; if (c > 0) { rrect(rx, cy + 4, Math.max(10, bw * c / g), 10, 5); ctx.fill(); }
+        UI.text(c + ' / ' + g, rx + bw, cy - 12, 17, { align: 'right', fill: '#dfe6ff', stroke: null, raw: true });
+      } else UI.text(tr('未達成'), x + w - 20, cy + 1, 18, { align: 'right', fill: '#7a86b0', stroke: null, raw: true });
+    } else UI.text(tr('未達成'), x + w - 20, cy + 1, 18, { align: 'right', fill: '#7a86b0', stroke: null, raw: true });
   }
 };
 

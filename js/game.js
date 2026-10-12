@@ -357,7 +357,7 @@ const Game = {
     const s = this.s;
     if (!s || s.ended) return;
     if (s.paused) { this.cancelCount(); return; }   // 倒數中再按一次：取消倒數
-    s.paused = true; s.resumeT = 0; s.pauseAt = A.ctx.currentTime;
+    s.paused = true; s.resumeT = 0; s.pauseAt = A.ctx.currentTime; s.pausedOnce = true;   // pausedOnce：成就「臨危不亂」（暫停過仍全連擊）
     Sound.duck(true);
     // 已提前排入、但還沒播放的事件：倒回去，繼續時重新排
     const c = s.pauseAt - s.off, ev = s.chart.events;
@@ -532,6 +532,7 @@ const Game = {
     Save.data.medals[this.rid] = { r: Math.min(md.r === undefined ? 99 : md.r, R.rating), fc: !!(md.fc || R.fc), ag: !!(md.ag || R.ag) };
     R.newRecord = Save.recordBest(this.rid, R);   // HISCORE：比自己最高分高就更新
     Rhythm.record(this.song, s, ratio);   // 節奏分析用的遊玩紀錄（裡面會存檔）
+    Achieve.onResult(R, !!s.pausedOnce);   // 成就（獎章、遊玩紀錄都存好之後才判定）
     App.goto('result');
   },
   // HUD 的歌名（簡單／困難時加上難度）

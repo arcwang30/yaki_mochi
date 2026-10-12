@@ -113,6 +113,22 @@ const I18N = {
     '請將手機直立握持': 'スマホを縦に持ってください',
     // PC 版（橫式）
     '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '樂曲': '楽曲', '全曲原創（AI 協助製作）': '全曲オリジナル（AI アシストで制作）', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
+    // 成就（js/achieve.js）
+    '成就解鎖！': '実績解除！', '另外解鎖了 {0} 個成就': 'ほかに {0} 個の実績を解除', '遊戲幣': 'コイン', '已解鎖 {0} / {1}': '解除 {0} / {1}', '成就獎勵 {0} 遊戲幣': '実績報酬 {0} コイン', '隱藏成就：達成後揭曉': '隠し実績：達成すると判明', '已達成': '達成', '未達成': '未達成', '新': 'NEW', '上下滑動捲動': '上下にスワイプでスクロール', '↑↓ 捲動　ESC 返回': '↑↓ スクロール　ESC 戻る',
+    '銅': '銅', '銀': '銀', '金': '金', '白金': '白金',
+    '開店入門': '開店準備', '累計場數': '累計プレイ', '累計廣島燒': '累計広島焼き', '連擊': 'コンボ', '評價': '評価', '全連擊・全 GREAT': 'フルコンボ・オール GREAT', '曲包制霸': '曲パック制覇', '收集・探索': 'コレクション・探索', '商店收藏': 'ショップ収集', '趣味・隱藏': 'おまけ・隠し',
+    '開店準備': '開店準備', '完成新手教學': 'チュートリアルをクリア', '第一位客人': '最初のお客さん', '完成第一場遊戲': '初めて 1 曲プレイ', '第一份廣島燒': '初めての広島焼き', '做出第一份廣島燒': '広島焼きを初めて完成', '調音師傅': '調律の達人', '完成一次自動校正': '自動調整を 1 回完了', '口耳相傳': '口コミ', '分享一次成績': '成績を 1 回シェア',
+    '常客': '常連さん', '熟面孔': 'なじみの顔', '老主顧': 'お得意さま', '夜市名人': '夜市の有名人', '百年老店': '百年の老舗', '累計完成 {0} 場': '累計 {0} 回プレイ',
+    '小有手藝': 'ちょっとした腕前', '百份達成': '百枚達成', '排隊名攤': '行列のできる屋台', '鐵板職人': '鉄板職人', '廣島燒之王': '広島焼きの王', '累計做出 {0} 份廣島燒': '広島焼きを累計 {0} 枚',
+    '手感上來了': 'ノッてきた', '停不下來': '止まらない', '鍋鏟旋風': 'ヘラの旋風', '無限連擊': '無限コンボ', '單場 {0} 連擊': '1 回で {0} コンボ',
+    '第一次拿到「上」以上': '初めて「上」以上', '鐵板之神降臨': '鉄板の神降臨', '第一次拿到「特上」': '初めて「特上」', '神之手': '神の手', '困難拿到「特上」': 'むずかしいで「特上」', '特上十選': '特上十選', '特上三十選': '特上三十選', '{0} 首拿到「特上」': '{0} 曲で「特上」', '客人轉身去吃章魚燒': 'お客さんはたこ焼きへ', '拿到一次「修行」評價': '「修行」評価を 1 回とる',
+    '一個都沒漏': 'ひとつも逃さない', '第一次全連擊': '初めてのフルコンボ', '完美的一盤': '完璧な一枚', '第一次全 GREAT': '初めてのオール GREAT', '火力全開': '火力全開', '困難全連擊': 'むずかしいでフルコンボ', '分毫不差': '寸分違わず', '困難全 GREAT': 'むずかしいでオール GREAT', '全連擊十首': 'フルコンボ 10 曲', '全連擊三十首': 'フルコンボ 30 曲', '{0} 首全連擊': '{0} 曲でフルコンボ', '全 GREAT 十首': 'オール GREAT 10 曲', '全 GREAT 三十首': 'オール GREAT 30 曲', '{0} 首全 GREAT': '{0} 曲でオール GREAT',
+    '內建曲目制霸': '収録曲制覇', '內建曲目 10 首都拿到「上」以上': '収録曲 10 曲すべて「上」以上', '{0} 制霸': '{0} 制覇', '{0} 的 10 首都拿到「上」以上': '{0} の 10 曲すべて「上」以上',
+    '挑戰者': '挑戦者', '第一次完成困難': '初めて「むずかしい」をクリア', '三種吃法': '三通りの食べ方', '同一首歌三種難度都完成': '同じ曲を 3 つの難易度でクリア', '菜單走透透': 'メニュー制覇', '任一曲包的 10 首都玩過': 'どれか 1 つの曲パックを全曲プレイ', '夜市全制覇': '夜市全制覇', '{0} 首全部玩過': '{0} 曲すべてプレイ', '招牌菜': '看板メニュー', '同一首歌完成 {0} 次': '同じ曲を {0} 回プレイ', '每晚準時開攤': '毎晩欠かさず開店', '連續 {0} 天都至少完成一場': '{0} 日連続でプレイ',
+    '節奏分析出現「漸入佳境」': 'リズム分析で「上り調子」', '音感等級達到「音感絕佳」': '音感レベル「音感バツグン」に到達', '音感等級達到「人體節拍器」': '音感レベル「人間メトロノーム」に到達',
+    '開張大吉': '開店大吉', '第一次在商店裝備商品': 'ショップで初めて装備', '夜市建築師': '夜市の建築家', '擁有全部店面背景': '屋台の背景をすべて所持', '音效收藏家': '効果音コレクター', '擁有全部打擊音效': '打撃音をすべて所持', '動物園長': '動物園長', '擁有全部寵物': 'ペットをすべて所持', '商店全收藏': 'ショップ全制覇', '擁有商店全部商品': 'ショップの全商品を所持',
+    '國際化屋台': '国際派の屋台', '切換過中文、日本語、English 三種語言': '中文・日本語・English の 3 言語に切り替え', '深夜食堂': '深夜食堂', '在凌晨 0:00～4:00 完成一場': '深夜 0:00～4:00 にプレイ', '臨危不亂': '動じない', '中途暫停過、繼續後仍拿到全連擊': '途中でポーズしてもフルコンボ', '喵喵完美': 'ニャンとも完璧', '使用「貓咪」打擊音效拿到全 GREAT': '打撃音「ネコ」でオール GREAT',
+
     // 商店・店面背景
     '內建曲目': 'スタンダード', '追加樂曲': '追加楽曲', '選擇樂曲組': '楽曲パックを選ぶ', '已過關 {0}/{1}': 'クリア {0}/{1}', '目前': '選択中', '點一組切換・點外面關閉': 'タップで切り替え・外側で閉じる', '十字鍵 選擇　A 決定　B 關閉': '十字キー 選択　A 決定　B 閉じる', '方向鍵 選擇　ENTER 決定　ESC 關閉': '方向キー 選択　ENTER 決定　ESC 閉じる',
     '上下滑動選曲・點中間的歌開始・點樂曲組名稱切換': '上下スワイプで選曲・中央の曲をタップで開始・パック名で切り替え', '↑↓ 選曲　← → 切換　X 樂曲組　LB／RB 難度　A 開始　Y 教學　B 返回': '↑↓ 選曲　← → 切替　X パック　LB／RB 難易度　A 開始　Y チュートリアル　B 戻る', '↑↓ 選曲　← → 切換　X 樂曲組　Q／E 難度　ENTER 開始　T 教學': '↑↓ 選曲　← → 切替　X パック　Q／E 難易度　ENTER 開始　T チュートリアル', '免費': '無料', '免費開放中': '無料公開中', '✓ 已購買': '✓ 購入済み', '前往選曲': '曲を選ぶ', '已擁有：按「前往選曲」就能玩': '購入済み：「曲を選ぶ」ですぐ遊べます', '點曲目就可以試聽': '曲をタップで試聴',
@@ -229,6 +245,22 @@ const I18N = {
     '請將手機直立握持': 'Please hold your phone upright',
     // PC version (landscape)
     '結束遊戲': 'QUIT GAME', '語音': 'Voice', '樂曲': 'Music', '全曲原創（AI 協助製作）': 'All original songs (made with AI assistance)', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
+    // Achievements (js/achieve.js)
+    '成就解鎖！': 'Achievement unlocked!', '另外解鎖了 {0} 個成就': '{0} more achievements unlocked', '遊戲幣': 'coins', '已解鎖 {0} / {1}': 'Unlocked {0} / {1}', '成就獎勵 {0} 遊戲幣': 'Rewards: {0} coins', '隱藏成就：達成後揭曉': 'Hidden: revealed when unlocked', '已達成': 'Done', '未達成': 'Locked', '新': 'NEW', '上下滑動捲動': 'Swipe up/down to scroll', '↑↓ 捲動　ESC 返回': '↑↓ Scroll　ESC Back',
+    '銅': 'B', '銀': 'S', '金': 'G', '白金': 'P',
+    '開店入門': 'Getting Started', '累計場數': 'Plays', '累計廣島燒': 'Okonomiyaki Made', '連擊': 'Combo', '評價': 'Ratings', '全連擊・全 GREAT': 'Full Combo & All GREAT', '曲包制霸': 'Pack Mastery', '收集・探索': 'Collection & Exploration', '商店收藏': 'Shop Collection', '趣味・隱藏': 'Fun & Hidden',
+    '開店準備': 'Opening Prep', '完成新手教學': 'Finish the tutorial', '第一位客人': 'First Customer', '完成第一場遊戲': 'Finish your first song', '第一份廣島燒': 'First Okonomiyaki', '做出第一份廣島燒': 'Make your first okonomiyaki', '調音師傅': 'Fine Tuner', '完成一次自動校正': 'Complete auto calibration once', '口耳相傳': 'Word of Mouth', '分享一次成績': 'Share a result',
+    '常客': 'Regular', '熟面孔': 'Familiar Face', '老主顧': 'Loyal Patron', '夜市名人': 'Night Market Celebrity', '百年老店': 'Century-Old Stall', '累計完成 {0} 場': 'Finish {0} songs in total',
+    '小有手藝': 'Handy Cook', '百份達成': 'A Hundred Served', '排隊名攤': 'Long Line Stall', '鐵板職人': 'Teppan Artisan', '廣島燒之王': 'Okonomiyaki King', '累計做出 {0} 份廣島燒': 'Make {0} okonomiyaki in total',
+    '手感上來了': 'Warming Up', '停不下來': 'Unstoppable', '鍋鏟旋風': 'Spatula Cyclone', '無限連擊': 'Endless Combo', '單場 {0} 連擊': 'Reach a {0} combo in one song',
+    '第一次拿到「上」以上': 'Get "Jo" or better for the first time', '鐵板之神降臨': 'Teppan God Descends', '第一次拿到「特上」': 'Get "Tokujo" for the first time', '神之手': 'Hand of God', '困難拿到「特上」': 'Get "Tokujo" on Hard', '特上十選': 'Tokujo Ten', '特上三十選': 'Tokujo Thirty', '{0} 首拿到「特上」': 'Get "Tokujo" on {0} songs', '客人轉身去吃章魚燒': 'Off to the Takoyaki Stand', '拿到一次「修行」評價': 'Get a "Shugyo" rating',
+    '一個都沒漏': 'Nothing Dropped', '第一次全連擊': 'Get your first full combo', '完美的一盤': 'The Perfect Plate', '第一次全 GREAT': 'Get your first all GREAT', '火力全開': 'Full Blast', '困難全連擊': 'Full combo on Hard', '分毫不差': 'Pinpoint', '困難全 GREAT': 'All GREAT on Hard', '全連擊十首': 'Full Combo ×10', '全連擊三十首': 'Full Combo ×30', '{0} 首全連擊': 'Full combo {0} songs', '全 GREAT 十首': 'All GREAT ×10', '全 GREAT 三十首': 'All GREAT ×30', '{0} 首全 GREAT': 'All GREAT on {0} songs',
+    '內建曲目制霸': 'Base Set Master', '內建曲目 10 首都拿到「上」以上': 'Get "Jo" or better on all 10 base songs', '{0} 制霸': '{0} Master', '{0} 的 10 首都拿到「上」以上': 'Get "Jo" or better on all 10 songs of {0}',
+    '挑戰者': 'Challenger', '第一次完成困難': 'Finish a song on Hard', '三種吃法': 'Three Ways to Eat', '同一首歌三種難度都完成': 'Finish one song on all three difficulties', '菜單走透透': 'Whole Menu', '任一曲包的 10 首都玩過': 'Play all 10 songs of any pack', '夜市全制覇': 'Night Market Tour', '{0} 首全部玩過': 'Play all {0} songs', '招牌菜': 'Signature Dish', '同一首歌完成 {0} 次': 'Finish the same song {0} times', '每晚準時開攤': 'Open Every Night', '連續 {0} 天都至少完成一場': 'Play on {0} days in a row',
+    '節奏分析出現「漸入佳境」': 'Rhythm Report shows "On the Rise"', '音感等級達到「音感絕佳」': 'Reach the "Perfect Pitch-er" sense level', '音感等級達到「人體節拍器」': 'Reach the "Human Metronome" sense level',
+    '開張大吉': 'Grand Opening', '第一次在商店裝備商品': 'Equip an item from the shop', '夜市建築師': 'Night Market Architect', '擁有全部店面背景': 'Own every stall style', '音效收藏家': 'Sound Collector', '擁有全部打擊音效': 'Own every hit sound', '動物園長': 'Zookeeper', '擁有全部寵物': 'Own every pet', '商店全收藏': 'Shop Complete', '擁有商店全部商品': 'Own everything in the shop',
+    '國際化屋台': 'Global Stall', '切換過中文、日本語、English 三種語言': 'Use Chinese, Japanese and English', '深夜食堂': 'Midnight Diner', '在凌晨 0:00～4:00 完成一場': 'Finish a song between 0:00 and 4:00', '臨危不亂': 'Unshaken', '中途暫停過、繼續後仍拿到全連擊': 'Pause mid-song and still get a full combo', '喵喵完美': 'Purr-fect', '使用「貓咪」打擊音效拿到全 GREAT': 'Get all GREAT with the "Cat" hit sound',
+
     // Shop / stall style
     '內建曲目': 'STANDARD', '追加樂曲': 'Song Packs', '選擇樂曲組': 'Choose a Song Pack', '已過關 {0}/{1}': 'Cleared {0}/{1}', '目前': 'NOW', '點一組切換・點外面關閉': 'Tap a pack to switch · tap outside to close', '十字鍵 選擇　A 決定　B 關閉': 'D-pad Select　A OK　B Close', '方向鍵 選擇　ENTER 決定　ESC 關閉': 'Arrows Select　ENTER OK　ESC Close',
     '上下滑動選曲・點中間的歌開始・點樂曲組名稱切換': 'Swipe up/down to pick · tap the center song to start · tap the pack name to switch', '↑↓ 選曲　← → 切換　X 樂曲組　LB／RB 難度　A 開始　Y 教學　B 返回': '↑↓ Song　← → Switch　X Packs　LB／RB Difficulty　A Start　Y Tutorial　B Back', '↑↓ 選曲　← → 切換　X 樂曲組　Q／E 難度　ENTER 開始　T 教學': '↑↓ Song　← → Switch　X Packs　Q／E Difficulty　ENTER Start　T Tutorial', '免費': 'Free', '免費開放中': 'Free for now', '✓ 已購買': '✓ Purchased', '前往選曲': 'PLAY SONGS', '已擁有：按「前往選曲」就能玩': 'Owned: tap PLAY SONGS to play', '點曲目就可以試聽': 'Tap a song to preview',

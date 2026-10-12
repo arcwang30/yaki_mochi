@@ -25,6 +25,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `js/songs.js` | 70 首樂曲（歌名、星級、各段 BPM／難度、編曲；最後的 `VOL_ORDER` 決定分集與排列）— **新增或調整樂曲改這裡** |
 | `js/game.js` | 遊戲核心（譜面產生、可暫停的樂曲時鐘、判定、主角姿勢、特效、HUD） |
 | `js/rhythm.js` | 節奏分析：每場的遊玩紀錄（時間差、準確度、分布）與統計、音感等級與建議 |
+| `js/achieve.js` | 成就：58 個成就的條件與判定、解鎖通知、遊戲幣獎勵（規格見 `docs/成就表.md`；商店收藏類在 `COIN_SHOP` 打開前不顯示）|
 | `js/share.js` | 分享成績圖（結算畫面「分享」：產生成績圖片，手機叫出分享選單、PC 下載） |
 | `js/screens.js` | 畫面管理與各畫面：開始（夜空）、開場演出、主選單、選曲、遊戲 / 暫停、操作說明、設定、成就（預留）、商店、CREDIT、結算 |
 | `js/pets.js` | 陪伴寵物（坐在鐵板右上角，跟著節拍與打擊反應；寵物清單在 `js/config.js` 的 `PETS`） |

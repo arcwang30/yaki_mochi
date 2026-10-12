@@ -3,7 +3,7 @@
 // ===== 本機存檔：設定與成績（localStorage） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, voice: true, eco: false, lang: null, res: '1920x1080', bg: 'stall', hitSound: 'classic', pet: 'none', coins: 0, owned: null, shopSeen: false, tutorialDone: false, lastSong: null,
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, voice: true, eco: false, lang: null, res: '1920x1080', bg: 'stall', hitSound: 'classic', pet: 'none', coins: 0, owned: null, shopSeen: false, achievements: null, achNew: null, playDays: null, langsUsed: null, coinsPaid: null, tutorialDone: false, lastSong: null,
     best: null,    // 自己的最佳成績（HISCORE）：{ 紀錄id: { score, oko, combo } }（紀錄 id 見 songs.js 的 recId）
     history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
     totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次
@@ -39,6 +39,9 @@ const Save = {
     if (!HIT_SOUNDS.some(h => h.id === d.hitSound)) d.hitSound = 'classic';   // 打擊音效包
     if (!PETS.some(p => p.id === d.pet)) d.pet = 'none';   // 陪伴寵物
     if (!Array.isArray(d.owned)) d.owned = [];   // 用遊戲幣買到的商品（「種類:id」，例如 bg:rock）
+    // 成就（js/achieve.js）：已解鎖 { id: 時間 }、還沒在成就畫面看過的、遊玩日期（連續天數）、用過的語言、已發過遊戲幣的
+    if (!d.achievements || typeof d.achievements !== 'object' || Array.isArray(d.achievements)) d.achievements = {};
+    for (const k of ['achNew', 'playDays', 'langsUsed', 'coinsPaid']) if (!Array.isArray(d[k])) d[k] = [];
     if (!(d.coins >= 0)) d.coins = 0;
     if (!d.lang) {   // 第一次：依瀏覽器語言
       const l = (navigator.language || 'zh').toLowerCase();
