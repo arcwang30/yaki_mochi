@@ -151,8 +151,9 @@ const Scene = {
     this.topFeather = { src, c };
     return c;
   },
-  // 開場：屋台上緣的煙霧帶（y = 世界座標的上緣；out = 落地後散開的進度 0～1）。蓋住接縫，落地後往兩側散開、淡出
-  edgeSmoke(y, out) {
+  // 開場：屋台上緣的煙霧帶（y = 世界座標的上緣；out = 落地後散開的進度 0～1；gather = 開場時聚攏的進度 0～1）。蓋住接縫，落地後往兩側散開、淡出
+  // 聚攏：每團煙錯開一點時間，從兩側、稍低的位置往中間飄過來，邊飄邊長大、變濃（不會一點畫面就整條冒出來）
+  edgeSmoke(y, out, gather = 1) {
     if (out >= 1) return;
     if (!this.smokeImg) {
       const c = document.createElement('canvas'); c.width = c.height = 128;
@@ -163,17 +164,17 @@ const Scene = {
     const t = Game.time, R = mulberry(5), n = ECO() ? 8 : 16, x0 = VIEW.x0, x1 = VIEW.x1, fade = 1 - out;
     ctx.save();
     for (let i = 0; i < n; i++) {
-      const u = (i + 0.5) / n, r = 110 + R() * 90, ph = R() * 6.3;
-      const x = x0 + u * (x1 - x0) + Math.sin(t * 0.7 + ph) * 30 + (u - 0.5) * out * 320;
-      const yy = y + 18 - R() * 50 + Math.sin(t * 0.9 + ph * 2) * 12 - out * 40;
-      ctx.globalAlpha = (0.78 + 0.22 * Math.sin(t * 1.3 + ph)) * fade;
+      const u = (i + 0.5) / n, ph = R() * 6.3, dy = R() * 50, k = ease(clamp(gather * 1.35 - R() * 0.35, 0, 1)), r = (110 + R() * 90) * (0.55 + 0.45 * k);
+      const x = x0 + u * (x1 - x0) + Math.sin(t * 0.7 + ph) * 30 + (u - 0.5) * out * 320 + (u - 0.5) * (1 - k) * (x1 - x0) * 0.45;
+      const yy = y + 18 - dy + Math.sin(t * 0.9 + ph * 2) * 12 - out * 40 + (1 - k) * 40;
+      ctx.globalAlpha = (0.78 + 0.22 * Math.sin(t * 1.3 + ph)) * fade * k;
       ctx.drawImage(this.smokeImg, x - r, yy - r * 0.55, r * 2, r * 1.1);
     }
     // 燈籠的暖光照在煙上
     ctx.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 5; i++) {
       const x = x0 + (i + 0.5) / 5 * (x1 - x0) + Math.sin(t * 0.5 + i) * 40, r = 150;
-      ctx.globalAlpha = 0.16 * fade; ctx.drawImage(this.glowSprite('#ff9a4a'), x - r, y + 40 - r * 0.5, r * 2, r);
+      ctx.globalAlpha = 0.16 * fade * gather; ctx.drawImage(this.glowSprite('#ff9a4a'), x - r, y + 40 - r * 0.5, r * 2, r);
     }
     ctx.restore();
   },

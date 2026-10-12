@@ -319,7 +319,7 @@ Screens.intro = {
       Scene.chef(0, dx, hop, rot);
     }
     ctx.save(); ctx.translate(shake * 0.4, riseW + shake); stage(); ctx.globalAlpha = appear;
-    Scene.griddle(); Scene.darkness(dark); Scene.lanternGlow(0.3, lit); Scene.edgeSmoke(Scene.bg.y, smokeOut);
+    Scene.griddle(); Scene.darkness(dark); Scene.lanternGlow(0.3, lit); Scene.edgeSmoke(Scene.bg.y, smokeOut, clamp(t / 1.0, 0, 1));   // 雲霧約 1 秒內聚攏
     ctx.restore();
     Fx.draw();
     // 4. 歡迎光臨！
