@@ -532,6 +532,7 @@ const Game = {
     R.newFc = R.fc && !md.fc; R.newAg = R.ag && !md.ag;
     Save.data.medals[this.rid] = { r: Math.min(md.r === undefined ? 99 : md.r, R.rating), fc: !!(md.fc || R.fc), ag: !!(md.ag || R.ag) };
     R.newRecord = Save.recordBest(this.rid, R);   // HISCORE：比自己最高分高就更新
+    R.coins = CoinShop.reward(this.song, this.diff, R);   // 遊玩獎勵（遊戲幣）
     Rhythm.record(this.song, s, ratio);   // 節奏分析用的遊玩紀錄（裡面會存檔）
     Achieve.onResult(R, !!s.pausedOnce);   // 成就（獎章、遊玩紀錄都存好之後才判定）
     App.goto('result');

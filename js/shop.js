@@ -78,6 +78,16 @@ const CoinShop = {
     Save.data.coins -= item.price; Save.data.owned.push(kind + ':' + item.id); Save.store();
     return 'ok';
   },
-  // 之後：結算畫面依成績發遊戲幣
   add(n) { Save.data.coins = Math.max(0, this.coins() + n); Save.store(); },
+  // 結算的遊玩獎勵（Game.finish 呼叫）：回傳 { base, first, fc, total }；COIN_SHOP = false 時不發（null）
+  reward(song, diff, R) {
+    if (!COIN_SHOP) return null;
+    const C = COIN_REWARD, d = Save.data, rid = recId(song, diff);
+    const out = { base: C.rating[R.rating] + diffStars(song, diff) * C.perStar, first: 0, fc: 0 };
+    if (R.rating <= 2 && !d.coinFirst.includes(song.id)) { d.coinFirst.push(song.id); out.first = C.first; }
+    if (R.fc && !d.coinFc.includes(rid)) { d.coinFc.push(rid); out.fc = C.fc; }
+    out.total = out.base + out.first + out.fc;
+    this.add(out.total);
+    return out;
+  },
 };

@@ -176,8 +176,12 @@ const PETS = [
 ];
 const PET_POS = { x: 652, y: 950, s: 1.1 };   // 世界座標：鐵板右上角的木檯（腳底中間）
 
-// 遊戲幣商店：false = 還沒有遊戲幣，商店裡的東西全部免費可套用；做好賺遊戲幣的機制後改成 true，就會照 price 收費
-const COIN_SHOP = false;
+// 遊戲幣商店：true = 照 price 收費；false = 商店裡的東西全部免費可套用（不發遊玩獎勵）
+const COIN_SHOP = true;
+// 遊玩獎勵（結算時發，js/shop.js 的 CoinShop.reward）：
+//   基本 = 依評價（特上/上/並/見習/修行）＋ 這一局的星級 × perStar
+//   首次過關：一首歌第一次拿到「並」以上（不分難度，一首只發一次）；首次全連擊：每首每個難度一次
+const COIN_REWARD = { rating: [40, 30, 22, 14, 6], perStar: 3, first: 50, fc: 20 };
 
 // ---- 製作名單 ----
 // 每個職稱可列多位

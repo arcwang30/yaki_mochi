@@ -165,7 +165,7 @@ const Achieve = {
     achMedal(x + 54, y + h / 2, 32, a.tier, true);
     UI.text(tr('成就解鎖！'), x + 100, y + 30, 20, { align: 'left', fill: T.color, stroke: null, raw: true });
     UI.text(it.more ? tr('另外解鎖了 {0} 個成就', it.more) : this.name(a), x + 100, y + 64, 28, { align: 'left', fill: '#fff', stroke: null, raw: true, maxW: w - (COIN_SHOP ? 250 : 130) });
-    if (COIN_SHOP && !it.more) UI.text('+' + T.coins + ' ' + tr('遊戲幣'), x + w - 24, y + 64, 22, { align: 'right', fill: '#fff27a', stroke: null, raw: true });
+    if (COIN_SHOP && !it.more) coinText('+' + T.coins, x + w - 24, y + 64, 22, { align: 'right' });
     ctx.restore();
     if (it.t >= DUR) q.shift();
   },

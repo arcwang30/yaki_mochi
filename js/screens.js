@@ -326,6 +326,35 @@ const TITLE = lay({ x: W / 2, y: 252, w: 460, h: 118, ty: 404 }, { x: 310, y: 21
 // ---------- 主選單 ----------
 // 按鈕放在畫面最下方（攤位前的吧台與板凳上），不擋主角：
 // 第 1 排 = 朱漆「開始遊戲」大木牌；第 2 排 = 掛在竹竿上的四塊木札
+// 遊戲幣圖示：金色硬幣（外圈深金、內圈刻線、左上高光）
+function drawCoin(x, y, r) {
+  ctx.save();
+  ctx.fillStyle = '#b8860b'; ctx.beginPath(); ctx.arc(x, y + r * 0.12, r, 0, 7); ctx.fill();   // 厚度（下緣）
+  const g = ctx.createRadialGradient(x - r * 0.35, y - r * 0.4, r * 0.1, x, y, r);
+  g.addColorStop(0, '#fff6b0'); g.addColorStop(0.45, '#ffd23f'); g.addColorStop(1, '#e0a020');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#a8740a'; ctx.lineWidth = Math.max(1.5, r * 0.12); ctx.beginPath(); ctx.arc(x, y, r * 0.68, 0, 7); ctx.stroke();
+  ctx.restore();
+}
+// 硬幣圖示＋數字（不寫「遊戲幣」）；align = left / center / right（對齊整組的寬度）；回傳寬度
+function coinText(n, x, y, fs, o = {}) {
+  const txt = String(n), r = fs * 0.52, gap = fs * 0.28;
+  ctx.font = `${fs}px ${FONT}`;
+  const w = r * 2 + gap + ctx.measureText(txt).width, x0 = o.align === 'right' ? x - w : o.align === 'center' ? x - w / 2 : x;
+  if (o.alpha !== undefined) { ctx.save(); ctx.globalAlpha *= o.alpha; }
+  drawCoin(x0 + r, y, r);
+  UI.text(txt, x0 + r * 2 + gap, y + 1, fs, { align: 'left', fill: o.fill || '#fff27a', stroke: null, raw: true });
+  if (o.alpha !== undefined) ctx.restore();
+  return w;
+}
+// 持有遊戲幣的膠囊（主選單、商店右上角共用）：右邊對齊 xr
+function coinPill(xr, y, h, fs) {
+  ctx.font = `${fs}px ${FONT}`;
+  const w = fs * 1.32 + ctx.measureText(String(CoinShop.coins())).width + 40;
+  UI.panel(xr - w, y, w, h, h / 2, 'rgba(16,22,52,.88)', '#e8b64a');
+  coinText(CoinShop.coins(), xr - w / 2, y + h / 2, fs, { align: 'center' });
+}
+
 Screens.menu = {
   sel: 0, n: 0, lastTag: 1,
   TAGS: [['操作說明', 'sub.howto', 'howto'], ['成就', 'sub.achievements', 'achievements'], ['節奏分析', 'sub.rhythm', 'rhythm'], ['設定', 'sub.settings', 'settings'], ['CREDIT', 'sub.credits', 'credits']],
@@ -347,6 +376,7 @@ Screens.menu = {
     });
     this.achBadge(24 + this.achIdx() * 136 + 118, 1124);
     this.shopButton(24, 40, 128, 86);
+    this.coinBadge();
     this.nav();
     UI.navHint();
   },
@@ -367,9 +397,12 @@ Screens.menu = {
     this.achBadge(1430 + 370, top + 150 + this.achIdx() * 100 + 6);
     if (DESKTOP_APP && UI.button(this, '結束遊戲', 1430, top + 150 + this.TAGS.length * 100, 380, 84, { sub: 'sub.quit', size: 32, back: true })) window.desktop.quit();
     this.shopButton(52, 46, 156, 100);
+    this.coinBadge();
     UI.nav(this);
     UI.navHint();
   },
+  // 右上角：目前的遊戲幣（只有硬幣圖示＋數字；COIN_SHOP 打開才顯示）；直式放在招牌上方的空隙
+  coinBadge() { if (COIN_SHOP) coinPill(W - lay(14, 40), lay(10, 44), lay(42, 60), lay(22, 30)); },
   // 「成就」木札右上角：新解鎖的數量（進成就畫面看過就消失）
   achIdx() { return this.TAGS.findIndex(t => t[2] === 'achievements'); },
   achBadge(x, y) {
@@ -535,7 +568,7 @@ Screens.shop = {
     Sound.startBgm();
     this.C().focus(this.item()); this.follow(true);
   },
-  leave() { Scene.preview = null; Pet.preview = null; this.stopDemo(); },
+  leave() { Scene.preview = null; Pet.preview = null; this.stopDemo(); this.ask = null; },
   back() { App.goto('menu'); },
   // 選中的卡片捲到看得到的位置（now = 直接跳過去）
   follow(now) {
@@ -580,10 +613,41 @@ Screens.shop = {
     if (c.act) return c.act(item);
     if (Save.data[c.key] === item.id) return;
     if (!CoinShop.owned(c.kind, item)) {
-      if (CoinShop.buy(c.kind, item) !== 'ok') { Sound.play('back'); this.say('遊戲幣不足'); return; }
-      this.say('購買成功！');
+      if (CoinShop.coins() < item.price) { Sound.play('back'); this.say('遊戲幣不足'); return; }
+      this.ask = { item, sel: 0, t: Game.time }; Sound.play('select'); return;   // 先問一次（確認框在 drawAsk）
     }
     Save.data[c.key] = item.id; Save.store(); Sound.play('confirm'); this.say('已套用！');
+    Achieve.unlock('shop_first'); Achieve.check();
+  },
+  // 購買確認框：「用 N 遊戲幣購買「名稱」？」購買／取消（← → 或 ↑↓ 切換、ENTER 決定、ESC 取消；點按鈕）
+  drawAsk(inp) {
+    const A2 = this.ask, it = A2.item, c = this.C(), pw = lay(600, 640), ph = 300, px = (W - pw) / 2, py = (H - ph) / 2;
+    UI.dim(0.6);
+    UI.panel(px, py, pw, ph, 28, 'rgba(16,22,52,.97)', '#ffd23f');
+    UI.text(it.name, W / 2, py + 62, 36, { fill: '#ffd23f', sw: 7, maxW: pw - 60 });
+    coinText(it.price, W / 2, py + 118, 32, { align: 'center' });   // 價格：硬幣圖示＋數字
+    { // 購買後還剩：文字＋硬幣圖示＋數字（整組置中）
+      const lbl = tr('購買後還剩'), left = CoinShop.coins() - it.price; ctx.font = `18px ${FONT}`;
+      const lw = ctx.measureText(lbl).width, cw = 18 * 1.32 + ctx.measureText(String(left)).width, x0 = W / 2 - (lw + 8 + cw) / 2;
+      UI.text(lbl, x0, py + 160, 18, { align: 'left', fill: '#9fb0e0', stroke: null, raw: true });
+      coinText(left, x0 + lw + 8, py + 160, 18, { fill: '#9fb0e0' });
+    }
+    const bw = 220, bh = 64, by = py + ph - bh - 30, b0 = W / 2 - bw - 12, b1 = W / 2 + 12;
+    if (['left', 'right', 'up', 'down'].some(k => inp.pressed.has(k))) { A2.sel ^= 1; Sound.play('select'); }
+    const tapped = (bx) => inp.taps.some(t => UI.inside(t.x, t.y, bx, by, bw, bh));
+    ['購買', '取消'].forEach((lb, k) => {
+      const bx = k ? b1 : b0, on = A2.sel === k;
+      UI.panel(bx, by, bw, bh, 32, k ? (on ? 'rgba(255,255,255,.25)' : 'rgba(255,255,255,.1)') : (on ? '#e0462a' : '#8a2a1a'), on ? '#ffd23f' : 'rgba(255,255,255,.4)');
+      UI.text(lb, bx + bw / 2, by + bh / 2 + 1, 28, { fill: '#fff', stroke: null });
+    });
+    if (Game.time - A2.t < 0.15) return;   // 剛打開時的同一下 ENTER 不算
+    const yes = tapped(b0) || (A2.sel === 0 && inp.pressed.has('confirm'));
+    const no = tapped(b1) || inp.pressed.has('back') || (A2.sel === 1 && inp.pressed.has('confirm'));
+    if (no) { this.ask = null; Sound.play('back'); return; }
+    if (!yes) return;
+    this.ask = null;
+    if (CoinShop.buy(c.kind, it) !== 'ok') { Sound.play('back'); this.say('遊戲幣不足'); return; }
+    Save.data[c.key] = it.id; Save.store(); Sound.play('confirm'); this.say('購買成功！');
     Achieve.unlock('shop_first'); Achieve.check();   // 商店收藏類成就（COIN_SHOP 打開才會解鎖）
   },
   state(c, it) { return c.state ? c.state(it) : Save.data[c.key] === it.id ? 'on' : CoinShop.owned(c.kind, it) ? 'owned' : 'locked'; },
@@ -641,11 +705,12 @@ Screens.shop = {
         UI.text('✓', x + G.cw - 14, y + 15, 16, { stroke: null, raw: true });
       } else if (st === 'locked') {
         // 付費：左上角的朱漆價格牌；遊戲幣：縮圖正中央
-        const txt = c.badge ? c.badge(it) : '● ' + it.price;
-        ctx.font = `17px ${FONT}`; const bw = Math.max(c.paid ? 70 : 92, ctx.measureText(txt).width + 24);
+        const txt = c.badge ? c.badge(it) : String(it.price);   // 遊戲幣：硬幣圖示＋價格
+        ctx.font = `17px ${FONT}`; const bw = Math.max(c.paid ? 70 : 92, ctx.measureText(txt).width + (c.paid ? 24 : 46));
         const bx = c.paid ? x + 12 : x + G.cw / 2 - bw / 2, by = c.paid ? y + 12 : y + 5 + th / 2 - 14;
         UI.panel(bx, by, bw, 28, 14, c.paid ? '#b8261a' : 'rgba(16,22,52,.9)', c.paid ? '#ffd23f' : '#fff27a');
-        UI.text(txt, bx + bw / 2, by + 15, 17, { fill: c.paid ? '#fff' : '#fff27a', stroke: null, raw: true });
+        if (c.paid) UI.text(txt, bx + bw / 2, by + 15, 17, { fill: '#fff', stroke: null, raw: true });
+        else coinText(txt, bx + bw / 2, by + 14, 17, { align: 'center' });
       }
       if (Input.taps.some(t => UI.inside(t.x, t.y, x, Math.max(y, G.y), G.cw, Math.min(y + G.ch, G.y + viewH) - Math.max(y, G.y)))) this.pick(i);
     });
@@ -684,7 +749,10 @@ Screens.shop = {
     else UI.text(desc, x, y + 50, 17, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: tw });
     const status = c.status ? c.status(it, st) : st === 'on' ? '✓ 套用中' : st === 'owned' ? '已擁有' : tr('{0} 遊戲幣', it.price);
     const sOpt = { fill: st === 'on' ? '#8dff8a' : st === 'owned' ? (c.paid ? '#8dff8a' : '#fff') : '#fff27a', stroke: null, raw: !!c.status || st === 'locked' };
-    if (LAND) UI.text(status, x, y + h - 6, 20, Object.assign({ align: 'left' }, sOpt));
+    if (!c.status && st === 'locked') {   // 遊戲幣價格：硬幣圖示＋數字
+      if (LAND) coinText(it.price, x, y + h - 6, 20); else coinText(it.price, x + tw, y + 20, 18, { align: 'right' });
+    }
+    else if (LAND) UI.text(status, x, y + h - 6, 20, Object.assign({ align: 'left' }, sOpt));
     else UI.text(status, x + tw, y + 20, 18, Object.assign({ align: 'right' }, sOpt));   // 手機：名稱那一行的右邊
     if (ex) {
       const bx = x + w - bw, by = y + (LAND ? 4 : 6), bh = LAND ? 48 : 44;
@@ -722,6 +790,9 @@ Screens.shop = {
   frame() {
     // 付款 / 恢復購買進行中：這一幀的操作全部忽略（畫面照畫，最後蓋上「處理中…」）
     if (Shop.busy) { Input.taps.length = 0; Input.pressed.clear(); Input.swipe = null; }
+    // 購買確認框開著：底下的商店不吃這一幀的操作，交給 drawAsk
+    let inp = null;
+    if (this.ask) { inp = { taps: Input.taps.slice(), pressed: new Set(Input.pressed) }; Input.taps.length = 0; Input.pressed.clear(); Input.swipe = null; Input.ptr.moved = false; }
     menuBackdrop(0);
     const c = this.C(), N = c.list.length, it = this.item(), G = this.grid(), st = this.state(c, it), ex = c.extra && c.extra();
     // 左上：商店名牌；右上：遊戲幣（COIN_SHOP 打開才顯示；追加樂曲的曲目面板蓋住時不顯示）
@@ -731,8 +802,7 @@ Screens.shop = {
       UI.text('商店', tx + 100, 51, 32, { fill: '#ffd23f' });
     }
     if (COIN_SHOP && !c.paid) {
-      UI.panel(W - tx - 220, 18, 220, 64, 32, 'rgba(16,22,52,.88)', '#e8b64a');
-      UI.text(tr('遊戲幣 {0}', CoinShop.coins()), W - tx - 110, 51, 26, { fill: '#fff27a', raw: true, maxW: 196 });
+      coinPill(W - tx, 18, 64, 28);
     }
     if (c.overlay) c.overlay(it);
     const [sx, sy, sw, sh] = this.L.sheet;
@@ -775,6 +845,7 @@ Screens.shop = {
     }
     UI.hint(c.kind === 'vol' ? (ex ? '← → 選擇　↑↓ 試聽曲目　Q E 分頁　X 恢復購買　ENTER 決定' : '← → 選擇　↑↓ 試聽曲目　Q E 分頁　ENTER 決定')
       : c.kind === 'hit' ? '方向鍵 選擇　Q E 分頁　X 試聽　ENTER 套用' : '方向鍵 選擇　Q E 分頁　ENTER 套用');
+    if (inp) this.drawAsk(inp);
     if (Shop.busy) { UI.dim(0.55); UI.text('處理中…', W / 2, H / 2, 44, { fill: '#fff', sw: 8 }); }
   }
 };
@@ -1887,7 +1958,17 @@ Screens.achievements = {
       achMedal(tx + 16, sy + sh / 2, 16, k, n > 0);
       UI.text(n + '/' + all.length, tx + 38, sy + sh / 2 + 1, 18, { align: 'left', fill: '#fff', stroke: null, raw: true });
     });
-    if (COIN_SHOP) UI.text(tr('成就獎勵 {0} 遊戲幣', list.filter(a => Achieve.done(a.id)).reduce((s, a) => s + ACH_TIERS[a.tier].coins, 0)), sx + 24 + bw + 20, sy + 26, 18, { align: 'left', fill: '#fff27a', stroke: null, raw: true });
+    if (COIN_SHOP) {   // 成就獎勵合計：橫式 =「成就獎勵」＋硬幣圖示＋數字（進度條右邊）；直式 = 只有硬幣圖示＋數字（「已解鎖」後面，右邊是等級數量）
+      const total = list.filter(a => Achieve.done(a.id)).reduce((s, a) => s + ACH_TIERS[a.tier].coins, 0);
+      if (LAND) {
+        const lx0 = sx + 24 + bw + 20, lbl = tr('成就獎勵'); ctx.font = `18px ${FONT}`;
+        UI.text(lbl, lx0, sy + 26, 18, { align: 'left', fill: '#fff27a', stroke: null, raw: true });
+        coinText(total, lx0 + ctx.measureText(lbl).width + 8, sy + 26, 18);
+      } else {
+        ctx.font = `24px ${FONT}`;
+        coinText(total, sx + 24 + ctx.measureText(tr('已解鎖 {0} / {1}', got, N)).width + 16, sy + 26, 18);
+      }
+    }
     // ---- 清單（分類標題＋成就列） ----
     const [lx, ly, lw, lh] = lay([30, 274, 660, 880], [360, 274, 1200, 690]);
     const rows = [];
@@ -2258,6 +2339,17 @@ Screens.result = {
     }
     if (r.hits >= 5) UI.text(tr('平均時間差：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), cx, y + 586, 16, { fill: '#8a6a4a', stroke: null, raw: true });
     this.drawRating(r, x, y + 604, w, t);
+    // 遊玩獎勵：難度牌和分享鈕中間（評價蓋章後跳出來）；首次過關／首次全連擊的加成另列一行
+    if (r.coins && t > 1.75) {
+      const k2 = ease(clamp((t - 1.75) / 0.25, 0, 1)), s2 = 1 + (1 - k2) * 0.4, px = x + 302;
+      ctx.save(); ctx.globalAlpha *= k2; ctx.translate(px, y + 58); ctx.scale(s2, s2);
+      UI.panel(-130, -22, 260, 44, 22, '#1f2a5a', '#ffd23f');
+      coinText('+' + r.coins.total, 0, 0, 26, { align: 'center' });
+      ctx.restore();
+      // 加成明細：「×廣島燒數」下面（右側空位），一項一行
+      [r.coins.first && tr('首次過關 +{0}', r.coins.first), r.coins.fc && tr('首次全連擊 +{0}', r.coins.fc)].filter(Boolean)
+        .forEach((s, i) => UI.text('● ' + s, cx + 150, y + 200 + i * 22, 16, { fill: '#c8321e', stroke: null, raw: true, alpha: k2, maxW: 150 }));
+    }
     ctx.restore();
 
     if (t < 1.6) { if (t > 0.4 && (Input.taps.length || Input.was('confirm'))) { this.t = 1.6; Input.taps.length = 0; Input.pressed.delete('confirm'); } return; }
