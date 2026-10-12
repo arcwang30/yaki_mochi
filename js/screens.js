@@ -312,7 +312,7 @@ Screens.menu = {
     this.TAGS.forEach(([label, sub, dest], k) => {
       if (UI.button(this, label, 24 + k * 136, 1122, 128, 94, { tag: true, sub, size: 25, ropeH: 24 })) App.goto(dest);   // 5 塊木札
     });
-    this.shopButton(14, 14, 150, 72);
+    this.shopButton(24, 40, 128, 86);
     this.nav();
     UI.navHint();
     UI.copyright();
@@ -332,14 +332,32 @@ Screens.menu = {
       if (UI.button(this, label, 1430, top + 150 + k * 100, 380, 84, { sub, size: 32 })) App.goto(dest);
     });
     if (DESKTOP_APP && UI.button(this, '結束遊戲', 1430, top + 150 + this.TAGS.length * 100, 380, 84, { sub: 'sub.quit', size: 32, back: true })) window.desktop.quit();
-    this.shopButton(36, 32, 230, 90);
+    this.shopButton(52, 46, 156, 100);
     UI.nav(this);
     UI.navHint();
     UI.copyright();
   },
-  // 左上角獨立的「商店」木牌（直式、橫式都排在最後一個：直式 = 6、橫式在 UI.nav 的最後）
+  // 左上角獨立的「商店」木札（直式、橫式都排在最後一個：直式 = 6、橫式在 UI.nav 的最後）
+  // 位置在角落不顯眼，加上提示效果：掛在竹竿上、燈火光暈一明一暗、每隔一陣子晃一下、周圍小星星閃爍；
+  // 還沒進過商店時右上角掛一個跳動的「NEW!」（進商店後就不再顯示，Save.data.shopSeen）
   shopButton(x, y, w, h) {
-    if (UI.button(this, '商店', x, y, w, h, { sub: 'sub.shop', size: lay(30, 34) })) App.goto('shop');
+    const t = Game.time, i = this.n, on = this.sel === i, pulse = 0.5 + 0.5 * Math.sin(t * 3.2);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = on ? 0.75 + pulse * 0.25 : 0.3 + pulse * 0.4;
+    ctx.drawImage(Scene.glowSprite('#ffb04a'), x - 40, y - 34, w + 80, h + 72); ctx.restore();
+    UI.pole(x - 16, y - 20, w + 32);
+    if (UI.button(this, '商店', x, y, w, h, { tag: true, sub: 'sub.shop', size: lay(26, 30), ropeH: 20, wiggle: true })) App.goto('shop');
+    // 小星星：三顆輪流閃
+    [[x - 8, y + h * 0.35, 0], [x + w + 8, y + h * 0.2, 1.1], [x + w * 0.62, y + h + 14, 2.2]].forEach(([sx, sy, ph]) => {
+      const k = Math.max(0, Math.sin(t * 2.4 + ph)), r = 4 + k * 9;
+      if (k <= 0.05) return;
+      ctx.save(); ctx.globalAlpha = k; ctx.fillStyle = '#fff6c8'; ctx.translate(sx, sy); ctx.rotate(t * 0.8 + ph);
+      ctx.beginPath(); for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4, rr = j % 2 ? r * 0.28 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.fill(); ctx.restore();
+    });
+    if (!Save.data.shopSeen) {   // NEW! 標籤（上下跳動）
+      const bx = x + w - 6, by = y + 4 - Math.abs(Math.sin(t * 4)) * 6;
+      UI.panel(bx - 34, by - 15, 68, 30, 15, '#e8302a', '#fff');
+      UI.text('NEW!', bx, by + 1, 17, { fill: '#fff', stroke: null, raw: true });
+    }
   },
   // 兩排的方向鍵移動：0 = 開始遊戲；1~5 = 下排木札；6 = 左上角的商店
   nav() {
@@ -468,6 +486,7 @@ Screens.shop = {
     return Object.assign({}, B, { cols, ch, cw: (gw - B.gap * (cols - 1)) / cols, rows: Math.max(1, Math.floor((viewH + B.gap) / (ch + B.gap))) });
   },
   enter() {
+    if (!Save.data.shopSeen) { Save.data.shopSeen = true; Save.store(); }   // 主選單商店木札的 NEW! 只到第一次進來為止
     this.toast = null; this.cat = 0; this.btn.sel = -1; this.demoT = -9;
     // 預設選中：套用中的那款；追加樂曲 = 第一個還沒買的 VOL
     this.sel = this.CATS.map(c => Math.max(0, c.key ? c.list.findIndex(x => x.id === Save.data[c.key]) : c.list.findIndex(x => !Shop.owned(x.vol))));
