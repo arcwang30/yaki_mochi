@@ -139,7 +139,6 @@ Screens.title = {
     const since = Game.time - (this.t0 || 0), fin = clamp((since - (this.fromLogo ? 0.5 : 0)) / 0.6, 0, 1);   // 提示字在夜空亮起後淡入
     UI.text(label, W / 2, lay(1000, 860), 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: fin * (0.55 + 0.45 * Math.sin(Game.time * 4)), raw: true });
     if (this.fromLogo && since < 0.8) { ctx.fillStyle = `rgba(0,0,0,${1 - ease(since / 0.8)})`; ctx.fillRect(0, 0, W, H); }   // LOGO 淡出後，夜空從全黑淡入
-    UI.copyright();
     if (Input.was('anykey') || Input.taps.length) { Sound.unlock(); App.cut('intro'); }
   }
 };
@@ -350,7 +349,6 @@ Screens.menu = {
     this.shopButton(24, 40, 128, 86);
     this.nav();
     UI.navHint();
-    UI.copyright();
   },
   // 橫式：左側標題暖簾；右側一欄木牌（上下鍵移動）。桌面版多一個「結束遊戲」
   frameLand() {
@@ -371,7 +369,6 @@ Screens.menu = {
     this.shopButton(52, 46, 156, 100);
     UI.nav(this);
     UI.navHint();
-    UI.copyright();
   },
   // 「成就」木札右上角：新解鎖的數量（進成就畫面看過就消失）
   achIdx() { return this.TAGS.findIndex(t => t[2] === 'achievements'); },
@@ -2173,7 +2170,7 @@ Screens.credits = {
     line(idx++, L.oy, yy => drawImgW(IMG.okonomiyaki, L.ox, yy, lay(240, 300)));
     if (okoK >= 1) this.steam(dt, L.ox, L.oy - 10);
     line(idx++, L.ty, yy => UI.text('大王焼き  リズム屋台', L.ox, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
-    line(idx++, L.ty + 44, yy => UI.text("©Arc's Concept Game", L.ox, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
+    line(idx++, L.ty + 44, yy => UI.text("©Arc's Concept Games", L.ox, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
     line(idx++, L.ty + 76, yy => UI.text(tr('樂曲') + '：' + tr('全曲原創（AI 協助製作）'), L.ox, yy, 18, { fill: '#cfd8ff', stroke: null, raw: true, maxW: lay(560, 520) }));
     line(idx++, L.ty + 104, yy => UI.text(tr('語音') + '：' + VOICE_CREDIT, L.ox, yy, 18, { fill: '#cfd8ff', stroke: null, raw: true, maxW: lay(560, 520) }));
     UI.begin(this);

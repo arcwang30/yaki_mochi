@@ -93,7 +93,7 @@ const Share = {
     // 頁尾
     const now = new Date(), date = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`;
     text(date, 60, H - 40, 26, { align: 'left', fill: 'rgba(255,255,255,.8)' });
-    text("©Arc's Concept Game", W - 40, H - 40, 24, { align: 'right', fill: 'rgba(255,255,255,.8)', stroke: 'rgba(0,0,0,.6)', sw: 6 });
+    text("©Arc's Concept Games", W - 40, H - 40, 24, { align: 'right', fill: 'rgba(255,255,255,.8)', stroke: 'rgba(0,0,0,.6)', sw: 6 });
     return c;
   },
 };

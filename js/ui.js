@@ -265,7 +265,7 @@ const UI = {
   inside(px, py, x, y, w, h) { return px >= x && px <= x + w && py >= y && py <= y + h; },
   tapIn(x, y, w, h) { return Input.taps.some(t => this.inside(t.x, t.y, x, y, w, h)); },
 
-  copyright() { this.text("©Arc's Concept Game", W - 16, H - 22, 16, { align: 'right', fill: 'rgba(255,255,255,.9)', stroke: 'rgba(0,0,0,.6)', sw: 4 }); },
+  copyright() { this.text("©Arc's Concept Games", W - 16, H - 22, 16, { align: 'right', fill: 'rgba(255,255,255,.9)', stroke: 'rgba(0,0,0,.6)', sw: 4 }); },
   hint(str) { this.text(str, 16, H - 22, 15, { align: 'left', fill: 'rgba(255,255,255,.85)', stroke: 'rgba(0,0,0,.6)', sw: 4 }); },
   // 依目前輸入裝置顯示提示
   navHint() {
