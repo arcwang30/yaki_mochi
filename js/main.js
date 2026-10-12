@@ -46,9 +46,9 @@
   // 樂曲排程另外用計時器跑，畫面掉幀時音樂也不會斷
   setInterval(() => { if (scheduling()) Game.schedule(); Sound.tick(); }, 25);
 
-  App.start('boot');
+  App.start('logo');   // 團隊 LOGO 兼載入畫面（js/screens.js）
   const fonts = Promise.race([document.fonts.load('40px "Mochiy Pop One"'), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
-  Promise.all([Assets.load(), fonts]).then(() => App.goto('logo'));   // 團隊 LOGO → 標題
+  Promise.all([Assets.load(), fonts]).then(() => { Screens.logo.ready = true; });   // 載入完成：LOGO 停留夠久就接標題
 
   // 遊戲中每 4 秒看一次平均幀間隔：明顯跟不上目標幀率（> 1.3 倍）就把解析度降 15%（不低於 1 倍），避免越玩越卡
   const perf = { sum: 0, n: 0 };
