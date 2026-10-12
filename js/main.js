@@ -48,7 +48,7 @@
 
   App.start('boot');
   const fonts = Promise.race([document.fonts.load('40px "Mochiy Pop One"'), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
-  Promise.all([Assets.load(), fonts]).then(() => App.goto('title'));
+  Promise.all([Assets.load(), fonts]).then(() => App.goto('logo'));   // 團隊 LOGO → 標題
 
   // 遊戲中每 4 秒看一次平均幀間隔：明顯跟不上目標幀率（> 1.3 倍）就把解析度降 15%（不低於 1 倍），避免越玩越卡
   const perf = { sum: 0, n: 0 };

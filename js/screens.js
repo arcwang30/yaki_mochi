@@ -101,11 +101,75 @@ function speechBubble(x, y, str, a = 1) {
 }
 
 // ---------- 開始畫面：開場一開始的夜空＋「點一下開始」（這一下同時解除瀏覽器的音效限制） ----------
+// ---------- 團隊 LOGO（開機只出現一次）：夜空從黑暗中亮起 → LOGO 彈出、閃光掃過、搖桿晃動 → 往上飄走，接標題畫面 ----------
+// 背景就是標題畫面的夜空（drawNightSky），切到標題時畫面不跳。無聲（瀏覽器在第一次點擊前不能出聲）。點一下 / 任意鍵跳過
+Screens.logo = {
+  t: 0, T: { lit: 0.7, pop: 0.45, shine: 0.95, out: 2.1, end: 2.7 },
+  JOY: [742, 48, 198, 194],   // 搖桿在 LOGO 圖（1000×421）裡的範圍：另外畫，才能單獨晃動
+  enter() { this.t = 0; this.prep(); },
+  // 預先切好：LOGO 本體（搖桿挖掉）、搖桿、閃光用的畫布
+  prep() {
+    if (this.base || !IMG.team_logo) return;
+    const img = IMG.team_logo, [jx, jy, jw, jh] = this.JOY, mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
+    this.base = mk(img.width, img.height); const b = this.base.getContext('2d'); b.drawImage(img, 0, 0); b.clearRect(jx, jy, jw, jh);
+    this.joy = mk(jw, jh); this.joy.getContext('2d').drawImage(img, jx, jy, jw, jh, 0, 0, jw, jh);
+    this.fx = mk(img.width, img.height);
+  },
+  frame(dt) {
+    this.t += dt;
+    const t = this.t, T = this.T, img = IMG.team_logo;
+    if (t >= T.end || (t > 0.2 && (Input.was('anykey') || Input.taps.length))) { App.cut('title'); return; }
+    drawNightSky();
+    if (img && this.base) {
+      // 彈出（回彈）→ 輕輕浮動 → 往上飄走
+      const p = clamp((t - T.pop) / 0.55, 0, 1), back = p < 1 ? 1 + 2.2 * Math.pow(p - 1, 3) + 1.2 * Math.pow(p - 1, 2) : 1;
+      const out = ease(clamp((t - T.out) / (T.end - T.out), 0, 1));
+      const s = (0.55 + 0.45 * back) * (1 - out * 0.12), a = clamp(p * 2.5, 0, 1) * (1 - out);
+      const w = lay(600, 760) * s, h = w * img.height / img.width, k = w / img.width;
+      const cx = W / 2, cy = lay(H * 0.38, H * 0.33) + Math.sin(t * 2.2) * 6 - out * lay(140, 120);
+      const x = cx - w / 2, y = cy - h / 2;
+      if (a > 0) {
+        // 閃光：一道斜的白光從左掃到右（只亮在 LOGO 有顏色的地方）
+        const g = this.fx.getContext('2d'), sp = clamp((t - T.shine) / 0.6, 0, 1);
+        g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, img.width, img.height); g.drawImage(this.base, 0, 0);
+        if (sp > 0 && sp < 1) {
+          const bx = -300 + sp * (img.width + 600), gr = g.createLinearGradient(bx - 140, 0, bx + 140, 0);
+          gr.addColorStop(0, 'rgba(255,255,255,0)'); gr.addColorStop(0.5, 'rgba(255,255,255,.7)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+          g.globalCompositeOperation = 'source-atop'; g.save(); g.transform(1, 0, -0.35, 1, 0, 0); g.fillStyle = gr; g.fillRect(bx - 140, 0, 280 + img.height, img.height); g.restore();
+        }
+        ctx.save(); ctx.globalAlpha = a;
+        // 背後的暖光
+        ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a * (0.35 + 0.15 * Math.sin(t * 3));
+        ctx.drawImage(Scene.glowSprite('#ffb04a'), cx - w * 0.75, cy - h * 1.1, w * 1.5, h * 2.2); ctx.restore();
+        ctx.drawImage(this.fx, x, y, w, h);
+        // 搖桿：以底座中心為軸晃兩下
+        const [jx, jy, jw, jh] = this.JOY, wt = t - T.shine - 0.15, rot = wt > 0 && wt < 0.9 ? Math.sin(wt * 18) * 0.16 * (1 - wt / 0.9) : 0;
+        ctx.save(); ctx.translate(x + (jx + jw * 0.5) * k, y + (jy + jh * 0.85) * k); ctx.rotate(rot);
+        ctx.drawImage(this.joy, -jw * 0.5 * k, -jh * 0.85 * k, jw * k, jh * k); ctx.restore();
+        // 星光：LOGO 周圍輪流閃
+        [[-0.46, -0.42, 0], [0.5, -0.5, 0.7], [0.47, 0.42, 1.4], [-0.5, 0.38, 2.1], [0.05, -0.62, 2.8]].forEach(([u, v, ph]) => {
+          const q = Math.max(0, Math.sin((t - T.shine) * 3 + ph)); if (t < T.shine || q < 0.05) return;
+          const r = (8 + q * 14) * s;
+          ctx.save(); ctx.globalAlpha = a * q; ctx.fillStyle = '#fff6c8'; ctx.translate(cx + u * w, cy + v * h); ctx.rotate(t + ph);
+          ctx.beginPath(); for (let j = 0; j < 8; j++) { const an = j * Math.PI / 4, rr = j % 2 ? r * 0.28 : r; ctx.lineTo(Math.cos(an) * rr, Math.sin(an) * rr); } ctx.fill(); ctx.restore();
+        });
+        ctx.restore();
+      }
+    }
+    // 一開始是全黑，夜空慢慢亮起
+    const dark = 1 - ease(clamp(t / T.lit, 0, 1));
+    if (dark > 0) { ctx.fillStyle = `rgba(0,0,0,${dark})`; ctx.fillRect(0, 0, W, H); }
+    UI.copyright();
+  }
+};
+
 Screens.title = {
+  enter() { this.t0 = Game.time; },
   frame() {
     drawNightSky();
     const label = Input.touchMode ? 'TAP TO START' : Input.padConnected ? 'PRESS START' : 'PRESS ANY KEY';
-    UI.text(label, W / 2, lay(1000, 860), 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: 0.55 + 0.45 * Math.sin(Game.time * 4), raw: true });
+    const fin = clamp((Game.time - (this.t0 || 0)) / 0.6, 0, 1);   // LOGO 飄走後，提示字在同一片夜空淡入
+    UI.text(label, W / 2, lay(1000, 860), 44, { fill: '#fff', stroke: '#c43a1a', sw: 10, alpha: fin * (0.55 + 0.45 * Math.sin(Game.time * 4)), raw: true });
     UI.copyright();
     if (Input.was('anykey') || Input.taps.length) { Sound.unlock(); App.cut('intro'); }
   }
