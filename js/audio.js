@@ -411,6 +411,26 @@ const HIT_PACKS = {
     else bark(t, 360, 0.2, 2.5, d);
     if (great) bark(t + 0.13, 900, 0.09, 1.3, d);
   },
+  // ---- 限定 ----
+  hanabi(t, p, great, d) {   // 花火：切 = 小煙火「啪啪」、炒 = 短哨音＋「碰」、淋醬 = 大煙火「咚——」；GREAT = 火花劈哩啪啦
+    osc('sine', 120, t, 0.14, 0.95, d, { to: 50, bend: 0.12, att: 0.001 });   // 爆炸的低音
+    if (p === 'knife') [0, 0.035, 0.06].forEach((x, i) => nz(t + x, 0.025, 0.75 - i * 0.15, d, { type: 'highpass', f: 3200 + i * 900 }));
+    else if (p === 'spatula') { nz(t, 0.05, 0.8, d, { f: 1800, q: 0.8 }); osc('sine', 1400, t, 0.07, 0.16, d, { to: 2800, bend: 0.07, att: 0.001 }); nz(t + 0.03, 0.12, 0.5, d, { type: 'lowpass', f: 2400, to: 600 }); }
+    else { osc('sine', 85, t, 0.32, 0.9, d, { to: 38, bend: 0.3, att: 0.001 }); nz(t, 0.28, 0.65, d, { type: 'lowpass', f: 1400, to: 200 }); }
+    if (great) [0.07, 0.1, 0.14, 0.17, 0.22, 0.26, 0.31].forEach((x, i) => nz(t + x, 0.018, 0.4 - i * 0.04, d, { type: 'highpass', f: 5000 + (i % 3) * 1500 }));
+  },
+  koto(t, p, great, d) {   // 箏：爪子撥弦（起音「喀」＋三角波帶倍音、略往下彎）；切 = 高、炒 = 兩音、淋醬 = 低音推弦
+    const pluck = (x, f, v, o = {}) => {
+      nz(x, 0.012, v * 0.7, d, { f: f * 3, q: 2 });
+      osc('triangle', f, x, 0.45, v, d, { to: o.to || f * 0.995, bend: o.bend || 0.3, att: 0.001 });
+      osc('sine', f * 2, x, 0.25, v * 0.35, d, { att: 0.001 });
+    };
+    osc('sine', 130, t, 0.1, 0.8, d, { to: 70, att: 0.002 });   // 墊一點低音，打擊感紮實
+    if (p === 'knife') pluck(t, 1175, 0.55);
+    else if (p === 'spatula') { pluck(t, 880, 0.5); pluck(t + 0.06, 1175, 0.4); }
+    else pluck(t, 440, 0.65, { to: 494, bend: 0.12 });   // 推弦：音往上推
+    if (great) [1319, 1568, 1760, 2093].forEach((f, i) => pluck(t + 0.05 + i * 0.03, f, 0.22));   // 刮奏
+  },
 };
 
 const Sound = {

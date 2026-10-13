@@ -157,6 +157,9 @@ const HIT_SOUNDS = [
   { id: 'bubble', name: '泡泡', desc: '啵！一顆一顆的泡泡破掉', price: 400, color: '#3ac0d8' },
   { id: 'register', name: '收銀機', desc: '鏘鈴！生意興隆的收銀聲', price: 500, color: '#d8a020' },
   { id: 'dog', name: '柴犬', desc: '汪！柴犬老闆幫你吆喝', price: 600, color: '#c87a3a' },
+  // 限定（高價）：卡片左上角掛「限定」牌
+  { id: 'hanabi', name: '花火大會', desc: '咻～碰！GREAT 時火花劈哩啪啦', price: 1800, color: '#3a2a8a', tag: '限定' },
+  { id: 'koto', name: '箏', desc: '叮～錚！和風古箏的五聲音階撥弦', price: 1500, color: '#8a5a2a', tag: '限定' },
 ];
 
 // ---- 陪伴寵物（主選單 → 商店 → 陪伴寵物）：畫法與反應在 js/pets.js；art: true = 改用 assets/images/pet_<id>_<mood>.png ----
@@ -173,6 +176,11 @@ const PETS = [
   { id: 'daruma', name: '達摩', desc: '跟著節拍搖搖晃晃，歡呼時畫上另一隻眼', price: 600, color: '#d8382a' },
   { id: 'hiyoko', name: '小雞', desc: '剛從蛋殼探出頭的小雞', price: 400, color: '#ffd84a' },
   { id: 'pocket', name: '遊戲機', desc: '螢幕就是臉的掌上遊戲機，一起打出高分', price: 600, color: '#ff8a3a' },
+  // 稀有（高價）：卡片左上角掛「稀有」牌、身邊有專屬特效
+  { id: 'chochin', name: '提燈妖怪', desc: '祭典的紙燈籠成了精，吐著舌頭陪你顧攤', price: 2000, color: '#e8582a', tag: '稀有' },
+  { id: 'kitsune', name: '九尾狐', desc: '九條尾巴跟著節拍擺動，身邊飄著狐火', price: 2500, color: '#fff8f0', tag: '稀有' },
+  { id: 'ryu', name: '小金龍', desc: '金光閃閃的小龍，鬍鬚隨風飄，歡呼時噴出彩雲', price: 3000, color: '#f2c040', tag: '稀有' },
+  { id: 'hoou', name: '鳳凰', desc: '拖著長長的火焰尾羽，火花不斷飛舞', price: 3000, color: '#e83a2a', tag: '稀有' },
 ];
 const PET_POS = { x: 652, y: 950, s: 1.1 };   // 世界座標：鐵板右上角的木檯（腳底中間）
 

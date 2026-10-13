@@ -400,6 +400,162 @@ const PET_DRAW = {
     // 喇叭孔
     g.fillStyle = 'rgba(60,20,0,.45)'; for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(-6 + i * 6, cy + 22, 1.6, 0, 7); g.fill(); }
   },
+
+  // ===== 稀有（高價）：各自有專屬特效 =====
+  chochin(g, mood, dt) {   // 提燈妖怪：紅色紙燈籠、獨眼、長舌頭；身體發光、輕輕飄浮，不碰木檯
+    const t = Game.time, fl = Math.sin(t * 2.2) * 4 - 8, sway = Math.sin(t * 1.7) * 0.06 + (mood === 'cheer' ? Math.sin(dt * 16) * 0.15 : 0);
+    // 光暈（燈籠裡的火）
+    const glow = g.createRadialGradient(0, -58 + fl, 8, 0, -58 + fl, 70); glow.addColorStop(0, 'rgba(255,190,90,.55)'); glow.addColorStop(1, 'rgba(255,150,60,0)');
+    g.fillStyle = glow; g.beginPath(); g.arc(0, -58 + fl, 70, 0, 7); g.fill();
+    g.save(); g.translate(0, fl); g.rotate(sway);
+    // 吊環＋上下的黑框
+    g.strokeStyle = PET_LINE; g.lineWidth = 3; g.beginPath(); g.arc(0, -108, 6, Math.PI, 0); g.stroke();
+    petEllipse(g, 0, -101, 18, 6, '#2a2a2e', null, 3);
+    petEllipse(g, 0, -14, 18, 6, '#2a2a2e', null, 3);
+    // 紙燈籠身體（橫向竹骨）
+    petEllipse(g, 0, -57, 33, 42, '#ff7a3a', '#d8482a');
+    g.save(); g.beginPath(); g.ellipse(0, -57, 33, 42, 0, 0, 7); g.clip();
+    g.fillStyle = 'rgba(255,240,180,.35)'; g.beginPath(); g.ellipse(-8, -66, 14, 22, 0, 0, 7); g.fill();   // 透光
+    g.strokeStyle = 'rgba(90,20,10,.45)'; g.lineWidth = 2;
+    for (let i = -3; i <= 3; i++) { const y = -57 + i * 11; g.beginPath(); g.moveTo(-34, y); g.quadraticCurveTo(0, y + 4, 34, y); g.stroke(); }
+    g.restore();
+    g.beginPath(); g.ellipse(0, -57, 33, 42, 0, 0, 7); g.strokeStyle = PET_LINE; g.lineWidth = 3.5; g.stroke();
+    // 獨眼
+    const ey = -70;
+    if (mood === 'happy' || mood === 'cheer') { g.strokeStyle = PET_LINE; g.lineWidth = 4; g.lineCap = 'round'; g.beginPath(); g.arc(0, ey + 4, 10, Math.PI * 1.15, Math.PI * 1.85); g.stroke(); }
+    else if (mood === 'sad') { g.strokeStyle = PET_LINE; g.lineWidth = 4; g.lineCap = 'round'; g.beginPath(); g.moveTo(-9, ey - 2); g.lineTo(9, ey + 2); g.stroke(); }
+    else {
+      g.fillStyle = '#fff'; g.beginPath(); g.ellipse(0, ey, 12, 13, 0, 0, 7); g.fill(); g.strokeStyle = PET_LINE; g.lineWidth = 3; g.stroke();
+      const lx = Math.sin(t * 0.9) * 3;   // 眼珠左右看
+      g.fillStyle = PET_LINE; g.beginPath(); g.arc(lx, ey + 1, 6, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(lx + 2, ey - 2, 2, 0, 7); g.fill();
+    }
+    // 嘴（紙破開的裂口）＋長舌頭
+    g.fillStyle = '#5a0a0a'; g.beginPath(); g.moveTo(-18, -44); g.lineTo(-9, -38); g.lineTo(0, -45); g.lineTo(9, -38); g.lineTo(18, -44); g.quadraticCurveTo(0, -26, -18, -44); g.fill();
+    g.strokeStyle = PET_LINE; g.lineWidth = 2.5; g.stroke();
+    const tl = mood === 'cheer' ? 34 : mood === 'sad' ? 12 : 22, tw = Math.sin(t * 4) * 5;
+    g.fillStyle = '#ff6a8a'; g.beginPath(); g.moveTo(-7, -36); g.quadraticCurveTo(-8 + tw, -36 + tl, tw, -32 + tl); g.quadraticCurveTo(8 + tw, -36 + tl, 7, -36); g.closePath(); g.fill(); g.stroke();
+    // 側面的「祭」字
+    g.fillStyle = 'rgba(40,10,5,.7)'; g.font = `bold 15px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('祭', 21, -60);
+    g.restore();
+  },
+  kitsune(g, mood, dt) {   // 九尾狐：白狐、九條金尖尾巴扇形擺動、紅色隈取、身邊繞著藍白狐火
+    const t = Game.time, up = mood === 'cheer', fan = mood === 'sad' ? 0.6 : up ? 1.25 : 1;
+    // 狐火（在身體後面的那半圈先畫）
+    const fires = [0, 1, 2].map(k => { const a = t * 1.6 + k * 2.094; return { x: Math.cos(a) * 50, y: -62 + Math.sin(a) * 16, back: Math.sin(a) < 0 }; });
+    const foxfire = f => {
+      const fx = f.x, fy = f.y + Math.sin(t * 6 + f.x) * 2, gr = g.createRadialGradient(fx, fy, 1, fx, fy, 13);
+      gr.addColorStop(0, 'rgba(230,250,255,.95)'); gr.addColorStop(0.45, 'rgba(110,190,255,.7)'); gr.addColorStop(1, 'rgba(80,120,255,0)');
+      g.fillStyle = gr; g.beginPath(); g.moveTo(fx, fy - 16); g.quadraticCurveTo(fx + 11, fy, fx, fy + 9); g.quadraticCurveTo(fx - 11, fy, fx, fy - 16); g.fill();
+    };
+    fires.filter(f => f.back).forEach(foxfire);
+    // 九條尾巴（扇形，在身體後面）
+    for (let i = 0; i < 9; i++) {
+      const a = (i - 4) * 0.2 * fan + Math.sin(t * 3 + i * 0.7) * 0.07;
+      g.save(); g.translate(0, -14); g.rotate(a);
+      petEllipse(g, 0, -52, 11, 36, '#fff8f0', '#e8dccc', 3);
+      g.fillStyle = '#ffb84a'; g.beginPath(); g.ellipse(0, -80, 7, 9, 0, 0, 7); g.fill();   // 金色尾尖
+      g.restore();
+    }
+    petEllipse(g, 0, -30, 26, 26, '#fff8f0', '#e8dccc');
+    [-1, 1].forEach(k => petEllipse(g, k * (up ? 32 : 11), up ? -52 : -6, 7, 7, '#fff8f0', null, 3));
+    // 耳朵（尖、內側紅）
+    [-1, 1].forEach(k => {
+      g.save(); g.translate(k * 18, -92); g.rotate(k * (0.25 + (mood === 'sad' ? 0.5 : 0)));
+      g.beginPath(); g.moveTo(-10, 8); g.lineTo(0, -20); g.lineTo(10, 8); g.closePath(); g.fillStyle = '#fff8f0'; g.fill(); g.strokeStyle = PET_LINE; g.lineWidth = 3.5; g.lineJoin = 'round'; g.stroke();
+      g.beginPath(); g.moveTo(-5, 5); g.lineTo(0, -11); g.lineTo(5, 5); g.closePath(); g.fillStyle = '#e8484a'; g.fill();
+      g.restore();
+    });
+    // 頭（尖一點的口鼻）
+    petEllipse(g, 0, -70, 30, 25, '#fff8f0', '#e8dccc');
+    // 隈取：額頭的紅色火焰紋、眼角紅線
+    g.fillStyle = '#e8303a'; g.beginPath(); g.moveTo(0, -94); g.quadraticCurveTo(6, -86, 0, -80); g.quadraticCurveTo(-6, -86, 0, -94); g.fill();
+    g.strokeStyle = '#e8303a'; g.lineWidth = 2.5; g.lineCap = 'round';
+    [-1, 1].forEach(k => { g.beginPath(); g.moveTo(k * 17, -74); g.quadraticCurveTo(k * 23, -78, k * 26, -84); g.stroke(); });
+    petEyes(g, 11, -72, mood);
+    g.fillStyle = PET_LINE; g.beginPath(); g.ellipse(0, -62, 4, 3, 0, 0, 7); g.fill();
+    petMouth(g, 0, -56, mood);
+    petBlush(g, 19, -62, 5);
+    fires.filter(f => !f.back).forEach(foxfire);
+  },
+  ryu(g, mood, dt) {   // 小金龍：金色身體、米白肚子橫紋、綠色鬃毛、鹿角、飄動的長鬍鬚；歡呼時頭上冒出彩雲
+    const t = Game.time, up = mood === 'cheer';
+    // 尾巴（右後方捲起，背上有綠色鰭）
+    const tw = Math.sin(t * 3) * 6;
+    g.lineCap = 'round'; g.lineJoin = 'round';
+    const tail = () => { g.beginPath(); g.moveTo(16, -20); g.bezierCurveTo(50, -10, 58 + tw, -40, 40 + tw, -58); };
+    tail(); g.strokeStyle = PET_LINE; g.lineWidth = 17; g.stroke(); tail(); g.strokeStyle = '#f2c040'; g.lineWidth = 11; g.stroke();
+    g.fillStyle = '#3ab06a'; g.strokeStyle = PET_LINE; g.lineWidth = 2.5;
+    g.beginPath(); g.moveTo(40 + tw, -58); g.lineTo(52 + tw, -70); g.lineTo(46 + tw, -52); g.closePath(); g.fill(); g.stroke();
+    // 身體＋肚子
+    petEllipse(g, 0, -30, 28, 28, '#f2c040', '#c8901a');
+    petEllipse(g, 0, -26, 15, 20, '#fff0c0', null, 2.5);
+    g.strokeStyle = 'rgba(160,110,20,.6)'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(-12, -36 + i * 9); g.quadraticCurveTo(0, -33 + i * 9, 12, -36 + i * 9); g.stroke(); }
+    // 手（爪）
+    [-1, 1].forEach(k => petEllipse(g, k * (up ? 34 : 20), up ? -54 : -18, 8, 7, '#f2c040', null, 3));
+    [-1, 1].forEach(k => petEllipse(g, k * 13, -5, 9, 6, '#f2c040', null, 3));
+    // 綠色鬃毛（頭後面）
+    for (let i = 0; i < 5; i++) { const a = -0.9 + i * 0.45; petEllipse(g, Math.sin(a) * 30, -74 - Math.cos(a) * 22, 9, 12, '#3ab06a', '#2a8a50', 3); }
+    // 鹿角
+    g.strokeStyle = PET_LINE; g.lineWidth = 7; [-1, 1].forEach(k => { g.beginPath(); g.moveTo(k * 12, -94); g.lineTo(k * 18, -112); g.moveTo(k * 16, -106); g.lineTo(k * 25, -110); g.stroke(); });
+    g.strokeStyle = '#f4e8d0'; g.lineWidth = 3.5; [-1, 1].forEach(k => { g.beginPath(); g.moveTo(k * 12, -94); g.lineTo(k * 18, -112); g.moveTo(k * 16, -106); g.lineTo(k * 25, -110); g.stroke(); });
+    // 頭＋口鼻
+    petEllipse(g, 0, -74, 31, 25, '#f2c040', '#c8901a');
+    petEllipse(g, 0, -60, 20, 12, '#fff0c0', null, 3);
+    g.fillStyle = PET_LINE; [-1, 1].forEach(k => { g.beginPath(); g.ellipse(k * 6, -63, 2.4, 1.8, 0, 0, 7); g.fill(); });
+    petEyes(g, 13, -79, mood);
+    petMouth(g, 0, -55, mood);
+    // 長鬍鬚（隨風飄）
+    g.strokeStyle = '#8a5a10'; g.lineWidth = 2.2;
+    [-1, 1].forEach(k => { const w = Math.sin(t * 3 + k) * 6; g.beginPath(); g.moveTo(k * 16, -60); g.bezierCurveTo(k * 32, -58 + w, k * 38, -48 - w, k * 50, -46 + w); g.stroke(); });
+    // 歡呼：頭上冒出彩雲
+    if (up) {
+      const k = Math.min(1, dt / 0.4), cy = -120 - k * 10;
+      g.save(); g.globalAlpha *= Math.max(0, 1 - dt / 1.4);
+      [['#ff8aa0', -18], ['#ffd23f', 0], ['#7ad8ff', 18]].forEach(([c, x]) => petEllipse(g, x * k, cy, 13 * k + 1, 9 * k + 1, c, null, 2.5));
+      g.restore();
+    }
+  },
+  hoou(g, mood, dt) {   // 鳳凰：紅色圓身、金色肚子、三根頭冠、長長的火焰尾羽（尾羽末端有眼紋），尾巴一直冒火花
+    const t = Game.time, up = mood === 'cheer', flap = up ? Math.sin(t * 20) * 0.6 : Math.sin(t * 3) * 0.08;
+    // 尾羽（往右後方拖曳）
+    [['#ffd23f', -0.15, 62], ['#ff7a3a', 0.2, 70], ['#e8303a', 0.55, 58]].forEach(([c, a0, len], i) => {
+      const a = a0 + Math.sin(t * 2.5 + i) * 0.08;
+      g.save(); g.translate(14, -26); g.rotate(a);
+      g.beginPath(); g.moveTo(0, -4); g.quadraticCurveTo(len * 0.6, -14, len, 0); g.quadraticCurveTo(len * 0.6, 12, 0, 4); g.closePath();
+      g.fillStyle = c; g.fill(); g.strokeStyle = PET_LINE; g.lineWidth = 3; g.stroke();
+      petEllipse(g, len - 9, 0, 6, 5, '#2a6ad8', null, 2); g.fillStyle = '#ffd23f'; g.beginPath(); g.arc(len - 9, 0, 2.2, 0, 7); g.fill();   // 眼紋
+      g.restore();
+    });
+    // 火花（從尾羽往上飄）
+    for (let i = 0; i < 6; i++) {
+      const p = (t * 0.7 + i / 6) % 1, x = 30 + i * 9 + Math.sin(t * 3 + i) * 5, y = -30 - p * 70;
+      g.save(); g.globalAlpha *= (1 - p) * 0.9; g.fillStyle = i % 2 ? '#ffd23f' : '#ff7a3a'; g.beginPath(); g.arc(x, y, 3 - p * 1.5, 0, 7); g.fill(); g.restore();
+    }
+    // 身體＋金肚子
+    petEllipse(g, 0, -44, 30, 40, '#e83a2a', '#b02218');
+    petEllipse(g, 0, -26, 17, 19, '#ffd23f', null, 2.5);
+    // 腳
+    g.strokeStyle = '#e8902a'; g.lineWidth = 4; g.lineCap = 'round'; [-1, 1].forEach(k => { g.beginPath(); g.moveTo(k * 9, -8); g.lineTo(k * 10, 0); g.stroke(); });
+    // 翅膀（金色羽尖）
+    [-1, 1].forEach(k => {
+      g.save(); g.translate(k * 25, -46); g.rotate(-k * (0.3 + Math.abs(flap) + (up ? 1.1 : 0)));
+      petEllipse(g, 0, 14, 9, 19, '#e83a2a', null, 3);
+      g.fillStyle = '#ffd23f'; g.beginPath(); g.ellipse(0, 27, 6, 6, 0, 0, 7); g.fill();
+      g.restore();
+    });
+    // 頭冠（三根金羽）
+    [-0.35, 0, 0.35].forEach(a => {
+      g.save(); g.translate(0, -82); g.rotate(a + Math.sin(t * 4 + a * 5) * 0.06);
+      g.strokeStyle = PET_LINE; g.lineWidth = 2.5; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -16); g.stroke();
+      petEllipse(g, 0, -20, 4.5, 6, '#ffd23f', null, 2.5);
+      g.restore();
+    });
+    // 頭（和身體連在一起的上半部）＋嘴
+    petEyes(g, 11, -66, mood);
+    g.fillStyle = '#ffb02a'; g.strokeStyle = PET_LINE; g.lineWidth = 2.5;
+    g.beginPath(); g.moveTo(-6, -58); g.lineTo(6, -58); g.lineTo(0, mood === 'happy' || up ? -48 : -51); g.closePath(); g.fill(); g.stroke();
+    petBlush(g, 19, -58, 5);
+  },
 };
 // 狸貓的眼睛（深色眼罩上用白線畫 ^ ^ 或 > <）
 function petEyesWhite(g, mood) {
