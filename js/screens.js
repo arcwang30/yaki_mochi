@@ -2215,14 +2215,15 @@ Screens.credits = {
   sel: 0, n: 0, t: 0, wisps: [], spawn: 0,
   enter() { this.t = 0; this.wisps = []; this.spawn = 0; chef.idlePose = 'wave'; Sound.startBgm(); },
   // 熱騰騰的蒸氣：從廣島燒表面冒出、左右搖曳著往上飄、慢慢變大變淡
+  // 結算畫面也用（Screens.credits.steam.call(畫面, …)：各畫面用自己的 wisps / spawn）
   // 每一縷 = 沿著同一條 S 形軌跡的幾顆柔光（尾巴較細較淡），看起來像一絲絲捲起的熱氣
-  steam(dt, cx, cy) {
+  steam(dt, cx, cy, col = '#ffffff', amul = 1) {   // col / amul：蒸氣顏色與濃度（淺色底上要用深一點的顏色）
     this.spawn -= dt;
     if (this.spawn <= 0) {
       this.spawn = ECO() ? 0.22 : 0.11;
       this.wisps.push({ x: cx + rand(-80, 80), y: cy + rand(-14, 8), age: 0, life: rand(1.5, 2.2), ph: rand(0, 6.3), amp: rand(10, 18), r: rand(14, 22), vy: rand(40, 56) });
     }
-    const glow = Scene.glowSprite('#ffffff'), TAIL = ECO() ? 2 : 4;
+    const glow = Scene.glowSprite(col), TAIL = ECO() ? 2 : 4;
     ctx.save();
     for (const p of this.wisps) {
       p.age += dt;
@@ -2232,7 +2233,7 @@ Screens.credits = {
         const x = p.x + Math.sin(p.ph + age * 2.6) * p.amp * Math.min(1, k * 2) + (p.x - cx) * k * 0.3;
         const y = p.y - p.vy * age;
         const r = p.r * (1 + k * 1.6) * (1 - j * 0.15);
-        ctx.globalAlpha = Math.min(1, k * 5) * (1 - k) * (1 - k) * 0.5 * (1 - j * 0.2);   // 淡入 → 淡出
+        ctx.globalAlpha = Math.min(1, k * 5) * (1 - k) * (1 - k) * 0.5 * amul * (1 - j * 0.2);   // 淡入 → 淡出
         ctx.drawImage(glow, x - r, y - r * 1.3, r * 2, r * 2.6);
       }
     }
@@ -2303,9 +2304,69 @@ Screens.result = {
     UI.wrap(R.desc, x + 126, two ? y + 62 : y + 68, w - 166, 17, two ? 13 : 15, { fill: '#5a3a1a' });
     ctx.restore();
   },
+  // 結算的廣島燒圖（中心 ox, oy、寬 w）：依節奏評價加效果，蓋章後（約 1.6 秒）才揭曉
+  //   傳說的鐵板之神（特上）：背後金色光暈、表面一道光掃過、四周金白星星閃爍、金粉往上飄（＋白色熱氣）
+  //   鐵板上的災難（修行）：疊上焦黑（遊戲中烤焦的同款）、冒灰黑色焦煙、偶爾跳出火星
+  //   其他：有做出廣島燒才冒白色熱氣
+  drawOko(r, ox, oy, w, t, dt) {
+    const img = IMG.okonomiyaki; if (!img) return;
+    const h = w * img.height / img.width, reveal = ease(clamp((t - 1.6) / 0.6, 0, 1));
+    const god = r.rating === 0 && reveal > 0, burnt = r.rating === RATINGS.length - 1 && reveal > 0;
+    if (god) {   // 金色光暈（一明一暗）
+      // 米白卡片上用加亮混色看不出來，改用一般疊色的金黃色半透明圈
+      const gr = ctx.createRadialGradient(ox, oy, 0, ox, oy, w * 0.75);
+      gr.addColorStop(0, `rgba(255,200,60,${0.45 * reveal * (0.8 + 0.2 * Math.sin(t * 3))})`); gr.addColorStop(1, 'rgba(255,200,60,0)');
+      ctx.save(); ctx.translate(ox, oy); ctx.scale(1, 0.72); ctx.translate(-ox, -oy); ctx.fillStyle = gr; ctx.fillRect(ox - w, oy - w, w * 2, w * 2); ctx.restore();
+    }
+    if (god) {   // 表面一道光掃過（每 2.4 秒一次；只亮在廣島燒上）
+      if (!this.okoFx) { this.okoFx = document.createElement('canvas'); this.okoFx.width = img.width; this.okoFx.height = img.height; }
+      const g = this.okoFx.getContext('2d'), sp = ((t - 1.6) % 2.4) / 0.9;
+      g.globalCompositeOperation = 'source-over'; g.clearRect(0, 0, img.width, img.height); g.drawImage(img, 0, 0);
+      if (sp > 0 && sp < 1) {
+        const bx = -120 + sp * (img.width + 240), gr = g.createLinearGradient(bx - 70, 0, bx + 70, 0);
+        gr.addColorStop(0, 'rgba(255,250,220,0)'); gr.addColorStop(0.5, 'rgba(255,250,220,.75)'); gr.addColorStop(1, 'rgba(255,250,220,0)');
+        g.globalCompositeOperation = 'source-atop'; g.save(); g.transform(1, 0, -0.4, 1, 0, 0); g.fillStyle = gr; g.fillRect(bx - 70, 0, 140 + img.height, img.height); g.restore();
+      }
+      ctx.drawImage(this.okoFx, ox - w / 2, oy - h / 2, w, h);
+    } else drawImgW(img, ox, oy, w);
+    if (burnt) drawImgW(burntImg('okonomiyaki'), ox, oy, w, 0, 0.72 * reveal);   // 燒焦（保留一點原色，看得出是廣島燒）
+    // 熱氣：燒焦 = 灰黑色焦煙（沒做出來也會冒）；其他有做出來 = 白色熱氣
+    if (burnt) Screens.credits.steam.call(this, dt, ox, oy - 22, '#4a423c', 1.9 * reveal);
+    else if (r.oko >= 1) Screens.credits.steam.call(this, dt, ox, oy - 22, '#ffffff', 1.8);
+    if (burnt) {   // 火星：從焦掉的表面跳起、往上飄、熄滅
+      ctx.save();
+      for (let i = 0; i < 7; i++) {
+        const ph = (t * 0.55 + i / 7) % 1, x = ox + Math.sin(i * 12.9898) * w * 0.32 + Math.sin(t * 3 + i) * 6, y = oy - 10 - ph * 70;
+        ctx.globalAlpha = reveal * (1 - ph) * (0.5 + 0.5 * Math.sin(t * 20 + i * 3));
+        ctx.fillStyle = i % 2 ? '#ff7a2a' : '#ffb347'; ctx.beginPath(); ctx.arc(x, y, 2.6 - ph * 1.4, 0, 7); ctx.fill();
+      }
+      ctx.restore();
+    }
+    if (god) {   // 星星（輪流閃爍、慢慢旋轉）＋金粉
+      const star = (x, y, rr, col, rot, edge) => {
+        ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.fillStyle = col; ctx.beginPath();
+        for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4, q = j % 2 ? rr * 0.26 : rr; ctx.lineTo(Math.cos(a) * q, Math.sin(a) * q); }
+        ctx.closePath(); if (edge) { ctx.lineJoin = 'round'; ctx.lineWidth = 3; ctx.strokeStyle = edge; ctx.stroke(); } ctx.fill(); ctx.restore();
+      };
+      ctx.save();
+      [[-0.55, -0.55, 0], [0.5, -0.75, 1.3], [0.62, 0.15, 2.6], [-0.62, 0.25, 3.9], [0.1, -0.95, 5.2], [-0.25, 0.62, 0.7], [0.35, 0.58, 2.0]].forEach(([u, v, ph], i) => {
+        const q = Math.max(0, Math.sin(t * 2.6 + ph)); if (q < 0.05) return;
+        const x = ox + u * w * 0.62, y = oy + v * h * 0.75, rr = (7 + q * 11) * (i % 3 === 0 ? 1.25 : 1);
+        ctx.globalAlpha = reveal * q;
+        star(x, y, rr, '#ffd23f', t * 0.6 + ph, '#d0801a'); star(x, y, rr * 0.5, '#fffbe6', t * 0.6 + ph);
+      });
+      for (let i = 0; i < 10; i++) {   // 金粉
+        const ph = (t * 0.35 + i / 10) % 1;
+        ctx.globalAlpha = reveal * Math.sin(ph * Math.PI) * 0.9;
+        ctx.fillStyle = i % 3 ? '#ffe27a' : '#fff6c8';
+        ctx.beginPath(); ctx.arc(ox + Math.sin(i * 7.31) * w * 0.45 + Math.sin(t * 2 + i) * 8, oy + h * 0.2 - ph * 110, 2.2, 0, 7); ctx.fill();
+      }
+      ctx.restore();
+    }
+  },
   sel: 0, n: 0, t: 0, r: null, newRecord: false,
   enter() {
-    this.r = Game.result; this.t = 0; this.sel = 0; this.stamped = false;
+    this.r = Game.result; this.t = 0; this.sel = 0; this.stamped = false; this.wisps = []; this.spawn = 0;
     this.song = songById(this.r.song);
     this.rid = recId(this.song, Game.diff);   // 這一局難度的紀錄 id
     this.newRecord = !!this.r.newRecord;      // 結束時已經比過自己的最高分（Game.finish）
@@ -2326,7 +2387,7 @@ Screens.result = {
     UI.ribbon(cx, y + 4, '本日營業結束！', 34, 380);
     { const D = DIFFS[Game.diff === undefined ? 1 : Game.diff];   // 左上：這一局的難度
       UI.panel(x + 22, y + 36, 112, 44, 22, D.color, '#fff'); UI.text(D.name, x + 78, y + 59, 22, { fill: '#fff', stroke: 'rgba(0,0,0,.35)', sw: 4 }); }
-    drawImgW(IMG.okonomiyaki, cx - 70, y + 140, 240);
+    this.drawOko(r, cx - 70, y + 140, 240, t, dt);   // 廣島燒（依評價：鐵板之神閃閃發亮、災難燒焦冒煙）
     UI.text('×' + r.oko, cx + 150, y + 150, 72, { fill: '#c8321e', stroke: '#fff', sw: 10 });
     UI.text('完成的廣島燒', cx, y + 242, 20, { fill: '#6b4a2a', stroke: null });
     UI.text('SCORE', cx, y + 290, 22, { fill: '#6b4a2a', stroke: null });

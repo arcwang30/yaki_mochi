@@ -694,11 +694,9 @@ const Game = {
       txt(String(s.stock[k]), x + 34, y + 15, 18, s.stock[k] ? '#fff' : '#8a8fae', { align: 'right', stroke: '#101634', lw: 5 });
     });
     // 左側：TEMPO、進度、COMBO
-    const m = this.measureAt(st), ch = s.chart;
+    const m = this.measureAt(st);
     txt('TEMPO ' + m.bpm, 14, 126, 16, '#fff', { align: 'left', stroke: '#101634', lw: 6 });
-    const prog = clamp((st - ch.measures[0].start) / (ch.end - ch.measures[0].start), 0, 1);
-    ctx.fillStyle = 'rgba(16,22,52,.7)'; rrect(14, 136, 156, 9, 4.5); ctx.fill();
-    ctx.fillStyle = '#ffb84a'; rrect(14, 136, Math.max(9, 156 * prog), 9, 4.5); ctx.fill();
+    if (!s.tut) this.drawProgress(14, 136, 190, 10, st, pulse, 204, 126, 12);   // 樂曲長度條（新手教學沒有固定長度，不顯示）
     ctx.font = `15px ${FONT}`; ctx.textAlign = 'left'; ctx.lineJoin = 'round';
     ctx.strokeStyle = '#101634'; ctx.lineWidth = 5; ctx.strokeText(this.songLabel(), 14, 172);
     ctx.fillStyle = this.song.color; ctx.fillText(this.songLabel(), 14, 172);
@@ -709,9 +707,39 @@ const Game = {
       ctx.restore();
     }
   },
+  // 樂曲長度條（直式、橫式共用）：左端 ▶ 起點、右端黑白格子終點旗、段落（每次加速）刻度、目前位置的亮點；
+  // 右上角（tx, ty）顯示「已播放 / 總長」
+  drawProgress(x, y, w, h, st, pulse, tx, ty, tsize) {
+    const ch = this.s.chart, t0 = ch.measures[0].start, len = ch.end - t0, prog = clamp((st - t0) / len, 0, 1);
+    const ic = h * 1.5, bx = x + ic + 4, bw = w - ic * 2 - 10, cy = y + h / 2;   // 兩端留位置給起點、終點記號
+    // 軌道（外框）＋已播放
+    ctx.fillStyle = 'rgba(16,22,52,.78)'; rrect(bx, y, bw, h, h / 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.5)'; ctx.lineWidth = Math.max(1.5, h * 0.18); ctx.stroke();
+    ctx.fillStyle = '#ffb84a'; rrect(bx, y, Math.max(h, bw * prog), h, h / 2); ctx.fill();
+    // 段落刻度（加速的地方）
+    ctx.fillStyle = 'rgba(255,255,255,.75)';
+    for (let i = 1; i < ch.measures.length; i++) {
+      const a = ch.measures[i - 1], b = ch.measures[i];
+      if (b.sec !== a.sec && b.kind !== 'outro') ctx.fillRect(bx + bw * (b.start - t0) / len - 1, y - h * 0.35, 2, h * 1.7);
+    }
+    // 起點 ▶
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.moveTo(x + ic * 0.2, cy - ic * 0.42); ctx.lineTo(x + ic * 0.9, cy); ctx.lineTo(x + ic * 0.2, cy + ic * 0.42); ctx.closePath(); ctx.fill();
+    // 終點旗（旗桿＋黑白格子）
+    const fx = bx + bw + 6, top = cy - ic * 0.6, pw = Math.max(1.5, h * 0.2), cw = ic * 0.24, chh = ic * 0.22;
+    ctx.fillStyle = '#e8e8e8'; ctx.fillRect(fx, top, pw, ic * 1.2);
+    for (let i = 0; i < 4; i++) for (let j = 0; j < 3; j++) { ctx.fillStyle = (i + j) % 2 ? '#1a1a1a' : '#fff'; ctx.fillRect(fx + pw + i * cw, top + j * chh, cw, chh); }
+    // 目前位置：亮點（跟著節拍輕輕跳）
+    const r = h * (0.78 + pulse * 0.18);
+    ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(bx + bw * prog, cy, r, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#ff8a2a'; ctx.lineWidth = Math.max(1.5, h * 0.25); ctx.stroke();
+    // 時間
+    const f = sec => Math.floor(sec / 60) + ':' + pad(sec % 60, 2);
+    txt(f(prog * len) + '/' + f(len), tx, ty, tsize, '#fff', { align: 'right', stroke: '#101634', lw: tsize * 0.38 });
+  },
   // 橫式 HUD：左側 = 分數、速度、進度、連擊；右側 = 廣島燒成品＋四種食材（攤位兩側的街景上）
   drawHUDLand(pulse, st) {
-    const s = this.s, m = this.measureAt(st), ch = s.chart;
+    const s = this.s, m = this.measureAt(st);
     // 兩側街景壓暗，HUD 比較清楚（攤位本身不壓）
     for (const [x0, x1] of [[0, Cam.x], [W, W - Cam.x]]) {
       const gr = ctx.createLinearGradient(x0, 0, x1, 0); gr.addColorStop(0, 'rgba(6,8,26,.72)'); gr.addColorStop(1, 'rgba(6,8,26,.3)');
@@ -725,11 +753,7 @@ const Game = {
     }
     const y0 = s.tut ? 196 : 272;
     txt('TEMPO ' + m.bpm, 44, y0 + 14, 28, '#fff', { align: 'left', stroke: '#101634', lw: 8 });
-    const prog = clamp((st - ch.measures[0].start) / (ch.end - ch.measures[0].start), 0, 1);
-    if (!s.tut) {
-      ctx.fillStyle = 'rgba(16,22,52,.7)'; rrect(44, y0 + 32, 416, 14, 7); ctx.fill();
-      ctx.fillStyle = '#ffb84a'; rrect(44, y0 + 32, Math.max(14, 416 * prog), 14, 7); ctx.fill();
-    }
+    if (!s.tut) this.drawProgress(44, y0 + 34, 416, 14, st, pulse, 460, y0 + 14, 24);   // 樂曲長度條
     txt(this.songLabel(), 44, y0 + 88, 28, this.song.color, { align: 'left', stroke: '#101634', lw: 8 });
     if (s.combo >= 3) {
       const k = 1 + pulse * 0.08;
