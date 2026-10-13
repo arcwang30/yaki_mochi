@@ -175,8 +175,8 @@ const PETS = [
   { id: 'penguin', name: '企鵝', desc: '拍拍翅膀幫你打拍子', price: 500, color: '#2a3a5a' },
   { id: 'daruma', name: '達摩', desc: '跟著節拍搖搖晃晃，歡呼時畫上另一隻眼', price: 600, color: '#d8382a' },
   { id: 'hiyoko', name: '小雞', desc: '剛從蛋殼探出頭的小雞', price: 400, color: '#ffd84a' },
-  { id: 'pocket', name: '遊戲機', desc: '螢幕就是臉的掌上遊戲機，一起打出高分', price: 600, color: '#ff8a3a' },
   // 稀有（高價）：卡片左上角掛「稀有」牌、身邊有專屬特效
+  { id: 'pocket', name: '遊戲機', desc: '螢幕就是臉的掌上遊戲機，一起打出高分', price: 2000, color: '#ff8a3a', tag: '稀有' },
   { id: 'chochin', name: '提燈妖怪', desc: '祭典的紙燈籠成了精，吐著舌頭陪你顧攤', price: 2000, color: '#e8582a', tag: '稀有' },
   { id: 'kitsune', name: '九尾狐', desc: '九條尾巴跟著節拍擺動，身邊飄著狐火', price: 2500, color: '#fff8f0', tag: '稀有' },
   { id: 'ryu', name: '小金龍', desc: '金光閃閃的小龍，鬍鬚隨風飄，歡呼時噴出彩雲', price: 3000, color: '#f2c040', tag: '稀有' },

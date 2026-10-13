@@ -399,6 +399,20 @@ const PET_DRAW = {
     });
     // 喇叭孔
     g.fillStyle = 'rgba(60,20,0,.45)'; for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(-6 + i * 6, cy + 22, 1.6, 0, 7); g.fill(); }
+    // 稀有特效：像素愛心和 8-bit 音符從兩側往上飄（歡呼時變多、彩虹色、飄得快；難過時不出現）
+    if (mood === 'sad') return;
+    const SPR = { heart: ['.##.##.', '#######', '#######', '.#####.', '..###..', '...#...'], note: ['..###', '..#.#', '..#..', '..#..', '###..', '###..'] };
+    const n = up ? 7 : 4, speed = up ? 1.1 : 0.45, ps = 2.6;
+    for (let i = 0; i < n; i++) {
+      const p = (t * speed + i / n) % 1, side = i % 2 ? 1 : -1;
+      const x = side * (34 + (i * 7) % 18) + Math.sin(t * 3 + i) * 4, y = cy - 24 - p * (up ? 80 : 60);
+      const rows = SPR[i % 3 === 0 ? 'note' : 'heart'];
+      g.save(); g.globalAlpha *= Math.min(1, (1 - p) * 1.6) * (p < 0.1 ? p * 10 : 1);
+      g.fillStyle = up ? `hsl(${(i * 52 + t * 300) % 360},90%,62%)` : i % 3 === 0 ? '#2a6ad8' : '#ff4a7a';
+      g.translate(x - rows[0].length * ps / 2, y - rows.length * ps / 2);
+      rows.forEach((r, ry) => { for (let rx = 0; rx < r.length; rx++) if (r[rx] === '#') g.fillRect(rx * ps, ry * ps, ps, ps); });
+      g.restore();
+    }
   },
 
   // ===== 稀有（高價）：各自有專屬特效 =====
