@@ -70,12 +70,12 @@ const ACHIEVEMENTS = [
   { id: 'ag_30', cat: 5, tier: 'plat', name: '全 GREAT 三十首', desc: '{0} 首全 GREAT', arg: 30, prog: achCnt(() => AchStat.songsWith(m => m.ag), 30) },
   // G. 曲包制霸（內建曲目＋VOL.1～）
   ...VOL_ORDER.map((_, v) => ({ id: 'pack_' + v, cat: 6, tier: 'silver', name: v ? '{0} 制霸' : '內建曲目制霸', nameArg: v ? 'VOL.' + v : undefined,
-    desc: v ? '{0} 的 10 首都拿到「上」以上' : '內建曲目 10 首都拿到「上」以上', arg: v ? 'VOL.' + v : '',
+    desc: v ? '{0} 的 10 首都拿到「上」以上' : '內建曲目 15 首都拿到「上」以上', arg: v ? 'VOL.' + v : '',
     prog: achCnt(() => AchStat.pack(v).filter(s => AchStat.medal(s, achTop(1))).length, AchStat.pack(v).length) })),
   // H. 收集・探索
   { id: 'first_hard', cat: 7, tier: 'bronze', name: '挑戰者', desc: '第一次完成困難', prog: achHas(() => Object.keys(Save.data.medals).some(k => k.endsWith(DIFFS[2].suffix))) },
   { id: 'all_diffs', cat: 7, tier: 'bronze', name: '三種吃法', desc: '同一首歌三種難度都完成', prog: achHas(() => SONGS.some(s => DIFFS.every(D => Save.data.medals[s.id + D.suffix]))) },
-  { id: 'explore_pack', cat: 7, tier: 'bronze', name: '菜單走透透', desc: '任一曲包的 10 首都玩過', prog: achHas(() => VOL_ORDER.some((_, v) => AchStat.pack(v).every(AchStat.played))) },
+  { id: 'explore_pack', cat: 7, tier: 'bronze', name: '菜單走透透', desc: '任一曲包的曲目全部玩過', prog: achHas(() => VOL_ORDER.some((_, v) => AchStat.pack(v).every(AchStat.played))) },
   { id: 'explore_all', cat: 7, tier: 'gold', name: '夜市全制覇', desc: '{0} 首全部玩過', arg: SONGS.length, prog: achCnt(() => SONGS.filter(AchStat.played).length, SONGS.length) },
   { id: 'signature', cat: 7, tier: 'silver', name: '招牌菜', desc: '同一首歌完成 {0} 次', arg: 20, prog: achCnt(() => Math.max(0, ...Object.values(AchStat.T().songs)), 20) },
   { id: 'streak_7', cat: 7, tier: 'silver', name: '每晚準時開攤', desc: '連續 {0} 天都至少完成一場', arg: 7, prog: achCnt(() => AchStat.streak(), 7) },
