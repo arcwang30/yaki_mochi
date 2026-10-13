@@ -18,6 +18,9 @@ const NAMES = ['rock', 'animal', 'zombie', 'pixel', 'shiba', 'arcade', 'metal', 
 const ONLY = new URLSearchParams(location.search).get('only');
 // 招牌、屋頂的位置和 bg_stall 差很多的背景：自動對齊會為了對上招牌把整張圖垂直拉長（變形），改用一般的垂直比例、不位移
 const FIX = { yokai: { sy: 1.0525, ty: 0 }, china: { sy: 1.0525, ty: 0 } };
+// 屋簷畫得比 bg_stall 低的背景：主角處理食材時會往上探身（頭頂約到 y = 460），會穿過屋簷。
+// 對齊後再分段垂直調整：屋簷以上整段往上移（頂端多的天空裁掉）、中間（後牆、窗戶）拉長補上、吧台以下（y 960 以下）不動
+const WARP = { yokai: [[0, -260], [715, 455], [960, 960], [1264, 1264]], steam: [[0, -45], [505, 460], [960, 960], [1264, 1264]] };
 const RW = 848, RH = 1264, K = 4;   // 參考圖尺寸、分析時縮小倍數
 const load = src => new Promise((ok, ng) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ng; i.src = src; });
 const log = s => { document.getElementById('log').innerHTML += s + '<br>'; };
@@ -91,8 +94,14 @@ async function save(canvas, name) {
       }
       X = cx + (X - cx) * f; Y = cy + (Y - cy) * f; DW *= f; DH *= f; out[n].cover = +f.toFixed(3);
     }
-    const c = document.createElement('canvas'); c.width = RW; c.height = RH;
+    let c = document.createElement('canvas'); c.width = RW; c.height = RH;
     const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, X, Y, DW, DH);
+    if (WARP[n]) {   // 分段垂直調整（屋簷太低的背景）：每一段 [來源 y, 目標 y] 之間線性對應
+      const w = document.createElement('canvas'); w.width = RW; w.height = RH; const wg = w.getContext('2d'); wg.imageSmoothingQuality = 'high';
+      const A = WARP[n];
+      for (let i = 0; i < A.length - 1; i++) { const [s0, t0] = A[i], [s1, t1] = A[i + 1]; wg.drawImage(c, 0, s0, RW, s1 - s0, 0, t0, RW, t1 - t0); }
+      c = w; out[n].warp = A;
+    }
     // 預覽：輸出圖、與 bg_stall 的半透明疊圖
     const card = document.createElement('div'); card.className = 'card';
     const ov = document.createElement('canvas'); ov.width = RW; ov.height = RH; const o = ov.getContext('2d');
