@@ -548,6 +548,12 @@ const Sound = {
       case 'confirm': osc('triangle', 660, t, 0.06, 0.22, u); osc('triangle', 990, t + 0.06, 0.1, 0.22, u); break;
       case 'back': osc('triangle', 660, t, 0.06, 0.2, u); osc('triangle', 440, t + 0.06, 0.1, 0.2, u); break;
       case 'pause': osc('sine', 520, t, 0.08, 0.25, u); osc('sine', 390, t + 0.08, 0.14, 0.25, u); break;
+      case 'purchase':   // 購買成功：收銀機結帳（按鍵兩下「喀喀」→ 抽屜彈開「咚」→「叮～」→ 零錢叮噹）
+        nz(t, 0.02, 0.4, u, { f: 2600, q: 2 }); nz(t + 0.07, 0.02, 0.36, u, { f: 2300, q: 2 });
+        osc('sine', 170, t + 0.14, 0.12, 0.32, u, { to: 85, att: 0.002 }); nz(t + 0.14, 0.07, 0.22, u, { type: 'lowpass', f: 900 });
+        bell(t + 0.16, 2349, 0.9, 0.17, u);
+        [[0.36, 3520], [0.42, 4186], [0.47, 3951], [0.53, 4699]].forEach(([d, f]) => bell(t + d, f, 0.2, 0.045, u));
+        break;
       case 'tick': SND.wood(t, false, u); break;
       case 'go': SND.wood(t, true, u); break;
       case 'sfxPreview': SND.hit('cabbage', 'GREAT', u); break;

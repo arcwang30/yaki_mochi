@@ -485,7 +485,7 @@ Screens.shop = {
         if (Shop.busy) return;
         Sound.play('confirm');
         Shop.buy(it.vol).then(r => {
-          if (r === 'ok') { if (A.ctx) SND.fanfare(A.ctx.currentTime + 0.05); S.say(tr('已解鎖 {0}！', it.name)); }
+          if (r === 'ok') { Sound.play('purchase'); if (A.ctx) SND.fanfare(A.ctx.currentTime + 0.6); S.say(tr('已解鎖 {0}！', it.name)); }
           else S.say(tr(r === 'cancel' ? '已取消購買' : '購買失敗，請稍後再試'));
         });
       },
@@ -648,7 +648,7 @@ Screens.shop = {
     if (!yes) return;
     this.ask = null;
     if (CoinShop.buy(c.kind, it) !== 'ok') { Sound.play('back'); this.say('遊戲幣不足'); return; }
-    Save.data[c.key] = it.id; Save.store(); Sound.play('confirm'); this.say('購買成功！');
+    Save.data[c.key] = it.id; Save.store(); Sound.play('purchase'); this.say('購買成功！');
     Achieve.unlock('shop_first'); Achieve.check();   // 商店收藏類成就（COIN_SHOP 打開才會解鎖）
   },
   state(c, it) { return c.state ? c.state(it) : Save.data[c.key] === it.id ? 'on' : CoinShop.owned(c.kind, it) ? 'owned' : 'locked'; },
