@@ -13,7 +13,11 @@
 // 遊戲裡的主角、鐵板、燈籠光暈都以 bg_stall 的座標擺放，所以新背景要先對齊：
 // 用邊緣的直行／橫列分布（1D）分別找出水平與垂直的縮放＋位移，再檢查有沒有蓋滿畫面。
 // 開啟：powershell -ExecutionPolicy Bypass -File tools\prep_server.ps1 → http://localhost:5174/tools/bg_prep.html（加 ?nosave 只預覽）
-const NAMES = ['rock', 'animal', 'zombie', 'pixel', 'shiba', 'arcade', 'metal'];
+const NAMES = ['rock', 'animal', 'zombie', 'pixel', 'shiba', 'arcade', 'metal', 'yokai', 'ice', 'eco', 'china', 'steam'];
+// 網址加 ?only=id1,id2 只處理指定的背景（新增背景時不必重新輸出舊的）
+const ONLY = new URLSearchParams(location.search).get('only');
+// 招牌、屋頂的位置和 bg_stall 差很多的背景：自動對齊會為了對上招牌把整張圖垂直拉長（變形），改用一般的垂直比例、不位移
+const FIX = { yokai: { sy: 1.0525, ty: 0 }, china: { sy: 1.0525, ty: 0 } };
 const RW = 848, RH = 1264, K = 4;   // 參考圖尺寸、分析時縮小倍數
 const load = src => new Promise((ok, ng) => { const i = new Image(); i.onload = () => ok(i); i.onerror = ng; i.src = src; });
 const log = s => { document.getElementById('log').innerHTML += s + '<br>'; };
@@ -64,13 +68,14 @@ async function save(canvas, name) {
   const ref = await load('../assets/images/bg_stall.jpg');
   const P = profiles(ref, RW / K, RH / K);
   const out = {};
-  for (const n of NAMES) {
+  for (const n of ONLY ? ONLY.split(',') : NAMES) {
     const img = await load(`../assets/source/bg_${n}.jpg`);
     const cw = img.width / K, ch = img.height / K;
     const Q = profiles(img, Math.round(cw), Math.round(ch));
     const fx = fit1d(P.col, Q.col, 0.85, 1.2), fy = fit1d(P.row, Q.row, 0.9, 1.25);
     // 換回原尺寸：cand 像素 (u, v) → ref 像素 (sx*u + tx, sy*v + ty)
-    const sx = fx.s, sy = fy.s, tx = fx.t * K, ty = fy.t * K;
+    let sx = fx.s, sy = fy.s, tx = fx.t * K, ty = fy.t * K;
+    if (FIX[n]) ({ sy, ty } = { sy, ty, ...FIX[n] });   // 上半部構圖不同的背景：垂直比例固定，只對齊吧台以下
     const dw = img.width * sx, dh = img.height * sy;
     const gaps = { left: tx, right: RW - (tx + dw), top: ty, bottom: RH - (ty + dh) };
     out[n] = { sx: +sx.toFixed(4), sy: +sy.toFixed(4), tx: Math.round(tx), ty: Math.round(ty), score: [+fx.score.toFixed(3), +fy.score.toFixed(3)], gaps: Object.fromEntries(Object.entries(gaps).map(([k, v]) => [k, Math.round(v)])) };

@@ -13,11 +13,12 @@ const Street = {
     const c = document.createElement('canvas'); c.width = W; c.height = H;
     const b = c.getContext('2d');
     const glows = [];
-    this.town(b, HZ, 0, sx + 40, 11, glows, st.win);
-    this.town(b, HZ, sx + sw - 40, W, 23, glows, st.win);
+    this.town(b, HZ, 0, sx + 40, 11, glows, st.win, st.snow);
+    this.town(b, HZ, sx + sw - 40, W, 23, glows, st.win, st.snow);
     this.ground(b, HZ, st.win);
+    if (st.snow) { b.fillStyle = 'rgba(228,238,255,.55)'; b.fillRect(0, HZ, W, H - HZ); }   // 雪地
     this.strings(b, sx, sw, glows, st);
-    st.booths.forEach(([sign, stripe, noren], k) => this.booth(b, k ? W - 300 : 300, sign, stripe, noren, k ? 7 : 3, glows, st.slime));
+    st.booths.forEach(([sign, stripe, noren], k) => this.booth(b, k ? W - 300 : 300, sign, stripe, noren, k ? 7 : 3, glows, st.slime, st.snow));
     g.save();
     if (st.pixel) {   // 像素風：縮小再用最近鄰放大，變成一格一格的點陣
       const P = 5, p = document.createElement('canvas'); p.width = W / P; p.height = H / P;
@@ -77,7 +78,7 @@ const Street = {
   },
 
   // 遠方的町家屋頂剪影（亮著的窗）＋樹
-  town(g, HZ, x0, x1, seed, glows, win = '#ffaa5a') {
+  town(g, HZ, x0, x1, seed, glows, win = '#ffaa5a', snow = false) {
     const R = mulberry(seed);
     g.save(); g.beginPath(); g.rect(x0, 0, x1 - x0, H); g.clip();
     // 樹的剪影
@@ -90,6 +91,10 @@ const Street = {
         g.fillStyle = col; g.fillRect(x, top, w, h + 40);
         // 瓦屋頂（斜面）
         g.fillStyle = '#0f0f22'; g.beginPath(); g.moveTo(x - 16, top + 6); g.lineTo(x + 18, top - 26); g.lineTo(x + w - 18, top - 26); g.lineTo(x + w + 16, top + 6); g.closePath(); g.fill();
+        if (snow) {   // 屋頂積雪
+          g.fillStyle = 'rgba(235,242,255,.92)'; g.beginPath(); g.moveTo(x - 12, top - 2); g.lineTo(x + 20, top - 31); g.lineTo(x + w - 20, top - 31);
+          g.lineTo(x + w + 12, top - 2); g.quadraticCurveTo(x + w / 2, top - 16, x - 12, top - 2); g.fill();
+        }
         // 窗（暖色燈光）
         for (let k = 0; k < 3; k++) {
           if (R() < 0.45) continue;
@@ -167,7 +172,7 @@ const Street = {
   },
 
   // 隔壁的屋台：條紋遮陽棚、招牌、暖簾、亮著的櫃台
-  booth(g, cx, sign, stripe, norenCol, seed, glows, slime) {
+  booth(g, cx, sign, stripe, norenCol, seed, glows, slime, snow) {
     const R = mulberry(seed), w = 420, x = cx - w / 2, top = 330, floor = 905;
     const ink = '#1c0f08';
     g.save(); g.lineJoin = 'round';
@@ -226,6 +231,9 @@ const Street = {
     g.fillStyle = '#3a2412'; rr(g, cx - 130, top - 120, 260, 92, 10); g.fill(); g.stroke();
     g.fillStyle = '#f6ecd4'; rr(g, cx - 118, top - 110, 236, 72, 6); g.fill();
     g.fillStyle = '#1c1008'; g.font = `50px ${FONT}`; g.fillText(sign, cx, top - 72);
+    if (snow) {   // 遮陽棚、招牌上的積雪
+      g.fillStyle = '#eef4ff'; rr(g, x + 4, aw - 12, w - 8, 16, 8); g.fill(); rr(g, cx - 134, top - 132, 268, 18, 9); g.fill();
+    }
     // 棚子兩角的紅燈籠
     for (const lx of [aL + 16, aR - 16]) { this.lantern(g, lx, aw + ah + 50, 1.3, '#ff5a2a'); glows.push([lx, aw + ah + 50, 70, '#ff7a30', 0.55]); }
     // 喪屍主題：招牌和遮陽棚往下滴的綠色黏液

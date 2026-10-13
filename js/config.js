@@ -114,10 +114,10 @@ const LANTERNS = [
 // lanterns：燈籠光暈 [x, y, 顏色, 半徑（省略 = 前 10 盞 70、其他 42）]，座標同 LANTERNS
 // price：遊戲幣價格（COIN_SHOP 打開後才生效；0 = 免費）
 // street：橫式兩側街景（js/street.js）的主題，省略的項目用 STREET_BASE
-//   booths 左右兩間隔壁屋台 [招牌字, [遮陽棚條紋兩色], 暖簾色]；cols 燈籠串顏色；cage 鐵籠燈；win 窗戶燈色；dark 壓暗；slime 綠色黏液；pixel 像素風
+//   booths 左右兩間隔壁屋台 [招牌字, [遮陽棚條紋兩色], 暖簾色]；cols 燈籠串顏色；cage 鐵籠燈；win 窗戶燈色；dark 壓暗；slime 綠色黏液；pixel 像素風；snow 積雪
 const STREET_BASE = {
   booths: [['たこ焼', ['#c8321e', '#fff6e8'], '#24356e'], ['かき氷', ['#2a6fd6', '#f2f8ff'], '#7a1e2a']],
-  cols: ['#ff6a30', '#ff7a30', '#ffd040', '#ff6a30', '#ff70d0', '#ff7a30'], cage: false, win: '#ffaa5a', dark: 0.28, slime: null, pixel: false,
+  cols: ['#ff6a30', '#ff7a30', '#ffd040', '#ff6a30', '#ff70d0', '#ff7a30'], cage: false, win: '#ffaa5a', dark: 0.28, slime: null, pixel: false, snow: false,
 };
 const LANTERN_SIDE = LANTERNS.slice(10);   // 兩側的燈籠串（多數背景同位置）
 const lanternRow = (cols, y = 395) => cols.map((c, i) => [[72, 145, 220, 300, 385, 465, 545, 628, 702, 772][i], y, c]);
@@ -142,6 +142,29 @@ const BACKGROUNDS = [
   { id: 'metal', name: '暗黑金屬', desc: '尖刺與魔法燈籠的金屬攤', price: 800, lanterns: [
     ...lanternRow(['#ff5a30', '#ff8040', '#c060ff', '#e060ff', '#4080ff', '#40d0ff', '#40ff60', '#60ff70', '#ffb040', '#ff5a30'], 410), ...LANTERN_SIDE],
     street: { booths: [['ドクロ', ['#18181c', '#6a1010'], '#101014'], ['メタル', ['#18181c', '#4a1a7a'], '#101014']], cols: ['#ff5a30', '#c060ff', '#4080ff', '#40ff60', '#ffb040'], cage: true, win: '#c070ff', dark: 0.42 } },
+  // 浮世妖怪、中華樓閣：招牌與屋頂的構圖和 bg_stall 不同，對齊時只對吧台以下（tools/bg_prep.html 的 FIX）
+  { id: 'yokai', name: '浮世妖怪', desc: '天狗、鬼面燈籠的浮世繪夜祭', price: 800, lanterns: [
+    ...[[152, '#ff8a6a'], [228, '#ff5a3a'], [306, '#70d070'], [384, '#5ad0c0'], [462, '#60c0e0'], [540, '#ffd040'], [618, '#5a8ad0'], [696, '#ff4a30']].map(([x, c]) => [x, 605, c]),
+    [72, 262, '#ff7a30', 46], [148, 295, '#ffe0b0', 46], [82, 388, '#ffe0b0', 46], [497, 230, '#ffd8b0', 50], [705, 325, '#ffe0b0', 46], [788, 268, '#ff7a30', 46], [800, 400, '#ffe0b0', 42],
+    [22, 720, '#ff7a30'], [62, 728, '#ff7a30'], [790, 742, '#ff7a30'], [828, 742, '#ff7a30']],
+    street: { booths: [['ようかい', ['#3a2a5a', '#e8e0c8'], '#1a2a4a'], ['おめん', ['#8a1a1a', '#f0e0c0'], '#2a1a1a']], cols: ['#ff7a30', '#ffe0b0', '#ff5a3a'], win: '#ffb070', dark: 0.32 } },
+  { id: 'ice', name: '冰封極光', desc: '結冰的屋台與極光夜空', price: 1000, lanterns: [
+    ...lanternRow(['#ff7a30', '#ff7a30', '#ff7a30', '#ff70d0', '#80ff60', '#e080ff', '#ffe060', '#ff7a30', '#ff7a30', '#ff7a30'], 400), ...LANTERN_SIDE.slice(0, 8)],
+    street: { booths: [['おしるこ', ['#6aa8d8', '#f4fbff'], '#2a4a6a'], ['あまざけ', ['#a8c8e8', '#ffffff'], '#3a5a7a']], win: '#ffd890', dark: 0.3, snow: true } },
+  { id: 'eco', name: '綠能未來', desc: '藤蔓、太陽能板與發光植物的未來攤', price: 800, lanterns: [
+    ...lanternRow(['#c080ff', '#c0ff80', '#ffd060', '#c080ff', '#60ff90', '#c080ff', '#ffd060', '#60ff90', '#c080ff', '#ffd060']),
+    [90, 80, '#a0ff80'], [78, 150, '#80ff90'], [48, 205, '#ffe080'], [12, 230, '#c080ff'], [757, 65, '#a0ff80'], [775, 150, '#80ff90'], [805, 190, '#ffe080'], [838, 210, '#c080ff'],
+    [170, 800, '#60ff90', 50], [665, 800, '#60ff90', 50]],
+    street: { booths: [['サラダ', ['#3a9a4a', '#f0fff0'], '#2a5a3a'], ['ジュース', ['#8ac83a', '#fffff0'], '#3a5a2a']], cols: ['#a0ff80', '#c080ff', '#ffe080', '#80ff90'], win: '#c0ff90', dark: 0.3 } },
+  { id: 'china', name: '中華樓閣', desc: '飛簷斗拱與宮燈的中式攤', price: 1000, lanterns: [
+    ...[[198, '#ffc0a0'], [312, '#ff90c0'], [427, '#a0ff90'], [540, '#ffe070'], [650, '#ffb070']].map(([x, c]) => [x, 420, c, 80]),
+    [105, 65, '#ff6a30', 46], [68, 140, '#ffe0a0', 46], [28, 185, '#ff90c0', 46], [740, 55, '#ff6a30', 46], [783, 140, '#a0ff90', 46], [820, 180, '#ff90c0', 46],
+    [8, 470, '#ffd0a0'], [50, 525, '#ff7a30'], [840, 480, '#ffd0a0'], [795, 535, '#ff7a30']],
+    street: { booths: [['ぎょうざ', ['#c8321e', '#ffe8a0'], '#7a1a10'], ['ちまき', ['#2a8a5a', '#ffe8a0'], '#7a1a10']], cols: ['#ff6a30', '#ffe0a0', '#ff90c0', '#a0ff90'], win: '#ffb060' } },
+  { id: 'steam', name: '蒸汽龐克', desc: '黃銅管線、霓虹燈管與飛艇的機械攤', price: 1000, lanterns: [
+    ...[[90, '#ffb040'], [170, '#ffb040'], [255, '#ff7a30'], [320, '#ff7a30'], [410, '#c070ff'], [450, '#c070ff'], [540, '#40ff60'], [615, '#40ff60'], [690, '#ffb040'], [770, '#ffb040']].map(([x, c]) => [x, 415, c]),
+    [30, 510, '#ffb060'], [55, 540, '#ffb060'], [820, 510, '#ffb060'], [790, 540, '#ffb060']],
+    street: { booths: [['ギア', ['#5a4a3a', '#c8a060'], '#3a2a1a'], ['じょうき', ['#3a3a40', '#b87a3a'], '#2a2018']], cols: ['#ffb060'], cage: true, win: '#ffb860', dark: 0.36 } },
 ];
 // ---- 打擊音效包（主選單 → 商店 → 打擊音效）：打中食材時的聲音；音色在 js/audio.js 的 HIT_PACKS ----
 // 每包都依處理動作（切 / 炒 / 淋醬）分三種音，GREAT 再加一聲亮音，節奏回饋和原本一樣清楚

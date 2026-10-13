@@ -147,6 +147,9 @@ const I18N = {
     '動物燈籠': 'どうぶつ提灯', '狐狸、貓咪、狸貓燈籠的可愛攤': 'キツネ・ネコ・タヌキ提灯のかわいい屋台', '喪屍夜市': 'ゾンビ夜市', '本店保證不含喪屍肉……大概': 'ゾンビ肉は使っていません……たぶん',
     '像素復古': 'ドット絵レトロ', '8-bit 風格的 RPG 小店': '8 ビット風 RPG のお店', '柴犬暖簾': '柴犬のれん', '柴犬老闆坐鎮的浪人攤': '柴犬が見守る浪人の屋台',
     '電玩城分店': 'ゲーセン支店', '大型機台和傳送門的電玩分店': 'アーケード筐体とワープゲートの支店', '暗黑金屬': 'ダーク・メタル', '尖刺與魔法燈籠的金屬攤': 'トゲと魔法ランタンのメタル屋台',
+    '浮世妖怪': '浮世絵妖怪', '天狗、鬼面燈籠的浮世繪夜祭': '天狗や鬼の面ちょうちんが並ぶ浮世絵の夜祭り', '冰封極光': '氷とオーロラ', '結冰的屋台與極光夜空': '凍りついた屋台とオーロラの夜空',
+    '綠能未來': 'グリーン未来', '藤蔓、太陽能板與發光植物的未來攤': 'ツタとソーラーパネル、光る植物の未来屋台', '中華樓閣': '中華楼閣', '飛簷斗拱與宮燈的中式攤': '反り屋根と宮灯の中華屋台',
+    '蒸汽龐克': 'スチームパンク', '黃銅管線、霓虹燈管與飛艇的機械攤': '真鍮パイプとネオン管、飛行船のメカ屋台',
     // 付費 VOL
     '購買': '購入', '購買 {0}': '{0} を購入', '恢復購買': '購入を復元', '已解鎖 {0}！': '{0} を解放しました！', '已取消購買': '購入をキャンセルしました', '購買失敗，請稍後再試': '購入に失敗しました。しばらくしてからお試しください',
     '已恢復購買': '購入を復元しました', '沒有可恢復的購買': '復元できる購入はありません', '恢復購買失敗': '購入の復元に失敗しました', '處理中…': '処理中…', '追加樂曲 {0} 首': '追加楽曲 {0} 曲', '選歌就可以先試聽': '曲を選ぶと試聴できます',
@@ -281,6 +284,9 @@ const I18N = {
     '動物燈籠': 'Animal Lanterns', '狐狸、貓咪、狸貓燈籠的可愛攤': 'Cute fox, cat and tanuki lanterns', '喪屍夜市': 'Zombie Market', '本店保證不含喪屍肉……大概': 'Guaranteed zombie-free meat… probably',
     '像素復古': 'Pixel Retro', '8-bit 風格的 RPG 小店': 'An 8-bit RPG shop', '柴犬暖簾': 'Shiba Noren', '柴犬老闆坐鎮的浪人攤': 'A ronin stall watched over by a shiba',
     '電玩城分店': 'Arcade Branch', '大型機台和傳送門的電玩分店': 'Arcade cabinets and a warp gate', '暗黑金屬': 'Dark Metal', '尖刺與魔法燈籠的金屬攤': 'Spikes and magic lanterns',
+    '浮世妖怪': 'Ukiyo-e Yokai', '天狗、鬼面燈籠的浮世繪夜祭': 'An ukiyo-e night festival of tengu and oni lanterns', '冰封極光': 'Frozen Aurora', '結冰的屋台與極光夜空': 'A frozen stall under the northern lights',
+    '綠能未來': 'Green Future', '藤蔓、太陽能板與發光植物的未來攤': 'Vines, solar panels and glowing plants', '中華樓閣': 'Chinese Pavilion', '飛簷斗拱與宮燈的中式攤': 'Upturned eaves and palace lanterns',
+    '蒸汽龐克': 'Steampunk', '黃銅管線、霓虹燈管與飛艇的機械攤': 'Brass pipes, neon tubes and an airship',
     // Paid volumes
     '購買': 'BUY', '購買 {0}': 'BUY {0}', '恢復購買': 'Restore Purchases', '已解鎖 {0}！': '{0} unlocked!', '已取消購買': 'Purchase canceled', '購買失敗，請稍後再試': 'Purchase failed. Please try again later.',
     '已恢復購買': 'Purchases restored', '沒有可恢復的購買': 'No purchases to restore', '恢復購買失敗': 'Could not restore purchases', '處理中…': 'Processing…', '追加樂曲 {0} 首': '{0} more songs', '選歌就可以先試聽': 'Select a song to hear a preview',
