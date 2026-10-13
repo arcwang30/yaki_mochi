@@ -10,7 +10,7 @@ while ($l.IsListening) {
   try {
     if ($req.HttpMethod -eq 'POST' -and $req.Url.AbsolutePath -eq '/__save') {
       $name = [IO.Path]::GetFileName($req.QueryString['name'])
-      if ($name -notmatch '^[a-z0-9_]+\.(png|jpg)$') { $c.Response.StatusCode = 400 }
+      if ($name -notmatch '^[a-z0-9_]+\.(png|jpg|webp)$') { $c.Response.StatusCode = 400 }
       else {
         $ms = New-Object IO.MemoryStream; $req.InputStream.CopyTo($ms)
         [IO.File]::WriteAllBytes((Join-Path $out $name), $ms.ToArray())

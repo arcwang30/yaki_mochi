@@ -99,6 +99,7 @@ function speechBubble(x, y, str, a = 1) {
 // 載入完成後點一下 / 任意鍵可以提早淡出。ready 由 js/main.js 在素材與字型載入完成時設定
 Screens.logo = {
   t: 0, shown: -1, leaving: -1, ready: false, IN: 0.6, HOLD: 1.6, OUT: 0.5,
+  BOX: lay(500, 560),   // LOGO 縮放到最長邊 = 這個大小
   enter() { this.t = 0; this.shown = -1; this.leaving = -1; },
   frame(dt) {
     this.t += dt;
@@ -114,14 +115,14 @@ Screens.logo = {
     ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
     const fin = ease(clamp(la / this.IN, 0, 1)), a = fin * (1 - out);
     if (img && a > 0) {
-      const s = 0.94 + 0.06 * fin, w = lay(560, 760) * s, h = w * img.height / img.width, cx = W / 2, cy = H * 0.45;
+      const s = (0.94 + 0.06 * fin) * this.BOX / Math.max(img.width, img.height), w = img.width * s, h = img.height * s, cx = W / 2, cy = H * 0.45;
       ctx.save(); ctx.globalAlpha = a; ctx.drawImage(img, cx - w / 2, cy - h / 2, w, h); ctx.restore();
     }
     // 載入進度條（載入完就淡掉）
     const prog = Assets.names.length ? Assets.loaded / Assets.names.length : 1;
     this.barA = clamp((this.barA === undefined ? 1 : this.barA) + (this.ready ? -dt * 3 : dt * 3), 0, 1);
     if (this.barA > 0 && !this.ready) {
-      const bw = lay(260, 360), bx = W / 2 - bw / 2, by = H * 0.45 + lay(170, 200);
+      const bw = lay(260, 360), bx = W / 2 - bw / 2, by = H * 0.45 + this.BOX / 2 + 36;   // LOGO 下方
       ctx.save(); ctx.globalAlpha = this.barA * 0.9;
       ctx.fillStyle = 'rgba(255,255,255,.12)'; rrect(bx, by, bw, 6, 3); ctx.fill();
       ctx.fillStyle = '#ffd23f'; rrect(bx, by, Math.max(6, bw * prog), 6, 3); ctx.fill();

@@ -2,9 +2,9 @@
 
 // ===== Service Worker：讓遊戲可安裝成 APP、離線也能玩 =====
 // 發佈新版本時把 VERSION 加 1，舊快取會在下次開啟時清掉。
-const VERSION = 'v58';
+const VERSION = 'v59';
 const CACHE = 'daioyaki-' + VERSION;
-const IMAGES = ['bg_stall.jpg', 'team_logo.png', 'griddle.png', 'button.png', 'great_text.png', 'okonomiyaki.png',
+const IMAGES = ['bg_stall.jpg', 'team_logo.webp', 'griddle.png', 'button.png', 'great_text.png', 'okonomiyaki.png',
   'chef_idle.png', 'chef_wave.png', 'chef_knife.png', 'chef_spatula.png', 'chef_sauce.png', 'chef_great.png', 'chef_nice.png', 'chef_bad.png', 'chef_cheer.png',
   'noodles_raw.png', 'yakisoba.png', 'cabbage_raw.png', 'cabbage_shred.png', 'crepe_raw.png', 'crepe_sauce.png', 'bacon_raw.png', 'bacon_bits.png'];
 const CORE = ['./', 'index.html', 'manifest.json', 'css/style.css',

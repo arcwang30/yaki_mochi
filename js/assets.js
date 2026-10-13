@@ -3,7 +3,7 @@
 // ===== 圖片素材載入與共用繪圖小工具 =====
 const IMG = {};
 const Assets = {
-  names: ['bg_stall.jpg', 'team_logo', 'griddle', 'button', 'great_text', 'okonomiyaki',
+  names: ['bg_stall.jpg', 'team_logo.webp', 'griddle', 'button', 'great_text', 'okonomiyaki',
     'chef_idle', 'chef_wave', 'chef_knife', 'chef_spatula', 'chef_sauce', 'chef_great', 'chef_nice', 'chef_bad', 'chef_cheer',
     'noodles_raw', 'yakisoba', 'cabbage_raw', 'cabbage_shred', 'crepe_raw', 'crepe_sauce', 'bacon_raw', 'bacon_bits'],
   loaded: 0,
