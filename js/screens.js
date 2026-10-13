@@ -2265,7 +2265,6 @@ Screens.credits = {
     UI.begin(this);
     if (UI.button(this, '返回', W / 2 - 110, lay(1076, 940), 220, 70, { back: true }) || Input.was('back')) App.goto('menu');
     UI.nav(this);
-    UI.copyright();
   }
 };
 
