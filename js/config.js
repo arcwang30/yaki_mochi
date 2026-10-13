@@ -149,17 +149,17 @@ const BACKGROUNDS = [
 const HIT_SOUNDS = [
   { id: 'classic', name: '經典鐵板', desc: '咚！鐵板與菜刀的原味聲響', price: 0, color: '#c8521e' },
   { id: 'taiko', name: '和太鼓', desc: '咚、咔！祭典太鼓的節奏', price: 300, color: '#a82a2a' },
-  { id: 'chip', name: '8-bit 電玩', desc: '嗶嗶！懷舊遊戲機的電子音', price: 400, color: '#2a9a3a' },
   { id: 'laser', name: '電子雷射', desc: '咻碰！電音舞台的合成音效', price: 400, color: '#7a2ad6' },
   { id: 'bell', name: '風鈴', desc: '叮鈴～清涼的夏日鈴聲', price: 400, color: '#2a8ad6' },
   { id: 'cat', name: '貓咪', desc: '喵！每一下都是貓叫', price: 600, color: '#e8902a' },
   { id: 'drums', name: '爵士鼓組', desc: '咚恰！大鼓小鼓配銅鈸', price: 300, color: '#5a6a8a' },
   { id: 'bubble', name: '泡泡', desc: '啵！一顆一顆的泡泡破掉', price: 400, color: '#3ac0d8' },
   { id: 'register', name: '收銀機', desc: '鏘鈴！生意興隆的收銀聲', price: 500, color: '#d8a020' },
-  { id: 'dog', name: '柴犬', desc: '汪！柴犬老闆幫你吆喝', price: 600, color: '#c87a3a' },
+  { id: 'hanabi', name: '花火大會', desc: '咻～碰！GREAT 時火花劈哩啪啦', price: 600, color: '#3a2a8a' },
+  { id: 'koto', name: '箏', desc: '叮～錚！和風古箏的五聲音階撥弦', price: 400, color: '#8a5a2a' },
   // 限定（高價）：卡片左上角掛「限定」牌
-  { id: 'hanabi', name: '花火大會', desc: '咻～碰！GREAT 時火花劈哩啪啦', price: 1800, color: '#3a2a8a', tag: '限定' },
-  { id: 'koto', name: '箏', desc: '叮～錚！和風古箏的五聲音階撥弦', price: 1500, color: '#8a5a2a', tag: '限定' },
+  { id: 'chip', name: '8-bit 電玩', desc: '嗶嗶！懷舊遊戲機的電子音', price: 1500, color: '#2a9a3a', tag: '限定' },
+  { id: 'dog', name: '柴犬', desc: '汪！柴犬老闆幫你吆喝', price: 1800, color: '#c87a3a', tag: '限定' },
 ];
 
 // ---- 陪伴寵物（主選單 → 商店 → 陪伴寵物）：畫法與反應在 js/pets.js；art: true = 改用 assets/images/pet_<id>_<mood>.png ----
