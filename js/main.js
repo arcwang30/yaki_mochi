@@ -16,7 +16,7 @@
     if (LAND) RES = Math.min(Display.renderScale(), RES_MAX());   // PC 版：依設定的解析度繪製，再縮放到視窗大小
     cv.width = Math.round(W * RES);
     cv.height = Math.round(H * RES);
-    Sides.resize(W * scale);
+    Sides.resize(W * scale, H * scale);
   }
 
   Sides.init();   // 兩側掛簾（iPad 等比 9:16 寬的螢幕，js/sides.js）
@@ -88,6 +88,7 @@
     Sound.tick();
     ctx.setTransform(RES, 0, 0, RES, 0, 0);
     App.frame(dt);
+    Sides.tick(performance.now(), cv);   // 手機上下空白：延伸畫面上下緣（js/sides.js；有節流）
     Input.endFrame();
   }
   window.__step = step;

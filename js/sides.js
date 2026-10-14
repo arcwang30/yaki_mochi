@@ -1,7 +1,9 @@
 'use strict';
 
-// ===== 兩側掛簾：直式版面在比 9:16 寬的螢幕上（例如 iPad），左右空白各掛一幅廣島燒的布簾 =====
-// 只在視窗大小改變、圖片與字型載入完成時重畫，平常不花效能。遊玩中點兩側也算打擊（iPad 手常放在兩邊）。
+// ===== 直式版面的空白處理 =====
+// 比 9:16 寬的螢幕（例如 iPad）：左右空白各掛一幅廣島燒的布簾（on）
+// 比 9:16 長的螢幕（一般 iPhone）：上下空白延伸遊戲畫面的上下緣（vOn，見 tick），下方空白的上半部也算打擊
+// 掛簾只在視窗大小改變、圖片與字型載入完成時重畫，平常不花效能。遊玩中點兩側也算打擊（iPad 手常放在兩邊）。
 const Sides = {
   el: null, ctx: null, on: false,
   // 各邊的字：上方小色帶＋直書大字；下方一串燈籠，每盞一個字（字數 = 燈籠數）
@@ -10,20 +12,59 @@ const Sides = {
   init() {
     this.el = document.getElementById('sides');
     this.ctx = this.el.getContext('2d');
-    this.el.addEventListener('pointerdown', e => { Input.hit(undefined, undefined, e.timeStamp); e.preventDefault(); });
+    this.el.addEventListener('pointerdown', e => {
+      // 手機上下空白：只有下方空白的上半部算打擊（上方有動態島；最底下留給 Home 指示條的往上滑）
+      if (this.vOn) { const gb = (this.vh + this.gameH) / 2; if (e.clientY < gb || e.clientY > gb + this.vert * 0.6) return; }
+      Input.hit(undefined, undefined, e.timeStamp); e.preventDefault();
+    });
   },
 
-  // gameW = 遊戲畫面實際顯示的寬度（CSS px）
-  resize(gameW) {
-    const vw = window.innerWidth, vh = window.innerHeight, side = (vw - gameW) / 2;
-    this.on = !LAND && side > 12;   // 手機上下的空白不處理，維持原樣
-    this.el.style.display = this.on ? 'block' : 'none';
-    if (!this.on) return;
+  // gameW、gameH = 遊戲畫面實際顯示的寬高（CSS px）
+  // 比 9:16 寬（iPad）→ 左右掛簾（on）；比 9:16 長（一般 iPhone）→ 上下延伸畫面（vOn，tick 裡畫）
+  resize(gameW, gameH = window.innerHeight) {
+    const vw = window.innerWidth, vh = window.innerHeight, side = (vw - gameW) / 2, vert = (vh - gameH) / 2;
+    this.on = !LAND && side > 12;
+    this.vOn = !LAND && !this.on && vert > 12;
+    this.el.style.display = this.on || this.vOn ? 'block' : 'none';
+    if (!this.on && !this.vOn) return;
     const dpr = window.devicePixelRatio || 1;
     this.el.width = Math.round(vw * dpr);
     this.el.height = Math.round(vh * dpr);
     this.vw = vw; this.vh = vh; this.side = side; this.dpr = dpr;
+    this.gameW = gameW; this.gameH = gameH; this.vert = vert; this.lastT = 0;
     this.draw();
+  },
+
+  // ---- 手機上下空白：把遊戲畫面最上緣、最下緣幾行壓成一排色塊（只留顏色、不留細節，選單提示字也不會被複製），
+  //      再平滑放大到空白處，像畫面的光色往外延伸；外側壓暗融進螢幕邊緣，上方加幾顆星星。取的是當下的畫面，所以任何店面背景、任何畫面都會自動配色。
+  //      主迴圈每幀呼叫，實際約每秒 12 次（省電模式 6 次）重畫 ----
+  tick(now, src) {
+    if (!this.vOn || now - this.lastT < (ECO() ? 160 : 80)) return;
+    this.lastT = now;
+    const c = this.ctx, { vw, vh, vert, gameW } = this, gx = (vw - gameW) / 2;
+    if (!this.tmp) { this.tmp = document.createElement('canvas'); this.tmp.width = 24; this.tmp.height = 1; }
+    const t = this.tmp, tg = t.getContext('2d'), sh = Math.max(1, Math.round(src.height * 0.05));
+    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    c.clearRect(0, 0, vw, vh);
+    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; tg.imageSmoothingEnabled = true; tg.imageSmoothingQuality = 'high';
+    [[0, 0], [src.height - sh, vh - vert]].forEach(([sy, y]) => {
+      tg.clearRect(0, 0, t.width, 1); tg.drawImage(src, 0, sy, src.width, sh, 0, 0, t.width, 1);   // 邊緣一段 → 24 格平均色
+      c.drawImage(t, 0.5, 0, t.width - 1, 1, gx, y, gameW, vert + 1);   // 平滑放大（左右漸層、上下同色）
+    });
+    // 外側壓暗（越靠螢幕邊緣越暗）
+    for (const [y0, y1] of [[0, vert], [vh, vh - vert]]) {
+      const g = c.createLinearGradient(0, y0, 0, y1);
+      g.addColorStop(0, 'rgba(5,6,22,.82)'); g.addColorStop(1, 'rgba(5,6,22,.12)');
+      c.fillStyle = g; c.fillRect(0, Math.min(y0, y1), vw, vert);
+    }
+    // 上方的星星（固定位置、輕輕閃）
+    const tm = now / 1000;
+    for (let i = 0; i < 14; i++) {
+      const x = ((i * 0.618034 + 0.13) % 1) * vw, y = ((i * 0.381966 + 0.07) % 1) * vert * 0.8;
+      c.globalAlpha = 0.35 + 0.35 * Math.sin(tm * (1.2 + (i % 5) * 0.3) + i * 2.1);
+      c.fillStyle = '#fff8e0'; c.beginPath(); c.arc(x, y, 0.8 + (i % 3) * 0.45, 0, Math.PI * 2); c.fill();
+    }
+    c.globalAlpha = 1;
   },
 
   draw() {
