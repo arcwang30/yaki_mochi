@@ -16,7 +16,10 @@
     if (LAND) RES = Math.min(Display.renderScale(), RES_MAX());   // PC 版：依設定的解析度繪製，再縮放到視窗大小
     cv.width = Math.round(W * RES);
     cv.height = Math.round(H * RES);
+    Sides.resize(W * scale);
   }
+
+  Sides.init();   // 兩側掛簾（iPad 等比 9:16 寬的螢幕，js/sides.js）
   window.applyPowerMode = resize;   // 設定切換省電模式時重新套用解析度
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', () => setTimeout(resize, 200));
@@ -48,7 +51,7 @@
 
   App.start('logo');   // 團隊 LOGO 兼載入畫面（js/screens.js）
   const fonts = Promise.race([document.fonts.load('40px "Mochiy Pop One"'), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
-  Promise.all([Assets.load(), fonts]).then(() => { Screens.logo.ready = true; });   // 載入完成：LOGO 停留夠久就接標題
+  Promise.all([Assets.load(), fonts]).then(() => { Screens.logo.ready = true; Sides.draw(); });   // 載入完成：LOGO 停留夠久就接標題
 
   // 遊戲中每 4 秒看一次平均幀間隔：明顯跟不上目標幀率（> 1.3 倍）就把解析度降 15%（不低於 1 倍），避免越玩越卡
   const perf = { sum: 0, n: 0 };
@@ -65,7 +68,7 @@
   function loop(now) {
     // 幀率上限：60（120Hz 螢幕不會跑到 120）；省電模式 30。判定用事件時間戳記與音訊時鐘，不受幀率影響
     if (now - last < 1000 / FPS_MAX() - 1.5) { requestAnimationFrame(loop); return; }
-    const landscape = !LAND && coarse && window.innerWidth > window.innerHeight * 1.1;   // 直式版面才需要提示轉回直立
+    const landscape = !LAND && !NATIVE_APP && coarse && window.innerWidth > window.innerHeight * 1.1;   // 直式版面才需要提示轉回直立；App 版鎖定直式，iPad 視窗被拉成橫長時直接縮放，兩側掛簾
     if (landscape) { rotate.style.display = 'flex'; pauseGame(); }
     else if (rotate.style.display !== 'none') rotate.style.display = 'none';
     const dt = Math.min((now - last) / 1000, 0.05);

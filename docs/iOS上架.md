@@ -40,14 +40,14 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 | --- | --- | --- |
 | Bundle ID | `capacitor.config.json` 的 `appId` | `com.arcconceptgames.daioyaki`。**在 App Store Connect 註冊後就不能改**，要換請在 `npx cap add ios` 之前改好 |
 | App 名稱（主畫面下方的字） | `capacitor.config.json` 的 `appName` | 大王焼き |
-| 方向 | `tools/ios-setup.mjs` | iPhone 直式、iPad 橫式 |
+| 方向 | `tools/ios-setup.mjs` | iPhone 直式；iPad 直式＋倒立直式（左右空白掛廣島燒掛簾與燈籠，見 `js/sides.js`；點兩側也算打擊） |
 | 原生版判斷 | `js/config.js` 的 `NATIVE_APP` | 不註冊 Service Worker、不顯示「安裝到主畫面」、忽略網址測試參數（`?fast`、`?shop=test` 等） |
 | 字型 | `tools/build-web.mjs` | 改用 App 內附的 Mochiy Pop One（OFL 授權），不連 Google Fonts |
 
 ## 進度
 
 - [x] 階段 1：Capacitor 設定、原生版開關、字型內附、建置腳本
-- [ ] 階段 2：iPad 用 16:9 橫式版面
+- [x] 階段 2：iPad 直式（兩側掛簾、點兩側算打擊、不顯示轉向提示）
 - [ ] 階段 3：App Store 內購（VOL.1～6，非消耗型），先用 Xcode 的 StoreKit 設定檔在本機測試
 - [ ] 階段 4：iOS 音訊（解鎖、背景暫停、靜音鍵）、存檔改原生儲存、原生分享
 - [ ] 階段 5：App Store Connect（App、內購商品、隱私問卷）、TestFlight、送審
