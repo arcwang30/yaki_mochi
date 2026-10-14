@@ -15,6 +15,7 @@ const Save = {
   load() {
     try {
       const raw = localStorage.getItem(this.key);
+      this.fresh = !raw;   // 沒有存檔（第一次開啟，或 iOS 清掉了 localStorage → js/native.js 會從備份檔還原）
       if (raw) Object.assign(this.data, JSON.parse(raw));
     } catch (e) { /* ignore */ }
     this.normalize();
@@ -50,7 +51,9 @@ const Save = {
   },
 
   store() {
-    try { localStorage.setItem(this.key, JSON.stringify(this.data)); } catch (e) { /* ignore */ }
+    const json = JSON.stringify(this.data);
+    try { localStorage.setItem(this.key, json); } catch (e) { /* ignore */ }
+    Native.mirrorSave(json);   // App 版：另存一份備份檔
   },
 
   // HISCORE = 自己這一首（這個難度）的最高分；沒玩過 = 0
@@ -92,3 +95,4 @@ const Save = {
 };
 
 Save.load();
+Native.restoreSave(Save.fresh);

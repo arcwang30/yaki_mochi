@@ -1629,6 +1629,14 @@ Screens.settings = {
   exportSave() {
     Sound.play('confirm');
     const code = Save.exportCode();
+    // App 版：複製到剪貼簿，同時叫出分享選單（可以存到「檔案」、傳給自己）；不能下載檔案
+    if (NATIVE_APP) {
+      const copied = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(code).then(() => true, () => false) : Promise.resolve(false);
+      const shared = Native.shareFile('daioyaki-save.txt', code, undefined, 'utf8').then(() => true, () => false);
+      Promise.all([copied, shared]).then(([c, s]) => this.say(c ? (s ? '已複製存檔碼！也可以存到「檔案」或傳給自己保存' : '已複製存檔碼！貼到記事本或傳給自己保存')
+        : s ? '存檔碼可以存到「檔案」或傳給自己保存' : '匯出失敗，請稍後再試'));
+      return;
+    }
     const download = () => {
       const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([code], { type: 'text/plain' })); a.download = 'daioyaki-save.txt';
       document.body.appendChild(a); a.click(); a.remove(); this.say('已下載存檔檔案（daioyaki-save.txt）');
@@ -1644,6 +1652,7 @@ Screens.settings = {
       if (!d) { if (code) this.say('這不是有效的存檔碼'); return; }
       if (!window.confirm(tr('會用存檔碼覆蓋目前的成績、紀錄與設定，確定嗎？'))) return;
       Save.importData(d); this.say('匯入完成！即將重新載入…');
+      Native.flushSave();   // App 版：重新載入前先把備份檔寫好
       setTimeout(() => location.reload(), 900);
     };
     const ask = () => { const c = window.prompt(tr('請貼上存檔碼')); if (c) apply(c); };
@@ -1754,7 +1763,7 @@ Screens.settings = {
     if (LAND) {
       this.toggle('full', 90, '全螢幕', 'F11 也可以切換', Display.fullscreen(), () => { Display.setFullscreen(!Display.fullscreen()); Sound.play('confirm'); });
       this.choice('res', '解析度', RESOLUTIONS.map(r => [r, r.replace('x', '×')]), Save.data.res, r => this.setRes(r));
-    } else this.toggle('vibrate', 90, '震動', navigator.vibrate ? '手機打擊時輕微震動' : '此裝置不支援震動', Save.data.vibrate,
+    } else this.toggle('vibrate', 90, '震動', Sound.canVibrate() ? '手機打擊時輕微震動' : '此裝置不支援震動', Save.data.vibrate,
       () => { Save.data.vibrate = !Save.data.vibrate; Save.store(); Sound.play('confirm'); Sound.vibrate(30); });
     this.toggle('eco', 90, '省電模式', '每秒 30 幀・較低解析度・減少特效（判定不受影響）', Save.data.eco,
       () => { Save.data.eco = !Save.data.eco; Save.store(); Sound.play('confirm'); if (window.applyPowerMode) window.applyPowerMode(); });

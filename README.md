@@ -35,6 +35,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `js/ui.js` | 即時模式 UI（按鈕、面板、標題帶） |
 | `js/assets.js` | 圖片載入與繪圖小工具 |
 | `js/save.js` | 設定與成績（localStorage；HISCORE = 自己的最高分；存檔碼備份） |
+| `js/native.js` | iOS App 版的原生功能：震動、分享選單、存檔備份檔（網頁版不使用） |
 | `js/pwa.js`, `sw.js`, `manifest.json` | PWA：Service Worker（離線快取）、安裝提示、APP 設定 |
 | `js/i18n.js` | 中文／日本語／English 翻譯表（以中文原文為鍵，新增文字時在此補翻譯） |
 | `assets/images/` | 遊戲用圖（已去背、裁切、壓縮） |

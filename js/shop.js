@@ -51,9 +51,7 @@ const AppleStore = {
   list() { return Save.data.appleOwned || (Save.data.appleOwned = []); },
 
   init() {
-    const C = window.Capacitor || {};
-    this.plugin = (window.capacitorNativePurchases && window.capacitorNativePurchases.NativePurchases)
-      || (C.Plugins && C.Plugins.NativePurchases) || (C.registerPlugin && C.registerPlugin('NativePurchases')) || null;
+    this.plugin = Native.plugin('NativePurchases', 'capacitorNativePurchases');
     if (!this.plugin) { console.warn('NativePurchases plugin not found'); return; }
     // 家長同意（Ask to Buy）通過、在別台裝置買的、退款：StoreKit 之後才通知，收到就重新整理擁有清單
     this.plugin.addListener('transactionUpdated', () => this.refresh());

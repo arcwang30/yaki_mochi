@@ -14,6 +14,8 @@ const Share = {
     const R = RATINGS[r.rating];
     const text = tr('我在《大王焼き リズム屋台》的「{0}」拿到 {1} 分！評價：{2}', songName(song), r.score, tr(R.title))
       + (/^https?:/.test(location.href) ? ' ' + location.origin + location.pathname : '');
+    // App 版：寫成暫存檔，叫出 iOS 分享選單（WKWebView 的 navigator.share 不一定能分享檔案、也沒辦法下載）
+    if (NATIVE_APP) { Native.shareFile(name, url.split(',')[1], text).catch(e => console.warn('share failed', e)); return; }
     let file = null;
     try {
       const bin = atob(url.split(',')[1]), buf = new Uint8Array(bin.length);

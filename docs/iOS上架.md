@@ -10,7 +10,7 @@
 ## 第一次設定
 
 ```sh
-npm install @capacitor/core @capacitor/ios @capgo/native-purchases @fontsource/mochiy-pop-one
+npm install @capacitor/core @capacitor/ios @capacitor/haptics @capacitor/share @capacitor/filesystem @capgo/native-purchases @fontsource/mochiy-pop-one
 npm install -D @capacitor/cli
 npm run build            # 產生 www/
 npx cap add ios          # 產生 Xcode 專案 ios/
@@ -44,6 +44,32 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 | 方向 | `tools/ios-setup.mjs` | iPhone 直式；iPad 直式＋倒立直式（左右空白掛廣島燒掛簾與燈籠，見 `js/sides.js`；點兩側也算打擊） |
 | 原生版判斷 | `js/config.js` 的 `NATIVE_APP` | 不註冊 Service Worker、不顯示「安裝到主畫面」、忽略網址測試參數（`?fast`、`?shop=test` 等） |
 | 字型 | `tools/build-web.mjs` | 改用 App 內附的 Mochiy Pop One（OFL 授權），不連 Google Fonts |
+
+## iOS 原生功能（`js/native.js`）
+
+App 版才會用到；網頁版行為不變。官方外掛（Haptics、Share、Filesystem）由 `npx cap sync` 自動加進 Xcode 專案，JS 這邊用 `Capacitor.registerPlugin` 直接呼叫原生。
+
+| 項目 | 做法 |
+| --- | --- |
+| 震動 | iPhone 用觸覺回饋（打中＝輕、失誤＝中）；iPad 沒有觸覺引擎，設定裡顯示「此裝置不支援震動」 |
+| 分享成績圖 | 寫成暫存檔，叫出 iOS 分享選單（LINE、IG、存到照片…） |
+| 匯出存檔碼 | 複製到剪貼簿，同時叫出分享選單（可以存成 `daioyaki-save.txt` 到「檔案」或傳給自己） |
+| 存檔備份 | 每次存檔（1 秒內合併）另寫一份 `Library/save.json`（跟著 iCloud 備份）；切到背景時立刻寫。iOS 清掉 localStorage 時，下次開啟自動從備份還原 |
+| 靜音開關 | 打開靜音開關也有聲音（`navigator.audioSession.type = 'playback'`，iOS 16.4+）；會暫停其他 App 正在播的音樂 |
+| 音訊被打斷 | 來電、Siri、鬧鐘：遊戲自動暫停，回來後點一下就恢復聲音 |
+
+測試清單（實機 iPhone 為主）：
+
+| 測試 | 預期 |
+| --- | --- |
+| 打開靜音開關玩一首 | 有聲音 |
+| 玩到一半叫 Siri／打電話進來 | 遊戲暫停；回來按繼續，音樂和判定正常 |
+| 玩到一半切到背景再回來 | 遊戲暫停、沒有聲音殘留 |
+| 設定 → 震動開關、遊玩中打擊 | iPhone 有觸覺回饋；iPad 顯示不支援 |
+| 結算 → 分享 | 出現分享選單，圖片正確；取消也不會出錯 |
+| 設定 → 存檔備份 → 匯出 | 出現分享選單（可存到「檔案」）；提示已複製；到「備忘錄」貼上是一串 `DAIOYAKI1.` 開頭的碼 |
+| 匯入剛剛的存檔碼 | 重新載入後成績、設定都在 |
+| 備份還原：玩幾首 → Safari 開發者工具（Mac Safari → 開發 → 模擬器）執行 `localStorage.clear()` → 重開 App | 成績、設定都還在 |
 
 ## 內購規劃
 
@@ -116,5 +142,5 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 - [x] 階段 1：Capacitor 設定、原生版開關、字型內附、建置腳本
 - [x] 階段 2：iPad 直式（兩側掛簾、點兩側算打擊、不顯示轉向提示）
 - [ ] 階段 3：App Store 內購（VOL.1～3 首發，非消耗型）：程式完成，待 Mac 上用 StoreKit 設定檔測試
-- [ ] 階段 4：iOS 音訊（解鎖、背景暫停、靜音鍵）、存檔改原生儲存、原生分享
+- [ ] 階段 4：iOS 原生功能（震動、分享、存檔備份、靜音開關、音訊打斷）：程式完成，待 Mac 上實機測試
 - [ ] 階段 5：App Store Connect（App、內購商品、隱私問卷）、TestFlight、送審

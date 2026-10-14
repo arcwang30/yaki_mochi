@@ -442,8 +442,12 @@ const Sound = {
   init() {
     if (A.ctx) { this.resume(); return; }
     try {
+      // App 版：音樂是遊戲的核心，iPhone 的靜音開關打開時也要有聲音（WebKit 的 Audio Session API，iOS 16.4+；舊版照系統預設）
+      if (NATIVE_APP && navigator.audioSession) { try { navigator.audioSession.type = 'playback'; } catch (e) { /* ignore */ } }
       const C = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
       A.ctx = C;
+      // 音訊被打斷（來電、Siri…）或暫停：通知遊戲暫停，免得樂曲時鐘停住、畫面還在跑
+      C.onstatechange = () => { if (C.state !== 'running' && this.onStop) this.onStop(); };
       A.master = C.createGain(); A.master.gain.value = 0.9; A.master.connect(C.destination);
       const comp = C.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 4; comp.connect(A.master);
       A.music = C.createGain(); A.music.connect(comp);
@@ -561,7 +565,12 @@ const Sound = {
     }
   },
 
-  vibrate(ms) { if (Save.data.vibrate && navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) { /* ignore */ } } },
+  canVibrate() { return Native.canHaptic || !!navigator.vibrate; },   // iPhone App：原生觸覺回饋；其他：瀏覽器的 navigator.vibrate（iOS 瀏覽器沒有）
+  vibrate(ms) {
+    if (!Save.data.vibrate) return;
+    if (Native.canHaptic) Native.haptic(ms);
+    else if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) { /* ignore */ } }
+  },
 
   // ---- 選單音樂 / 選曲試聽：循環播放某首歌的某一段 ----
   // 每次換歌建立新的音量節點，舊的直接淡出斷開（已排入的音符不會殘留）
@@ -609,5 +618,6 @@ const Sound = {
     }
   },
   suspend() { if (A.ctx && A.ctx.state === 'running') A.ctx.suspend(); },
-  resume() { if (A.ctx && A.ctx.state === 'suspended') A.ctx.resume(); },
+  // iOS：來電、Siri、鬧鐘打斷時狀態是 'interrupted'（不是 suspended），一樣要 resume
+  resume() { if (A.ctx && A.ctx.state !== 'running' && A.ctx.state !== 'closed') A.ctx.resume(); },
 };

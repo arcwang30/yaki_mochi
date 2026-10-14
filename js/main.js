@@ -41,9 +41,10 @@
   const scheduling = () => App.name === 'game' || (App.name === 'tutorial' && Screens.tutorial.phase !== 'intro');   // 教學完成卡片後面伴奏繼續
   const pauseGame = () => { if (playing() && Game.s && !Game.s.paused && !Game.s.ended) App.cur.pause(); };
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) { pauseGame(); Sound.suspend(); } else Sound.resume();
+    if (document.hidden) { pauseGame(); Sound.suspend(); Native.flushSave(); } else Sound.resume();
   });
   window.addEventListener('blur', pauseGame);
+  Sound.onStop = pauseGame;   // 音訊被打斷（iOS 來電、Siri…）也暫停
   const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
 
   // 樂曲排程另外用計時器跑，畫面掉幀時音樂也不會斷
