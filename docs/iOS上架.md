@@ -144,3 +144,35 @@ App 版才會用到；網頁版行為不變。官方外掛（Haptics、Share、F
 - [ ] 階段 3：App Store 內購（VOL.1～3 首發，非消耗型）：程式完成，待 Mac 上用 StoreKit 設定檔測試
 - [ ] 階段 4：iOS 原生功能（震動、分享、存檔備份、靜音開關、音訊打斷）：程式完成，待 Mac 上實機測試
 - [ ] 階段 5：App Store Connect（App、內購商品、隱私問卷）、TestFlight、送審
+
+## 上架資料（階段 5）
+
+### 公開網站（隱私權政策、支援頁面）
+
+App Store Connect 必填「隱私權政策網址」和「支援網址」。放在一個**獨立的公開網站**，遊戲的 repo 維持私人（不推出網頁版，原始碼與付費內容不公開）。
+
+| 頁面 | 網址 | 填在 App Store Connect |
+| --- | --- | --- |
+| 首頁 | https://arcconceptgames.github.io/ | （行銷網址，選填） |
+| 隱私權政策 | https://arcconceptgames.github.io/daioyaki/privacy/ | App 資訊 → 隱私權政策網址 |
+| 支援 | https://arcconceptgames.github.io/daioyaki/support/ | 版本資訊 → 支援網址 |
+
+各頁網址加 `?lang=zh|ja|en` 指定語言，沒指定時依瀏覽器語言（App Store Connect 各語系可以填不同的網址）。
+
+檔案在本 repo 的 `site/`（共用 `style.css`、`lang.js`；不載入任何外部資源）。
+
+**第一次設定（GitHub 網站上操作）**
+
+1. 遊戲 repo 收起來：`arcwang30/yaki_mochi` → Settings → Pages 取消發佈；Settings → General → Danger Zone → Change visibility → **Private**
+2. 建組織：GitHub 右上角 **+ → New organization** → Free 方案，名稱 `arcconceptgames`
+3. 在組織下建 **公開** repo，名稱必須是 `arcconceptgames.github.io`
+4. 把 `site/` 裡的**所有檔案**（含 `.nojekyll`）上傳到那個 repo 的根目錄（網頁上 **Add file → Upload files** 拖進去即可）
+5. 那個 repo → Settings → Pages：Source 選 **Deploy from a branch**、`main` / `(root)`；幾分鐘後上面三個網址就能打開
+
+**之後要改內容**：改 `site/` 裡的檔案，再上傳覆蓋到 `arcconceptgames.github.io` repo。
+
+**內容維護**
+- 隱私權政策：遊戲功能改變時要跟著更新（例如加了分析工具、排行榜、帳號、廣告），並更新生效日期
+- 支援頁面：常見問題寫的是遊戲裡的實際選單名稱，改了選單文字要一起改
+- 上架後在首頁的作品卡片加上 App Store 連結
+- App Store Connect 的「App 隱私權」問卷：依目前功能可以填 **「未收集資料」（Data Not Collected）**
