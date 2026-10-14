@@ -870,7 +870,8 @@ Screens.shop = {
       ctx.save(); ctx.globalAlpha = a; UI.panel(cx - 200, ty - 28, 400, 56, 28, 'rgba(16,22,52,.96)', '#8dff8a');
       UI.text(this.toast.text, cx, ty + 1, 24, { fill: '#fff', stroke: null, raw: true, maxW: 370 }); ctx.restore();
     }
-    UI.hint(c.kind === 'vol' ? (ex ? '← → 選擇　↑↓ 試聽曲目　Q E 分頁　X 恢復購買　ENTER 決定' : '← → 選擇　↑↓ 試聽曲目　Q E 分頁　ENTER 決定')
+    UI.hint(Input.touchMode ? '點卡片選擇・點上方分頁切換'   // 手機：跟其他畫面一樣顯示觸控的操作
+      : c.kind === 'vol' ? (ex ? '← → 選擇　↑↓ 試聽曲目　Q E 分頁　X 恢復購買　ENTER 決定' : '← → 選擇　↑↓ 試聽曲目　Q E 分頁　ENTER 決定')
       : c.kind === 'hit' ? '方向鍵 選擇　Q E 分頁　X 試聽　ENTER 套用' : '方向鍵 選擇　Q E 分頁　ENTER 套用');
     if (inp) this.drawAsk(inp);
     if (Shop.busy) { UI.dim(0.55); UI.text('處理中…', W / 2, H / 2, 44, { fill: '#fff', sw: 8 }); }

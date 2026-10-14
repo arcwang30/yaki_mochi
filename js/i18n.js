@@ -115,7 +115,7 @@ const I18N = {
     // PC 版（橫式）
     '結束遊戲': 'ゲーム終了', '語音': 'ボイス', '樂曲': '楽曲', '全曲原創（AI 協助製作）': '全曲オリジナル（AI アシストで制作）', '解析度': '解像度', '全螢幕': 'フルスクリーン', 'F11 也可以切換': 'F11 キーでも切り替えできます',
     // 成就（js/achieve.js）
-    '成就解鎖！': '実績解除！', '另外解鎖了 {0} 個成就': 'ほかに {0} 個の実績を解除', '遊戲幣': 'コイン', '已解鎖 {0} / {1}': '解除 {0} / {1}', '成就獎勵': '実績報酬', '隱藏成就：達成後揭曉': '隠し実績：達成すると判明', '已達成': '達成', '未達成': '未達成', '新': 'NEW', '上下滑動捲動': '上下にスワイプでスクロール', '↑↓ 捲動　ESC 返回': '↑↓ スクロール　ESC 戻る',
+    '點卡片選擇・點上方分頁切換': 'カードをタップで選択・上のタブで切り替え', '成就解鎖！': '実績解除！', '另外解鎖了 {0} 個成就': 'ほかに {0} 個の実績を解除', '遊戲幣': 'コイン', '已解鎖 {0} / {1}': '解除 {0} / {1}', '成就獎勵': '実績報酬', '隱藏成就：達成後揭曉': '隠し実績：達成すると判明', '已達成': '達成', '未達成': '未達成', '新': 'NEW', '上下滑動捲動': '上下にスワイプでスクロール', '↑↓ 捲動　ESC 返回': '↑↓ スクロール　ESC 戻る',
     '銅': '銅', '銀': '銀', '金': '金', '白金': '白金',
     '開店入門': '開店準備', '累計場數': '累計プレイ', '累計廣島燒': '累計広島焼き', '連擊': 'コンボ', '評價': '評価', '全連擊・全 GREAT': 'フルコンボ・オール GREAT', '曲包制霸': '曲パック制覇', '收集・探索': 'コレクション・探索', '商店收藏': 'ショップ収集', '趣味・隱藏': 'おまけ・隠し',
     '開店準備': '開店準備', '完成新手教學': 'チュートリアルをクリア', '第一位客人': '最初のお客さん', '完成第一場遊戲': '初めて 1 曲プレイ', '第一份廣島燒': '初めての広島焼き', '做出第一份廣島燒': '広島焼きを初めて完成', '調音師傅': '調律の達人', '完成一次自動校正': '自動調整を 1 回完了', '口耳相傳': '口コミ', '分享一次成績': '成績を 1 回シェア',
@@ -254,7 +254,7 @@ const I18N = {
     // PC version (landscape)
     '結束遊戲': 'QUIT GAME', '語音': 'Voice', '樂曲': 'Music', '全曲原創（AI 協助製作）': 'All original songs (made with AI assistance)', '解析度': 'Resolution', '全螢幕': 'Full Screen', 'F11 也可以切換': 'You can also press F11',
     // Achievements (js/achieve.js)
-    '成就解鎖！': 'Achievement unlocked!', '另外解鎖了 {0} 個成就': '{0} more achievements unlocked', '遊戲幣': 'coins', '已解鎖 {0} / {1}': 'Unlocked {0} / {1}', '成就獎勵': 'Rewards', '隱藏成就：達成後揭曉': 'Hidden: revealed when unlocked', '已達成': 'Done', '未達成': 'Locked', '新': 'NEW', '上下滑動捲動': 'Swipe up/down to scroll', '↑↓ 捲動　ESC 返回': '↑↓ Scroll　ESC Back',
+    '點卡片選擇・點上方分頁切換': 'Tap a card to select · tap the tabs to switch', '成就解鎖！': 'Achievement unlocked!', '另外解鎖了 {0} 個成就': '{0} more achievements unlocked', '遊戲幣': 'coins', '已解鎖 {0} / {1}': 'Unlocked {0} / {1}', '成就獎勵': 'Rewards', '隱藏成就：達成後揭曉': 'Hidden: revealed when unlocked', '已達成': 'Done', '未達成': 'Locked', '新': 'NEW', '上下滑動捲動': 'Swipe up/down to scroll', '↑↓ 捲動　ESC 返回': '↑↓ Scroll　ESC Back',
     '銅': 'B', '銀': 'S', '金': 'G', '白金': 'P',
     '開店入門': 'Getting Started', '累計場數': 'Plays', '累計廣島燒': 'Okonomiyaki Made', '連擊': 'Combo', '評價': 'Ratings', '全連擊・全 GREAT': 'Full Combo & All GREAT', '曲包制霸': 'Pack Mastery', '收集・探索': 'Collection & Exploration', '商店收藏': 'Shop Collection', '趣味・隱藏': 'Fun & Hidden',
     '開店準備': 'Opening Prep', '完成新手教學': 'Finish the tutorial', '第一位客人': 'First Customer', '完成第一場遊戲': 'Finish your first song', '第一份廣島燒': 'First Okonomiyaki', '做出第一份廣島燒': 'Make your first okonomiyaki', '調音師傅': 'Fine Tuner', '完成一次自動校正': 'Complete auto calibration once', '口耳相傳': 'Word of Mouth', '分享一次成績': 'Share a result',

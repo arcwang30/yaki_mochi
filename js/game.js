@@ -424,7 +424,8 @@ const Game = {
     }
     for (const a of s.okoAnims) a.t += dt;
     s.okoAnims = s.okoAnims.filter(a => a.t < 1.2);
-    if (!s.tut && st > s.chart.end + 0.4) this.finish();
+    // 只結算一次：轉場到結算畫面的淡出期間（約 0.22 秒）遊戲畫面還會繼續更新，不擋的話每幀都會再結算一次（重複發遊戲幣、經驗、紀錄）
+    if (!s.tut && !s.ended && st > s.chart.end + 0.4) this.finish();
   },
   // 新手教學：樂曲時鐘往前 2 小節內的小節還沒產生就補上（節奏型 = 教學畫面目前指定的 s.tut.pat；null = 只有音樂）
   tutExtend() {
