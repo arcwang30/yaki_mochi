@@ -31,7 +31,7 @@ const Sides = {
     this.el.width = Math.round(vw * dpr);
     this.el.height = Math.round(vh * dpr);
     this.vw = vw; this.vh = vh; this.side = side; this.dpr = dpr;
-    this.gameW = gameW; this.gameH = gameH; this.vert = vert; this.lastT = 0;
+    this.gameW = gameW; this.gameH = gameH; this.vert = vert; this.lastT = 0; this.bottomDrawn = false;
     this.draw();
   },
 
@@ -42,21 +42,26 @@ const Sides = {
     if (!this.vOn || now - this.lastT < (ECO() ? 160 : 80)) return;
     this.lastT = now;
     const c = this.ctx, { vw, vh, vert, gameW } = this, gx = (vw - gameW) / 2;
+    // 遊玩中（遊戲、新手教學的練習）下方固定不更新：畫面底部的打擊光效不會讓下方空白跟著閃（進場 0.6 秒後固定；畫布被清空過就再畫一次）
+    const playing = App.name === 'game' || (App.name === 'tutorial' && Screens.tutorial.phase === 'play');
+    if (!playing) this.playSince = 0; else if (!this.playSince) this.playSince = now;
+    const freeze = playing && now - this.playSince > 600 && this.bottomDrawn;
     if (!this.tmp) { this.tmp = document.createElement('canvas'); this.tmp.width = 24; this.tmp.height = 1; }
     const t = this.tmp, tg = t.getContext('2d'), sh = Math.max(1, Math.round(src.height * 0.05));
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    c.clearRect(0, 0, vw, vh);
+    c.clearRect(0, 0, vw, vert + 1); if (!freeze) c.clearRect(0, vh - vert - 1, vw, vert + 1);
     c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; tg.imageSmoothingEnabled = true; tg.imageSmoothingQuality = 'high';
-    [[0, 0], [src.height - sh, vh - vert]].forEach(([sy, y]) => {
+    [[0, 0], [src.height - sh, vh - vert]].filter((_, k) => !(k && freeze)).forEach(([sy, y]) => {
       tg.clearRect(0, 0, t.width, 1); tg.drawImage(src, 0, sy, src.width, sh, 0, 0, t.width, 1);   // 邊緣一段 → 24 格平均色
       c.drawImage(t, 0.5, 0, t.width - 1, 1, gx, y, gameW, vert + 1);   // 平滑放大（左右漸層、上下同色）
     });
     // 外側壓暗（越靠螢幕邊緣越暗）
-    for (const [y0, y1] of [[0, vert], [vh, vh - vert]]) {
+    for (const [y0, y1] of freeze ? [[0, vert]] : [[0, vert], [vh, vh - vert]]) {
       const g = c.createLinearGradient(0, y0, 0, y1);
       g.addColorStop(0, 'rgba(5,6,22,.82)'); g.addColorStop(1, 'rgba(5,6,22,.12)');
       c.fillStyle = g; c.fillRect(0, Math.min(y0, y1), vw, vert);
     }
+    if (!freeze) this.bottomDrawn = true;
     // 上方的星星（固定位置、輕輕閃）
     const tm = now / 1000;
     for (let i = 0; i < 14; i++) {
