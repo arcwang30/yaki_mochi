@@ -44,6 +44,41 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 | 原生版判斷 | `js/config.js` 的 `NATIVE_APP` | 不註冊 Service Worker、不顯示「安裝到主畫面」、忽略網址測試參數（`?fast`、`?shop=test` 等） |
 | 字型 | `tools/build-web.mjs` | 改用 App 內附的 Mochiy Pop One（OFL 授權），不連 Google Fonts |
 
+## 內購規劃
+
+### 商品
+
+全部是**非消耗型**（買一次永久擁有、可恢復購買）。商品 ID 一旦建立就不能改、刪掉後也不能再用。
+
+| 商品 | 程式裡的 sku（`js/shop.js`） | App Store Connect 的商品 ID | 狀態 |
+| --- | --- | --- | --- |
+| VOL.1 | `vol1` | `com.arcconceptgames.daioyaki.vol1` | 首發 |
+| VOL.2 | `vol2` | `com.arcconceptgames.daioyaki.vol2` | 首發 |
+| VOL.3 | `vol3` | `com.arcconceptgames.daioyaki.vol3` | 首發 |
+| VOL.4～6 | `vol4`～`vol6` | `com.arcconceptgames.daioyaki.vol4`～`vol6` | 之後推出 |
+| VOL.1～3 合購包 | `vol1_3` | `com.arcconceptgames.daioyaki.vol1_3` | 規劃中 |
+
+價格在 App Store Connect 從 Apple 的價格級距選；遊戲顯示的價格是 App Store 回傳的當地價格，不寫在程式裡。
+
+### 分集推出
+
+- App 版開放到第幾集由 `js/config.js` 的 `RELEASED_VOLS` 決定（目前 3）；網頁版全開
+- 還沒開放的集數**完全不顯示**（選曲、樂曲組、商店、成就都沒有），不放「即將推出」：避免審核 2.1（未完成／佔位內容）
+- 開放新的一集一定要送新版本，不做遠端開關：符合審核 2.3.1（不可有隱藏、可遠端開啟的功能）；樂曲是程式碼，本來也只能透過 App 更新加入
+- 已解鎖的成就不會因為曲數增加而收回；「夜市全制覇」的曲數會跟著變多
+
+推出新的一集（例如 VOL.4）：
+
+1. `RELEASED_VOLS` 改成 4，`npm run sync`，Xcode 建置新版本
+2. App Store Connect 建立 `com.arcconceptgames.daioyaki.vol4`
+3. 新版本送審時把 vol4 商品一起勾選送審
+
+### 合購包（規劃中）
+
+- 程式已經支援：`js/shop.js` 的 `BUNDLES`，買了合購包＝擁有裡面每一集；擁有判定不看是否上架，買過永遠有效
+- 上架：`released` 改 `true`、App Store Connect 建立同 ID 的非消耗型商品，跟新版本一起送審
+- Apple 不支援「補差價」：已經買了其中一集的人再買合購包會重複付費。上架前要決定商店怎麼呈現，建議**已擁有其中任一集的人不顯示合購包**（或顯示但標示「已擁有 VOL.1」），商店畫面到時再做
+
 ## 進度
 
 - [x] 階段 1：Capacitor 設定、原生版開關、字型內附、建置腳本

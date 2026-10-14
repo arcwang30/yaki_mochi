@@ -5,6 +5,9 @@ const FONT = "'Mochiy Pop One','Microsoft JhengHei','PingFang TC',sans-serif";
 // iOS App 版（Capacitor 原生殼，會在頁面腳本之前放好 window.Capacitor）：沒有 Service Worker、沒有「安裝到主畫面」，也不吃網址上的測試參數
 const NATIVE_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 const QS = new URLSearchParams(NATIVE_APP ? '' : location.search);
+// 追加樂曲開放到第幾集：App 版一集一集推出（改這個數字要送新版本審核，見 docs/iOS上架.md）；網頁版全開
+// 網頁版可用 ?vols=3 模擬 App 版的開放範圍（測試用）
+const RELEASED_VOLS = NATIVE_APP ? 3 : QS.has('vols') ? Number(QS.get('vols')) : Infinity;
 const FAST = QS.has('fast');      // 網址加 ?fast：每段只有 3 小節，方便測試結算畫面
 
 // ---- 版面：手機直式 9:16（720x1280）／PC 橫式 16:9（1920x1080） ----

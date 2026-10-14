@@ -2518,6 +2518,7 @@ const VOL_ORDER = [
   ['calypso', 'okinawa', 'minyue', 'arabic', 'cumbia', 'baroque', 'ragtime', 'kalinka', 'balkan', 'samul'],      // VOL.5：世界音樂
   ['trap', 'vapor', 'garage', 'bounce', 'house', 'glitch', 'mathrock', 'moombah', 'hyperpop', 'jersey'],       // VOL.6：電子
 ];
+VOL_ORDER.splice(RELEASED_VOLS + 1);   // 還沒開放的 VOL 整組拿掉（選曲、商店、成就都跟著 VOL_ORDER / SONGS 走，見 js/config.js 的 RELEASED_VOLS）
 {
   const all = SONGS.splice(0);
   VOL_ORDER.forEach((ids, v) => ids.forEach((id, k) => { const s = all.find(x => x.id === id); s.vol = v; s.no = k + 1; SONGS.push(s); }));

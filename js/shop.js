@@ -13,6 +13,12 @@ const PAID_VOLS = {
   5: { sku: 'vol5', songs: 10 },
   6: { sku: 'vol6', songs: 10 },
 };
+// 合購包：一個商品同時解鎖好幾集（規劃中，還沒上架；規則見 docs/iOS上架.md 的「內購規劃」）
+// 上架：released 改 true，並在 App Store Connect 建立同 sku 的非消耗型商品；包含的集數都要已開放（RELEASED_VOLS）才會賣
+// 擁有判定不看 released：買過的合購包永遠有效
+const BUNDLES = [
+  { sku: 'vol1_3', vols: [1, 2, 3], released: false },
+];
 
 // ---- 測試商店：購買約 1 秒後成功（模擬付款畫面）；網址加 &fail=1 一律「取消」，測試失敗流程 ----
 // 主控台可用 Shop.resetTest() 清掉測試購買紀錄
@@ -42,7 +48,15 @@ const Shop = {
   enabled() { return !!this.store; },
   isTest() { return this.store === TestStore; },
   paid(vol) { return !!PAID_VOLS[vol]; },
-  owned(vol) { return !this.enabled() || !this.paid(vol) || this.store.owns(PAID_VOLS[vol].sku); },
+  owned(vol) {
+    return !this.enabled() || !this.paid(vol) || this.store.owns(PAID_VOLS[vol].sku)
+      || BUNDLES.some(b => b.vols.includes(vol) && this.store.owns(b.sku));
+  },
+  // 目前在賣的商品 sku（商店向 App Store 查價格、登記商品用）：已開放的各集＋已上架的合購包
+  skus() {
+    const vols = Object.keys(PAID_VOLS).map(Number).filter(v => v <= RELEASED_VOLS);
+    return [...vols.map(v => PAID_VOLS[v].sku), ...BUNDLES.filter(b => b.released && b.vols.every(v => v <= RELEASED_VOLS)).map(b => b.sku)];
+  },
   songOwned(song) { return this.owned(song.vol); },
   price(vol) { return this.paid(vol) && this.enabled() ? this.store.price(PAID_VOLS[vol].sku) : ''; },
 
