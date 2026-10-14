@@ -1,0 +1,11 @@
+{
+  "appId": "com.arcconceptgames.daioyaki",
+  "appName": "大王焼き",
+  "webDir": "www",
+  "backgroundColor": "#0d1024",
+  "ios": {
+    "contentInset": "never",
+    "scrollEnabled": false,
+    "backgroundColor": "#0d1024"
+  }
+}

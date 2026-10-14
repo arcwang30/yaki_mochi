@@ -2,7 +2,9 @@
 
 // ===== 全域參數（調整難度、計分、版面改這裡） =====
 const FONT = "'Mochiy Pop One','Microsoft JhengHei','PingFang TC',sans-serif";
-const QS = new URLSearchParams(location.search);
+// iOS App 版（Capacitor 原生殼，會在頁面腳本之前放好 window.Capacitor）：沒有 Service Worker、沒有「安裝到主畫面」，也不吃網址上的測試參數
+const NATIVE_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+const QS = new URLSearchParams(NATIVE_APP ? '' : location.search);
 const FAST = QS.has('fast');      // 網址加 ?fast：每段只有 3 小節，方便測試結算畫面
 
 // ---- 版面：手機直式 9:16（720x1280）／PC 橫式 16:9（1920x1080） ----

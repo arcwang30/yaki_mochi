@@ -1609,11 +1609,11 @@ Screens.howto = {
 // ---------- 設定 ----------
 Screens.settings = {
   sel: 0, n: 0, from: 'menu',
-  // 各列（上下鍵的順序）：直式 = 手機；橫式 = PC（全螢幕、解析度）；桌面版沒有「安裝到主畫面」
-  KEYS: LAND ? ['music', 'sfx', 'offset', 'voice', 'backup', 'full', 'res', 'eco', 'lang', ...(DESKTOP_APP ? [] : ['install'])]
-    : ['music', 'sfx', 'offset', 'voice', 'vibrate', 'eco', 'lang', 'install', 'backup'],
-  // 各列的位置 [x, y]：直式一欄；橫式兩欄（左：音量、判定校正、語音反應、備份；右：全螢幕、解析度、省電、語言、安裝）
-  POS: lay({ music: [50, 176], sfx: [50, 298], offset: [50, 420], voice: [50, 572], vibrate: [50, 668], eco: [50, 764], lang: [50, 860], install: [50, 980], backup: [50, 1076] },
+  // 各列（上下鍵的順序）：直式 = 手機；橫式 = PC（全螢幕、解析度）；桌面版、App 版沒有「安裝到主畫面」
+  KEYS: LAND ? ['music', 'sfx', 'offset', 'voice', 'backup', 'full', 'res', 'eco', 'lang', ...(DESKTOP_APP || NATIVE_APP ? [] : ['install'])]
+    : ['music', 'sfx', 'offset', 'voice', 'vibrate', 'eco', 'lang', ...(NATIVE_APP ? [] : ['install']), 'backup'],
+  // 各列的位置 [x, y]：直式一欄（App 版沒有安裝，備份往上補位）；橫式兩欄（左：音量、判定校正、語音反應、備份；右：全螢幕、解析度、省電、語言、安裝）
+  POS: lay({ music: [50, 176], sfx: [50, 298], offset: [50, 420], voice: [50, 572], vibrate: [50, 668], eco: [50, 764], lang: [50, 860], install: [50, 980], backup: [50, NATIVE_APP ? 980 : 1076] },
     { music: [300, 200], sfx: [300, 326], offset: [300, 452], voice: [300, 610], backup: [300, 706], full: [1000, 200], res: [1000, 300], eco: [1000, 424], lang: [1000, 524], install: [1000, 648] }),
   BACK: lay([230, 1176], [W / 2 - 130, 830]),
   get ROWS() { return this.KEYS.length + 1; },   // 最後一列 = 返回

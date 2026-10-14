@@ -40,8 +40,9 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `assets/icons/` | APP 圖示（192／512／maskable／Apple／favicon） |
 | `assets/audio/` | 語音（開場「いらっしゃいませ！」、選曲「select song」）；音量與起始位置在 `js/audio.js` 的 `VOICES`。遊戲實際讀的是內嵌版 `js/voices.js`（file:// 開啟的桌面版也能播），換了音檔後執行 `tools/embed_voices.ps1` 重新產生 |
 | `assets/source/` | 原始圖片（企畫附圖、Excel 內的圖） |
-| `tools/` | `serve.ps1` 本機伺服器、`build.ps1` 封裝、`prep.html` + `prep_server.ps1` 素材前處理 |
+| `tools/` | `serve.ps1` 本機伺服器、`build.ps1` 封裝、`prep.html` + `prep_server.ps1` 素材前處理；`build-web.mjs`、`ios-setup.mjs` iOS App 建置（Mac）|
 | `docs/企畫書.md` | 遊戲企畫 |
+| `docs/iOS上架.md` | iOS App（Capacitor）建置步驟與上架進度；設定在 `capacitor.config.json`、`package.json` |
 | `prototypes/stack-flip/` | 早期雛形「疊料＋翻面」 |
 | `builds/` | 封裝發佈版本（zip），**不進 git** |
 

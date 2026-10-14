@@ -6,6 +6,7 @@ const PWA = {
   justInstalled: false,
 
   init() {
+    if (NATIVE_APP) return;   // App 版：檔案本來就在 App 裡，不需要離線快取，也不會有安裝提示
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {
       window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW register failed', e)));
     }
@@ -16,7 +17,7 @@ const PWA = {
   // 已經是從主畫面開啟（APP 模式）
   installed() {
     const mm = q => window.matchMedia && window.matchMedia(q).matches;
-    return this.justInstalled || mm('(display-mode: standalone)') || mm('(display-mode: fullscreen)') || navigator.standalone === true;
+    return NATIVE_APP || this.justInstalled || mm('(display-mode: standalone)') || mm('(display-mode: fullscreen)') || navigator.standalone === true;
   },
 
   // 'ios' | 'android' | 'desktop'

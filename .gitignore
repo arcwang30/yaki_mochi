@@ -16,3 +16,7 @@ desktop.ini
 
 # VOICEVOX 試聽檔（tools/voicevox_samples.ps1 產生）
 voice_samples/
+
+# iOS App（Capacitor）：npm 套件、npm run build 的輸出（Xcode 專案 ios/ 要進 git）
+node_modules/
+www/
