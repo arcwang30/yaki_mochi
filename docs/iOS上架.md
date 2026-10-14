@@ -161,15 +161,15 @@ App Store Connect 必填「隱私權政策網址」和「支援網址」。放�
 
 檔案在本 repo 的 `site/`（共用 `style.css`、`lang.js`；不載入任何外部資源）。
 
-**第一次設定（GitHub 網站上操作）**
+**第一次設定（GitHub 網站上操作）**：2026-10-14 網站已上線
 
-1. 遊戲 repo 收起來：`arcwang30/yaki_mochi` → Settings → Pages 取消發佈；Settings → General → Danger Zone → Change visibility → **Private**
-2. 建組織：GitHub 右上角 **+ → New organization** → Free 方案，名稱 `arcconceptgames`
-3. 在組織下建 **公開** repo，名稱必須是 `arcconceptgames.github.io`
-4. 把 `site/` 裡的**所有檔案**（含 `.nojekyll`）上傳到那個 repo 的根目錄（網頁上 **Add file → Upload files** 拖進去即可）
-5. 那個 repo → Settings → Pages：Source 選 **Deploy from a branch**、`main` / `(root)`；幾分鐘後上面三個網址就能打開
+1. ⏳（等手機測試方式準備好再做）遊戲 repo 收起來：`arcwang30/yaki_mochi` → Settings → Pages 取消發佈；Settings → General → Danger Zone → Change visibility → **Private**
+2. ✅ 建組織：GitHub 右上角 **+ → New organization** → Free 方案，名稱 `arcconceptgames`
+3. ✅ 在組織下建 **公開** repo，名稱必須是 `arcconceptgames.github.io`
+4. ✅ 把 `site/` 裡的**所有檔案**（含 `.nojekyll`）上傳到那個 repo 的根目錄（網頁上 **Add file → Upload files** 拖進去即可）
+5. ✅ 那個 repo → Settings → Pages：Source 選 **Deploy from a branch**、`main` / `(root)`；幾分鐘後上面三個網址就能打開
 
-**之後要改內容**：改 `site/` 裡的檔案，再上傳覆蓋到 `arcconceptgames.github.io` repo。
+**之後要改內容**：改 `site/` 裡的檔案，然後執行 `bash tools/deploy-site.sh "說明這次改了什麼"`（Windows 用 Git Bash、Mac 用終端機），幾分鐘後網站更新。
 
 **內容維護**
 - 隱私權政策：遊戲功能改變時要跟著更新（例如加了分析工具、排行榜、帳號、廣告），並更新生效日期
