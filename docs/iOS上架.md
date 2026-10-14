@@ -147,6 +147,10 @@ App 版才會用到；網頁版行為不變。官方外掛（Haptics、Share、F
 
 ## 上架資料（階段 5）
 
+### 截圖
+
+規格、現有宣傳圖能不能用、建議拍哪些畫面：`docs/App Store 截圖.md`。
+
 ### 上架文字
 
 名稱、副標題、說明、關鍵字、內購商品名稱等，三語都在 `docs/App Store 上架文字.md`；改過後執行 `powershell -ExecutionPolicy Bypass -File tools\check-store-text.ps1` 檢查字數。

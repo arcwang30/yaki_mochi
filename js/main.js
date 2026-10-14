@@ -75,6 +75,11 @@
     const dt = Math.min((now - last) / 1000, 0.05);
     autoQuality(now - last);
     last = now;
+    step(dt);
+    requestAnimationFrame(loop);
+  }
+  // 一幀：更新＋繪製（主迴圈呼叫；宣傳圖工具 tools/promo_maker.html 也用它逐格推進）
+  function step(dt) {
     Game.time += dt;
     Input.update();
     Fx.update(dt);
@@ -84,9 +89,10 @@
     ctx.setTransform(RES, 0, 0, RES, 0, 0);
     App.frame(dt);
     Input.endFrame();
-    requestAnimationFrame(loop);
   }
-  requestAnimationFrame(loop);
+  window.__step = step;
+  // 網址加 ?noloop：不跑主迴圈，由外部呼叫 window.__step(dt) 逐格推進（宣傳圖工具用；App 版不吃網址參數）
+  if (!QS.has('noloop')) requestAnimationFrame(loop);
 
   window.__game = { App, Game, Screens, Input, Save, Sound };
 })();

@@ -20,3 +20,6 @@ voice_samples/
 # iOS App（Capacitor）：npm 套件、npm run build 的輸出（Xcode 專案 ios/ 要進 git）
 node_modules/
 www/
+
+# 宣傳圖／App Store 截圖（tools/promo_maker.html 產生，隨時可以重新輸出）
+promo/store/
