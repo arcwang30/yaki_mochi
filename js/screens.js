@@ -354,6 +354,17 @@ function coinPill(xr, y, h, fs) {
   const w = fs * 1.32 + ctx.measureText(String(CoinShop.coins())).width + 40;
   UI.panel(xr - w, y, w, h, h / 2, 'rgba(16,22,52,.88)', '#e8b64a');
   coinText(CoinShop.coins(), xr - w / 2, y + h / 2, fs, { align: 'center' });
+  return xr - w;
+}
+// 屋台等級的膠囊（主選單、商店右上角，放在遊戲幣左邊）：「屋台 Lv.6」＋細細的經驗條；右邊對齊 xr，回傳左邊 x
+function stallPill(xr, y, h, fs) {
+  const b = Stall.bar(), txt = tr('屋台 Lv.{0}', b.lv); ctx.font = `${fs}px ${FONT}`;
+  const w = ctx.measureText(txt).width + 36, x = xr - w;
+  UI.panel(x, y, w, h, h / 2, 'rgba(16,22,52,.88)', '#e8b64a');
+  UI.text(txt, x + w / 2, y + h / 2 - 2, fs, { fill: '#ffd8a0', stroke: null, raw: true });
+  ctx.fillStyle = 'rgba(255,255,255,.18)'; rrect(x + 16, y + h - 9, w - 32, 4, 2); ctx.fill();
+  const k = b.need ? b.cur / b.need : 1; if (k > 0) { ctx.fillStyle = '#7ae07a'; rrect(x + 16, y + h - 9, Math.max(4, (w - 32) * k), 4, 2); ctx.fill(); }
+  return x;
 }
 
 Screens.menu = {
@@ -403,7 +414,7 @@ Screens.menu = {
     UI.navHint();
   },
   // 右上角：目前的遊戲幣（只有硬幣圖示＋數字；COIN_SHOP 打開才顯示）；直式放在招牌上方的空隙
-  coinBadge() { if (COIN_SHOP) coinPill(W - lay(14, 40), lay(10, 44), lay(42, 60), lay(22, 30)); },
+  coinBadge() { if (!COIN_SHOP) return; const y = lay(10, 44), h = lay(42, 60); stallPill(coinPill(W - lay(14, 40), y, h, lay(22, 30)) - 10, y, h, lay(18, 24)); },
   // 「成就」木札右上角：新解鎖的數量（進成就畫面看過就消失）
   achIdx() { return this.TAGS.findIndex(t => t[2] === 'achievements'); },
   achBadge(x, y) {
@@ -428,7 +439,7 @@ Screens.menu = {
       ctx.save(); ctx.globalAlpha = k; ctx.fillStyle = '#fff6c8'; ctx.translate(sx, sy); ctx.rotate(t * 0.8 + ph);
       ctx.beginPath(); for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4, rr = j % 2 ? r * 0.28 : r; ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr); } ctx.fill(); ctx.restore();
     });
-    if (!Save.data.shopSeen) {   // NEW! 標籤（上下跳動）
+    if (!Save.data.shopSeen || Save.data.shopNew.length) {   // NEW! 標籤（上下跳動）：第一次，或屋台升級新開放了還沒看過的商品
       const bx = x + w - 6, by = y + 4 - Math.abs(Math.sin(t * 4)) * 6;
       UI.panel(bx - 34, by - 15, 68, 30, 15, '#e8302a', '#fff');
       UI.text('NEW!', bx, by + 1, 17, { fill: '#fff', stroke: null, raw: true });
@@ -567,6 +578,7 @@ Screens.shop = {
     this.sel = this.CATS.map(c => Math.max(0, c.key ? c.list.findIndex(x => x.id === Save.data[c.key]) : c.list.findIndex(x => !Shop.owned(x.vol))));
     BACKGROUNDS.forEach(b => Assets.bg(b.id));   // 其他背景這時才載入（縮圖、預覽用）
     Sound.startBgm();
+    Stall.announce();   // 新開放的商品掛 NEW
     this.C().focus(this.item()); this.follow(true);
   },
   leave() { Scene.preview = null; Pet.preview = null; this.stopDemo(); this.ask = null; },
@@ -583,7 +595,7 @@ Screens.shop = {
     const N = this.C().list.length;
     i = clamp(i, 0, N - 1);
     if (i === this.sel[this.cat]) return;
-    this.sel[this.cat] = i; Sound.play('select'); this.follow(); this.C().focus(this.item());
+    this.sel[this.cat] = i; Sound.play('select'); this.follow(); this.C().focus(this.item()); Stall.seen(this.C().kind, this.item());
   },
   setCat(c) {
     c = clamp(c, 0, this.CATS.length - 1);
@@ -613,6 +625,7 @@ Screens.shop = {
     const c = this.C();
     if (c.act) return c.act(item);
     if (Save.data[c.key] === item.id) return;
+    if (!CoinShop.avail(c.kind, item)) { Sound.play('back'); this.say(Stall.why(item)); return; }   // 還沒開放：說明條件
     if (!CoinShop.owned(c.kind, item)) {
       if (CoinShop.coins() < item.price) { Sound.play('back'); this.say('遊戲幣不足'); return; }
       this.ask = { item, sel: 0, t: Game.time }; Sound.play('select'); return;   // 先問一次（確認框在 drawAsk）
@@ -651,7 +664,7 @@ Screens.shop = {
     Save.data[c.key] = it.id; Save.store(); Sound.play('purchase'); this.say('購買成功！');
     Achieve.unlock('shop_first'); Achieve.check();   // 商店收藏類成就（COIN_SHOP 打開才會解鎖）
   },
-  state(c, it) { return c.state ? c.state(it) : Save.data[c.key] === it.id ? 'on' : CoinShop.owned(c.kind, it) ? 'owned' : 'locked'; },
+  state(c, it) { return c.state ? c.state(it) : Save.data[c.key] === it.id ? 'on' : CoinShop.owned(c.kind, it) ? 'owned' : Stall.open(it) ? 'locked' : 'sealed'; },   // sealed = 屋台等級／條件還沒到（js/shop.js 的 Stall）
 
   // 分頁列：每頁寬度依文字；放不下時跟著選中的那頁左右捲動，兩端淡出提示還有
   // 付費（真錢）的分頁用朱漆色＋金框，和遊戲幣商品區分
@@ -697,7 +710,7 @@ Screens.shop = {
       UI.panel(x, y, G.cw, G.ch, 12, on ? 'rgba(255,190,60,.28)' : 'rgba(255,255,255,.07)', on ? '#ffd23f' : 'rgba(255,255,255,.22)');
       ctx.save(); rrect(x + 5, y + 5, G.cw - 10, th, 8); ctx.clip();
       c.thumb(it, x + 5, y + 5, G.cw - 10, th, on && Game.time - this.demoT < 1.2);
-      if (st === 'locked' && !c.paid) { ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x + 5, y + 5, G.cw - 10, th); }
+      if ((st === 'locked' || st === 'sealed') && !c.paid) { ctx.fillStyle = st === 'sealed' ? 'rgba(0,0,0,.62)' : 'rgba(0,0,0,.45)'; ctx.fillRect(x + 5, y + 5, G.cw - 10, th); }
       ctx.restore();
       if (it.tag) {   // 稀有／限定：左上角的金邊朱漆小牌（會微微發亮）
         const tt = tr(it.tag); ctx.font = `15px ${FONT}`; const tw2 = ctx.measureText(tt).width + 18;
@@ -718,6 +731,13 @@ Screens.shop = {
         UI.panel(bx, by, bw, 28, 14, c.paid ? '#b8261a' : 'rgba(16,22,52,.9)', c.paid ? '#ffd23f' : '#fff27a');
         if (c.paid) UI.text(txt, bx + bw / 2, by + 15, 17, { fill: '#fff', stroke: null, raw: true });
         else coinText(txt, bx + bw / 2, by + 14, 17, { align: 'center' });
+      } else if (st === 'sealed') {   // 還沒開放：鎖頭＋「Lv.8」或「特別條件」
+        drawLock(x + G.cw / 2, y + 5 + th / 2 - 8, 0.75);
+        UI.text(Stall.short(it), x + G.cw / 2, y + th - 8, LAND ? 17 : 15, { fill: '#ffd8a0', stroke: 'rgba(0,0,0,.6)', sw: 4, raw: true });
+      }
+      if (st === 'locked' && Stall.isNew(c.kind, it)) {   // 剛開放：右上角 NEW（選到就消失）
+        const bx = x + G.cw - 52, by = y + 9 - Math.abs(Math.sin(Game.time * 4 + i)) * 3;
+        UI.panel(bx, by, 46, 22, 11, '#e8302a', '#fff'); UI.text('NEW', bx + 23, by + 12, 14, { fill: '#fff', stroke: null, raw: true });
       }
       if (Input.taps.some(t => UI.inside(t.x, t.y, x, Math.max(y, G.y), G.cw, Math.min(y + G.ch, G.y + viewH) - Math.max(y, G.y)))) this.pick(i);
     });
@@ -754,8 +774,8 @@ Screens.shop = {
     const desc = c.desc ? c.desc(it) : it.desc;
     if (LAND) UI.wrap(desc, x, y + 62, tw, 26, 19, { fill: '#cfd8ff' });
     else UI.text(desc, x, y + 50, 17, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: tw });
-    const status = c.status ? c.status(it, st) : st === 'on' ? '✓ 套用中' : st === 'owned' ? '已擁有' : tr('{0} 遊戲幣', it.price);
-    const sOpt = { fill: st === 'on' ? '#8dff8a' : st === 'owned' ? (c.paid ? '#8dff8a' : '#fff') : '#fff27a', stroke: null, raw: !!c.status || st === 'locked' };
+    const status = c.status ? c.status(it, st) : st === 'on' ? '✓ 套用中' : st === 'owned' ? '已擁有' : st === 'sealed' ? '🔒 ' + Stall.why(it) : tr('{0} 遊戲幣', it.price);
+    const sOpt = { fill: st === 'on' ? '#8dff8a' : st === 'owned' ? (c.paid ? '#8dff8a' : '#fff') : st === 'sealed' ? '#ffb070' : '#fff27a', stroke: null, raw: !!c.status || st === 'locked' || st === 'sealed' };
     if (!c.status && st === 'locked') {   // 遊戲幣價格：硬幣圖示＋數字
       if (LAND) coinText(it.price, x, y + h - 6, 20); else coinText(it.price, x + tw, y + 20, 18, { align: 'right' });
     }
@@ -809,7 +829,7 @@ Screens.shop = {
       UI.text('商店', tx + 100, 51, 32, { fill: '#ffd23f' });
     }
     if (COIN_SHOP && !c.paid) {
-      coinPill(W - tx, 18, 64, 28);
+      stallPill(coinPill(W - tx, 18, 64, 28) - 12, 18, 64, 24);
     }
     if (c.overlay) c.overlay(it);
     const [sx, sy, sw, sh] = this.L.sheet;
@@ -831,7 +851,7 @@ Screens.shop = {
     if (Input.was('diffNext') || (Input.swipe === 'left' && UI.inside(Input.ptr.x, Input.ptr.y, sx, sy, sw, sh))) this.setCat(this.cat + 1);
     if (ex && Input.was('listen')) ex.run();
     // 按鈕：手機 = 木牌（套用／購買、返回）；PC = 右下角按鍵提示鈕
-    const label = c.label ? c.label(st) : st === 'on' ? '套用中' : st === 'owned' ? '套用' : '購買';
+    const label = c.label ? c.label(st) : st === 'on' ? '套用中' : st === 'owned' ? '套用' : st === 'sealed' ? '未開放' : '購買';
     if (LAND) {
       const pad = Input.padConnected, xr = sx + sw - 20;
       if (UI.prompt(xr, this.L.btnY, pad ? 'A' : 'ENTER', label, { hot: st !== 'on' })) this.act(it);
@@ -2372,9 +2392,31 @@ Screens.result = {
       ctx.restore();
     }
   },
+  // 屋台等級：經驗條從這場之前漲到之後；升級時「LEVEL UP!」＋音效，列出新開放的商品（沒有就預告下一級會開放什麼）
+  drawStall(r, t) {
+    const S = r.stall; if (!S) return;
+    const [px, py, pw, ph] = lay([160, 1140, 400, 126], [1180, 170, 400, 150]);
+    const k = ease(clamp((t - 1.7) / 0.9, 0, 1)), b = Stall.bar(S.xp0 + (S.xp1 - S.xp0) * k), up = b.lv > S.lv0;
+    if (up && !this.leveled) { this.leveled = true; if (A.ctx) SND.fanfare(A.ctx.currentTime); }
+    UI.panel(px, py, pw, ph, 20, 'rgba(16,22,52,.92)', up ? '#ffd23f' : '#e8b64a');
+    UI.text(tr('屋台 Lv.{0}', b.lv), px + 20, py + 30, 28, { align: 'left', fill: '#ffd8a0', stroke: null, raw: true });
+    if (up) {   // 升級：面板上緣掛一塊跳動的紅牌
+      const s = 1 + 0.06 * Math.sin(Game.time * 8);
+      ctx.save(); ctx.translate(px + pw / 2, py); ctx.scale(s, s); UI.panel(-82, -18, 164, 34, 17, '#e8302a', '#fff');
+      UI.text('LEVEL UP!', 0, 0, 20, { fill: '#fff', stroke: null, raw: true }); ctx.restore();
+    }
+    UI.text('+' + S.gain + ' EXP', px + pw - 20, py + 30, 20, { align: 'right', fill: '#7ae07a', stroke: null, raw: true });
+    const bx = px + 20, by = py + 52, bw = pw - 40;
+    ctx.fillStyle = 'rgba(255,255,255,.15)'; rrect(bx, by, bw, 14, 7); ctx.fill();
+    const f = b.need ? b.cur / b.need : 1; if (f > 0) { ctx.fillStyle = '#7ae07a'; rrect(bx, by, Math.max(14, bw * f), 14, 7); ctx.fill(); }
+    if (b.need) UI.text(b.cur + ' / ' + b.need, px + pw - 20, by + 30, 14, { align: 'right', fill: '#9fb0e0', stroke: null, raw: true });
+    const sep = Save.data.lang === 'en' ? ', ' : '、', names = l => l.map(g => tr(g.it.name)).join(sep);
+    const line = S.fresh.length && k >= 1 ? tr('開放：{0}', names(S.fresh)) : !b.need ? tr('已達最高等級') : Stall.nextItems(b.lv).length ? tr('下一級開放：{0}', names(Stall.nextItems(b.lv))) : '';
+    if (line) UI.text(line, bx, py + ph - 26, 18, { align: 'left', fill: S.fresh.length && k >= 1 ? '#ffd23f' : '#cfd8ff', stroke: null, raw: true, maxW: bw });   // 一行（太長就縮小）
+  },
   sel: 0, n: 0, t: 0, r: null, newRecord: false,
   enter() {
-    this.r = Game.result; this.t = 0; this.sel = 0; this.stamped = false; this.wisps = []; this.spawn = 0;
+    this.r = Game.result; this.t = 0; this.sel = 0; this.stamped = false; this.leveled = false; this.wisps = []; this.spawn = 0;
     this.song = songById(this.r.song);
     this.rid = recId(this.song, Game.diff);   // 這一局難度的紀錄 id
     this.newRecord = !!this.r.newRecord;      // 結束時已經比過自己的最高分（Game.finish）
@@ -2429,6 +2471,7 @@ Screens.result = {
     ctx.restore();
 
     if (t < 1.6) { if (t > 0.4 && (Input.taps.length || Input.was('confirm'))) { this.t = 1.6; Input.taps.length = 0; Input.pressed.delete('confirm'); } return; }
+    this.drawStall(r, t);
     UI.begin(this);
     const BX = lay(160, 1180), BY = i => lay(890 + i * 84, 360 + i * 110);   // 三顆按鈕
     if (UI.button(this, '再玩一次', BX, BY(0), 400, 64, { lacquer: true })) App.goto('game', { song: this.song });

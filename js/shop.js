@@ -147,6 +147,8 @@ const CoinShop = {
     return 'ok';
   },
   add(n) { Save.data.coins = Math.max(0, this.coins() + n); Save.store(); },
+  // 可以買了嗎：已擁有（或商店免費）／沒有開放條件／條件達成（屋台等級、特殊條件）
+  avail(kind, item) { return this.owned(kind, item) || Stall.open(item); },
   // 結算的遊玩獎勵（Game.finish 呼叫）：回傳 { base, first, fc, total }；COIN_SHOP = false 時不發（null）
   reward(song, diff, R) {
     if (!COIN_SHOP) return null;
@@ -158,4 +160,52 @@ const CoinShop = {
     this.add(out.total);
     return out;
   },
+};
+
+// ===== 屋台等級：每場結算得經驗值（js/config.js 的 STALL），升級逐一開放商店的商品 =====
+// 商品的 lv：屋台幾級開放；req：特殊條件（下面的 REQ）。開放只是「可以買」，還是要花遊戲幣；已經買過的不受影響
+// Save.data.xp：經驗值；unlockSeen：已經通知過開放的商品（「種類:id」）；shopNew：商店卡片上還沒看過的 NEW
+const Stall = {
+  // 特殊條件（稀有寵物、限定音效）：盡量只用內建曲目，沒買 VOL 也拿得到
+  REQ: {
+    bit2: { test: () => ['chip', 'bitboss'].every(id => AchStat.medal(songById(id), achTop(2))), desc: () => tr('過關「{0}」和「{1}」', songName(songById('chip')), songName(songById('bitboss'))) },
+    bitboss: { test: () => AchStat.medal(songById('bitboss'), achTop(2)), desc: () => tr('過關「{0}」', songName(songById('bitboss'))) },
+    streak7: { test: () => AchStat.streak() >= 7, desc: () => tr('連續 {0} 天開攤', 7) },
+    toku10: { test: () => AchStat.songsWith(achTop(0)) >= 10, desc: () => tr('{0} 首拿到「特上」', 10) },
+    hardfc: { test: () => AchStat.songsWith(m => m.fc, [2]) > 0, desc: () => tr('任一首困難全連擊') },
+  },
+  // 第 L 級升到 L+1 要多少經驗；升到第 L 級的累計經驗
+  need: L => STALL.step[0] + (L - 1) * STALL.step[1],
+  total(L) { let s = 0; for (let k = 1; k < L; k++) s += this.need(k); return s; },
+  level(xp = Save.data.xp) { let L = 1; while (L < STALL.maxLv && xp >= this.total(L + 1)) L++; return L; },
+  // 經驗條：{ lv, cur（這一級已累積）, need（這一級總共要）}；滿級 need = 0
+  bar(xp = Save.data.xp) { const lv = this.level(xp); return { lv, cur: xp - this.total(lv), need: lv >= STALL.maxLv ? 0 : this.need(lv) }; },
+  open(item) { return item.req ? !!(this.REQ[item.req] && this.REQ[item.req].test()) : !item.lv || this.level() >= item.lv; },
+  // 還沒開放的說明（商店卡片、說明區、按下去的提示）
+  why(item) { return item.req ? this.REQ[item.req].desc() : tr('屋台 Lv.{0} 開放', item.lv); },
+  short(item) { return item.req ? tr('特別條件') : 'Lv.' + item.lv; },
+  gated() { return [['bg', BACKGROUNDS], ['pet', PETS], ['hit', HIT_SOUNDS]].flatMap(([kind, list]) => list.filter(it => it.lv || it.req).map(it => ({ kind, it, key: kind + ':' + it.id }))); },
+  // 第一次（舊存檔）：目前已經開放的都算通知過，不會一次跳一大串
+  init() { if (Save.data.unlockSeen === null) { Save.data.unlockSeen = this.gated().filter(g => this.open(g.it)).map(g => g.key); Save.store(); } },
+  // 新開放（還沒通知過）的商品：記下來、商店卡片掛 NEW；回傳這次新開放的 [{ kind, it }]
+  announce() {
+    if (!COIN_SHOP) return [];
+    this.init();
+    const d = Save.data, fresh = this.gated().filter(g => !d.unlockSeen.includes(g.key) && this.open(g.it) && !CoinShop.owned(g.kind, g.it));
+    fresh.forEach(g => { d.unlockSeen.push(g.key); if (!d.shopNew.includes(g.key)) d.shopNew.push(g.key); });
+    if (fresh.length) Save.store();
+    return fresh;
+  },
+  // 結算（Game.finish）：加經驗、判定升級與新開放；回傳 { gain, xp0, xp1, lv0, lv1, fresh }（COIN_SHOP 關掉時不算）
+  add(R, diff) {
+    if (!COIN_SHOP) return null;
+    this.init();
+    const xp0 = Save.data.xp, gain = STALL.xp.rating[R.rating] + STALL.xp.diff[diff];
+    Save.data.xp = xp0 + gain; Save.store();
+    return { gain, xp0, xp1: Save.data.xp, lv0: this.level(xp0), lv1: this.level(), fresh: this.announce() };
+  },
+  // 下一級開放的商品（結算畫面「下一級開放：…」）
+  nextItems(lv = this.level()) { return this.gated().filter(g => g.it.lv === lv + 1); },
+  seen(kind, item) { const k = kind + ':' + item.id, a = Save.data.shopNew, i = a.indexOf(k); if (i >= 0) { a.splice(i, 1); Save.store(); } },
+  isNew: (kind, item) => Save.data.shopNew.includes(kind + ':' + item.id),
 };

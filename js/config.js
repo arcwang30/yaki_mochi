@@ -128,23 +128,23 @@ const LANTERN_SIDE = LANTERNS.slice(10);   // 兩側的燈籠串（多數背景�
 const lanternRow = (cols, y = 395) => cols.map((c, i) => [[72, 145, 220, 300, 385, 465, 545, 628, 702, 772][i], y, c]);
 const BACKGROUNDS = [
   { id: 'stall', name: '夜市屋台', desc: '經典的祭典夜市攤位', price: 0, lanterns: LANTERNS },
-  { id: 'rock', name: '鋼鐵搖滾', desc: '鐵皮、鎖鏈和音箱牆的搖滾攤', price: 500, lanterns: [
+  { id: 'rock', name: '鋼鐵搖滾', desc: '鐵皮、鎖鏈和音箱牆的搖滾攤', price: 500, lv: 4, lanterns: [
     ...[142, 222, 302, 383, 464, 545, 625, 705].map(x => [x, 395, '#ffc070']), [48, 200, '#ffc070', 46], [798, 200, '#ffc070', 46]],
     street: { booths: [['LIVE', ['#1c1c22', '#b0201a'], '#2a2a2e'], ['BEER', ['#1c1c22', '#d89a20'], '#3a2a10']], cols: ['#ffc070'], cage: true, win: '#ffb860', dark: 0.36 } },
-  { id: 'animal', name: '動物燈籠', desc: '狐狸、貓咪、狸貓燈籠的可愛攤', price: 500, lanterns: [
+  { id: 'animal', name: '動物燈籠', desc: '狐狸、貓咪、狸貓燈籠的可愛攤', price: 500, lv: 6, lanterns: [
     [75, 400, '#60ff70'], [187, 400, '#ff9a40'], [305, 395, '#c090ff'], [425, 400, '#ff6a30'], [548, 400, '#ffb060'], [662, 395, '#ff80e0'], [772, 400, '#ff7a30'], ...LANTERN_SIDE],
     street: { booths: [['たいやき', ['#ff7aa8', '#fff2f6'], '#5a8a3a'], ['わたあめ', ['#7ac8ff', '#f2fbff'], '#a0508a']], cols: ['#60ff70', '#ff9a40', '#c090ff', '#ff80e0', '#ffd040'], win: '#ffc890', dark: 0.24 } },
-  { id: 'zombie', name: '喪屍夜市', desc: '本店保證不含喪屍肉……大概', price: 800, lanterns: [
+  { id: 'zombie', name: '喪屍夜市', desc: '本店保證不含喪屍肉……大概', price: 800, lv: 12, lanterns: [
     ...lanternRow(['#ff7a30', '#ff7a30', '#ff7a30', '#ffe0b0', '#ffe0b0', '#ffe0b0', '#ffd040', '#ff7a30', '#ff7a30', '#ff7a30']), ...LANTERN_SIDE],
     street: { booths: [['お化け', ['#4e5a44', '#b8b8a0'], '#2a3a24'], ['墓場', ['#5a2a2a', '#b8b0a0'], '#1e2a1e']], cols: ['#ff7a30', '#ffe0b0', '#9aff60', '#ff7a30'], win: '#9aff70', dark: 0.44, slime: '#7dff3a' } },
-  { id: 'pixel', name: '像素復古', desc: '8-bit 風格的 RPG 小店', price: 500, lanterns: LANTERNS,
+  { id: 'pixel', name: '像素復古', desc: '8-bit 風格的 RPG 小店', price: 500, lv: 1, lanterns: LANTERNS,
     street: { booths: [['やくそう', ['#2a6fd6', '#f2f8ff'], '#24356e'], ['セーブ', ['#2a9a3a', '#f0fff0'], '#7a1e2a']], pixel: true } },
-  { id: 'shiba', name: '柴犬暖簾', desc: '柴犬老闆坐鎮的浪人攤', price: 500, lanterns: LANTERNS,
+  { id: 'shiba', name: '柴犬暖簾', desc: '柴犬老闆坐鎮的浪人攤', price: 500, lv: 8, lanterns: LANTERNS,
     street: { booths: [['だんご', ['#e8902a', '#fff6e8'], '#1e2e5a'], ['おでん', ['#c8321e', '#fff6e8'], '#24356e']] } },
-  { id: 'arcade', name: '電玩城分店', desc: '大型機台和傳送門的電玩分店', price: 800, lanterns: [
+  { id: 'arcade', name: '電玩城分店', desc: '大型機台和傳送門的電玩分店', price: 800, lv: 14, lanterns: [
     ...lanternRow(['#ff7a30', '#ff7a30', '#ff7a30', '#ffd040', '#60ff70', '#c070ff', '#ffd040', '#ff7a30', '#ff7a30', '#ff7a30']), ...LANTERN_SIDE],
     street: { booths: [['ゲーム', ['#7a2ad6', '#2ad6e6'], '#1a1040'], ['UFO', ['#e62a9a', '#ffe02a'], '#102040']], cols: ['#ff3ad0', '#3ae0ff', '#ffe03a', '#7aff3a', '#a05aff'], win: '#60e0ff', dark: 0.3 } },
-  { id: 'metal', name: '暗黑金屬', desc: '尖刺與魔法燈籠的金屬攤', price: 800, lanterns: [
+  { id: 'metal', name: '暗黑金屬', desc: '尖刺與魔法燈籠的金屬攤', price: 800, lv: 16, lanterns: [
     ...lanternRow(['#ff5a30', '#ff8040', '#c060ff', '#e060ff', '#4080ff', '#40d0ff', '#40ff60', '#60ff70', '#ffb040', '#ff5a30'], 410), ...LANTERN_SIDE],
     street: { booths: [['ドクロ', ['#18181c', '#6a1010'], '#101014'], ['メタル', ['#18181c', '#4a1a7a'], '#101014']], cols: ['#ff5a30', '#c060ff', '#4080ff', '#40ff60', '#ffb040'], cage: true, win: '#c070ff', dark: 0.42 } },
   // 浮世妖怪、中華樓閣：招牌與屋頂的構圖和 bg_stall 不同，對齊時只對吧台以下（tools/bg_prep.html 的 FIX）
@@ -177,39 +177,39 @@ const BACKGROUNDS = [
 // color：商店卡片縮圖的底色
 const HIT_SOUNDS = [
   { id: 'classic', name: '經典鐵板', desc: '咚！鐵板與菜刀的原味聲響', price: 0, color: '#c8521e' },
-  { id: 'taiko', name: '和太鼓', desc: '咚、咔！祭典太鼓的節奏', price: 300, color: '#a82a2a' },
-  { id: 'laser', name: '電子雷射', desc: '咻碰！電音舞台的合成音效', price: 400, color: '#7a2ad6' },
-  { id: 'bell', name: '風鈴', desc: '叮鈴～清涼的夏日鈴聲', price: 400, color: '#2a8ad6' },
-  { id: 'cat', name: '貓咪', desc: '喵！每一下都是貓叫', price: 600, color: '#e8902a' },
-  { id: 'drums', name: '爵士鼓組', desc: '咚恰！大鼓小鼓配銅鈸', price: 300, color: '#5a6a8a' },
-  { id: 'bubble', name: '泡泡', desc: '啵！一顆一顆的泡泡破掉', price: 400, color: '#3ac0d8' },
-  { id: 'register', name: '收銀機', desc: '鏘鈴！生意興隆的收銀聲', price: 500, color: '#d8a020' },
-  { id: 'hanabi', name: '花火大會', desc: '咻～碰！GREAT 時火花劈哩啪啦', price: 600, color: '#3a2a8a' },
-  { id: 'koto', name: '箏', desc: '叮～錚！和風古箏的五聲音階撥弦', price: 400, color: '#8a5a2a' },
+  { id: 'taiko', name: '和太鼓', desc: '咚、咔！祭典太鼓的節奏', price: 300, lv: 1, color: '#a82a2a' },
+  { id: 'laser', name: '電子雷射', desc: '咻碰！電音舞台的合成音效', price: 400, lv: 4, color: '#7a2ad6' },
+  { id: 'bell', name: '風鈴', desc: '叮鈴～清涼的夏日鈴聲', price: 400, lv: 2, color: '#2a8ad6' },
+  { id: 'cat', name: '貓咪', desc: '喵！每一下都是貓叫', price: 600, lv: 10, color: '#e8902a' },
+  { id: 'drums', name: '爵士鼓組', desc: '咚恰！大鼓小鼓配銅鈸', price: 300, lv: 1, color: '#5a6a8a' },
+  { id: 'bubble', name: '泡泡', desc: '啵！一顆一顆的泡泡破掉', price: 400, lv: 3, color: '#3ac0d8' },
+  { id: 'register', name: '收銀機', desc: '鏘鈴！生意興隆的收銀聲', price: 500, lv: 7, color: '#d8a020' },
+  { id: 'hanabi', name: '花火大會', desc: '咻～碰！GREAT 時火花劈哩啪啦', price: 600, lv: 9, color: '#3a2a8a' },
+  { id: 'koto', name: '箏', desc: '叮～錚！和風古箏的五聲音階撥弦', price: 400, lv: 5, color: '#8a5a2a' },
   // 限定（高價）：卡片左上角掛「限定」牌
-  { id: 'chip', name: '8-bit 電玩', desc: '嗶嗶！懷舊遊戲機的電子音', price: 1500, color: '#2a9a3a', tag: '限定' },
-  { id: 'dog', name: '柴犬', desc: '汪！柴犬老闆幫你吆喝', price: 1800, color: '#c87a3a', tag: '限定' },
+  { id: 'chip', name: '8-bit 電玩', desc: '嗶嗶！懷舊遊戲機的電子音', price: 1500, req: 'bit2', color: '#2a9a3a', tag: '限定' },
+  { id: 'dog', name: '柴犬', desc: '汪！柴犬老闆幫你吆喝', price: 1800, req: 'streak7', color: '#c87a3a', tag: '限定' },
 ];
 
 // ---- 陪伴寵物（主選單 → 商店 → 陪伴寵物）：畫法與反應在 js/pets.js；art: true = 改用 assets/images/pet_<id>_<mood>.png ----
 const PETS = [
   { id: 'none', name: '不帶寵物', desc: '一個人顧攤也很自在', price: 0 },
-  { id: 'shiba', name: '柴犬', desc: '麻呂眉的看板犬，跟著節拍搖尾巴', price: 500, color: '#e8913a' },
-  { id: 'maneki', name: '招財貓', desc: '招手招來客人與好成績', price: 500, color: '#f4efe4' },
-  { id: 'tanuki', name: '狸貓', desc: '頭上頂著葉子的愛笑狸貓', price: 500, color: '#9a6a3e' },
-  { id: 'tako', name: '章魚燒小章魚', desc: '綁著頭巾的隔壁攤小幫手', price: 600, color: '#e8584a' },
-  { id: 'kingyo', name: '金魚', desc: '撈金魚撈到的小金魚，在水袋裡游來游去', price: 400, color: '#ff7a3a' },
-  { id: 'usagi', name: '月兔', desc: '從月亮跑來逛夜市的白兔', price: 500, color: '#f6f2ff' },
-  { id: 'panda', name: '熊貓', desc: '圓滾滾的黑眼圈店員', price: 500, color: '#f4f4f0' },
-  { id: 'penguin', name: '企鵝', desc: '拍拍翅膀幫你打拍子', price: 500, color: '#2a3a5a' },
-  { id: 'daruma', name: '達摩', desc: '跟著節拍搖搖晃晃，歡呼時畫上另一隻眼', price: 600, color: '#d8382a' },
-  { id: 'hiyoko', name: '小雞', desc: '剛從蛋殼探出頭的小雞', price: 400, color: '#ffd84a' },
+  { id: 'shiba', name: '柴犬', desc: '麻呂眉的看板犬，跟著節拍搖尾巴', price: 500, lv: 3, color: '#e8913a' },
+  { id: 'maneki', name: '招財貓', desc: '招手招來客人與好成績', price: 500, lv: 5, color: '#f4efe4' },
+  { id: 'tanuki', name: '狸貓', desc: '頭上頂著葉子的愛笑狸貓', price: 500, lv: 7, color: '#9a6a3e' },
+  { id: 'tako', name: '章魚燒小章魚', desc: '綁著頭巾的隔壁攤小幫手', price: 600, lv: 11, color: '#e8584a' },
+  { id: 'kingyo', name: '金魚', desc: '撈金魚撈到的小金魚，在水袋裡游來游去', price: 400, lv: 2, color: '#ff7a3a' },
+  { id: 'usagi', name: '月兔', desc: '從月亮跑來逛夜市的白兔', price: 500, lv: 6, color: '#f6f2ff' },
+  { id: 'panda', name: '熊貓', desc: '圓滾滾的黑眼圈店員', price: 500, lv: 9, color: '#f4f4f0' },
+  { id: 'penguin', name: '企鵝', desc: '拍拍翅膀幫你打拍子', price: 500, lv: 8, color: '#2a3a5a' },
+  { id: 'daruma', name: '達摩', desc: '跟著節拍搖搖晃晃，歡呼時畫上另一隻眼', price: 600, lv: 13, color: '#d8382a' },
+  { id: 'hiyoko', name: '小雞', desc: '剛從蛋殼探出頭的小雞', price: 400, lv: 1, color: '#ffd84a' },
   // 稀有（高價）：卡片左上角掛「稀有」牌、身邊有專屬特效
-  { id: 'pocket', name: '遊戲機', desc: '螢幕就是臉的掌上遊戲機，一起打出高分', price: 2000, color: '#ff8a3a', tag: '稀有' },
-  { id: 'chochin', name: '提燈妖怪', desc: '祭典的紙燈籠成了精，吐著舌頭陪你顧攤', price: 2000, color: '#e8582a', tag: '稀有' },
-  { id: 'kitsune', name: '九尾狐', desc: '九條尾巴跟著節拍擺動，身邊飄著狐火', price: 2500, color: '#fff8f0', tag: '稀有' },
-  { id: 'ryu', name: '小金龍', desc: '金光閃閃的小龍，鬍鬚隨風飄，歡呼時噴出彩雲', price: 3000, color: '#f2c040', tag: '稀有' },
-  { id: 'hoou', name: '鳳凰', desc: '拖著長長的火焰尾羽，火花不斷飛舞', price: 3000, color: '#e83a2a', tag: '稀有' },
+  { id: 'pocket', name: '遊戲機', desc: '螢幕就是臉的掌上遊戲機，一起打出高分', price: 2000, req: 'bitboss', color: '#ff8a3a', tag: '稀有' },
+  { id: 'chochin', name: '提燈妖怪', desc: '祭典的紙燈籠成了精，吐著舌頭陪你顧攤', price: 2000, lv: 10, color: '#e8582a', tag: '稀有' },
+  { id: 'kitsune', name: '九尾狐', desc: '九條尾巴跟著節拍擺動，身邊飄著狐火', price: 2500, req: 'toku10', color: '#fff8f0', tag: '稀有' },
+  { id: 'ryu', name: '小金龍', desc: '金光閃閃的小龍，鬍鬚隨風飄，歡呼時噴出彩雲', price: 3000, req: 'hardfc', color: '#f2c040', tag: '稀有' },
+  { id: 'hoou', name: '鳳凰', desc: '拖著長長的火焰尾羽，火花不斷飛舞', price: 3000, lv: 20, color: '#e83a2a', tag: '稀有' },
 ];
 const PET_POS = { x: 652, y: 950, s: 1.1 };   // 世界座標：鐵板右上角的木檯（腳底中間）
 
@@ -219,6 +219,9 @@ const COIN_SHOP = true;
 //   基本 = 依評價（特上/上/並/見習/修行）＋ 這一局的星級 × perStar
 //   首次過關：一首歌第一次拿到「並」以上（不分難度，一首只發一次）；首次全連擊：每首每個難度一次
 const COIN_REWARD = { rating: [40, 30, 22, 14, 6], perStar: 3, first: 50, fc: 20 };
+// 屋台等級（js/shop.js 的 Stall）：每場結算得經驗值 = 評價（特上/上/並/見習/修行）＋難度（簡單/普通/困難）
+// 升到下一級要 step[0] + (目前等級 - 1) × step[1]；Lv.20 約 340 場。商品的 lv：幾級開放；req：特殊條件（Stall.REQ）
+const STALL = { maxLv: 20, xp: { rating: [15, 12, 9, 7, 5], diff: [0, 1, 3] }, step: [70, 14] };
 
 // ---- 製作名單 ----
 // 每個職稱可列多位

@@ -535,6 +535,7 @@ const Game = {
     R.coins = CoinShop.reward(this.song, this.diff, R);   // 遊玩獎勵（遊戲幣）
     Rhythm.record(this.song, s, ratio);   // 節奏分析用的遊玩紀錄（裡面會存檔）
     Achieve.onResult(R, !!s.pausedOnce);   // 成就（獎章、遊玩紀錄都存好之後才判定）
+    R.stall = Stall.add(R, this.diff);   // 屋台經驗值＋升級、新開放的商品（獎章、成就、遊玩天數都記好之後才判定）
     App.goto('result');
   },
   // HUD 的歌名（簡單／困難時加上難度）
