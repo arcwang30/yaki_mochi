@@ -10,7 +10,7 @@
 ## 第一次設定
 
 ```sh
-npm install @capacitor/core @capacitor/ios @fontsource/mochiy-pop-one
+npm install @capacitor/core @capacitor/ios @capgo/native-purchases @fontsource/mochiy-pop-one
 npm install -D @capacitor/cli
 npm run build            # 產生 www/
 npx cap add ios          # 產生 Xcode 專案 ios/
@@ -25,6 +25,7 @@ npx cap open ios         # 開 Xcode
 1. 左邊點 **App** 專案 → TARGETS **App** → **Signing & Capabilities**：Team 選自己的開發者帳號（帳號還沒核准前可以先用個人 Apple ID 在實機測試）
 2. **General** → Supported Destinations：確認有 iPhone、iPad；Minimum Deployments 用預設即可
 3. App 圖示：**App/Assets → AppIcon**，放 1024×1024 的圖（不可透明、不可圓角）
+4. **Signing & Capabilities** → 左上 **+ Capability** → 加入 **In-App Purchase**
 
 ## 平常改完遊戲之後
 
@@ -73,6 +74,37 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 2. App Store Connect 建立 `com.arcconceptgames.daioyaki.vol4`
 3. 新版本送審時把 vol4 商品一起勾選送審
 
+### 程式架構
+
+- 內購套件：[@capgo/native-purchases](https://github.com/Cap-go/capacitor-native-purchases)（開源 MPL-2.0、StoreKit 2、iOS 15+），不需要第三方帳號或自己的伺服器
+- `js/shop.js` 的 `AppleStore`：App 版自動使用（網頁版不受影響）
+  - 擁有清單：StoreKit 的 currentEntitlements（退款／撤銷的不算，家人共享的算），另存一份在存檔，開啟 App 時先用存檔、背景再跟 StoreKit 核對
+  - 價格：向 App Store 查到的當地價格（查到之前不顯示價格）
+  - 家長同意（Ask to Buy）：顯示「等待核准中」，核准後 StoreKit 通知就自動解鎖
+  - 恢復購買：`AppStore.sync()`，會請玩家登入 Apple 帳號，所以只在按「恢復購買」時呼叫
+- `tools/build-web.mjs` 把 Capacitor 執行環境（`capacitor.js`）和內購套件的瀏覽器版（`plugins/native-purchases.js`）放進 www/，在遊戲腳本之前載入
+
+### 本機測試內購（不需要開發者帳號，用 Xcode 的 StoreKit 設定檔）
+
+1. Xcode：**File → New → File from Template… → StoreKit Configuration File**，取名 `Products.storekit`，**不要**勾「Sync this file with an app in App Store Connect」（帳號下來、商品建好後可以再改成同步）
+2. 打開 `Products.storekit`，左下 **+ → Add Non-Consumable In-App Purchase**，建立三個商品：
+   - Reference Name `VOL.1`、Product ID `com.arcconceptgames.daioyaki.vol1`、價格隨意（例如 90）
+   - VOL.2、VOL.3 同樣做法（`.vol2`、`.vol3`）
+3. **Product → Scheme → Edit Scheme… → Run → Options → StoreKit Configuration** 選 `Products.storekit`
+4. ▶ 執行（模擬器即可）
+
+測試清單：
+
+| 測試 | 做法 | 預期 |
+| --- | --- | --- |
+| 價格 | 打開商店「追加樂曲」 | VOL.1～3 顯示 StoreKit 設定檔裡的價格 |
+| 購買 | 買 VOL.1 → 確認付款 | 解鎖訊息、鎖頭消失、選曲可以玩 VOL.1 |
+| 取消 | 買 VOL.2 → 付款畫面按取消 | 「已取消購買」，還是鎖著 |
+| 家長同意 | Xcode 開著 `Products.storekit` 時選 **Editor → Enable Ask to Buy**，再買 VOL.2 | 「等待核准中」；在 **Debug → StoreKit → Manage Transactions** 核准後自動解鎖 |
+| 退款 | Manage Transactions 對 VOL.1 按 **Refund**，回到 App | VOL.1 重新上鎖 |
+| 恢復購買 | 刪掉 App 重新安裝 → 商店按「恢復購買」 | 「已恢復購買」，買過的都解鎖 |
+| 離線 | 買過之後開飛航模式重開 App | 買過的仍然解鎖（存檔＋StoreKit 快取） |
+
 ### 合購包（規劃中）
 
 - 程式已經支援：`js/shop.js` 的 `BUNDLES`，買了合購包＝擁有裡面每一集；擁有判定不看是否上架，買過永遠有效
@@ -83,6 +115,6 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 
 - [x] 階段 1：Capacitor 設定、原生版開關、字型內附、建置腳本
 - [x] 階段 2：iPad 直式（兩側掛簾、點兩側算打擊、不顯示轉向提示）
-- [ ] 階段 3：App Store 內購（VOL.1～6，非消耗型），先用 Xcode 的 StoreKit 設定檔在本機測試
+- [ ] 階段 3：App Store 內購（VOL.1～3 首發，非消耗型）：程式完成，待 Mac 上用 StoreKit 設定檔測試
 - [ ] 階段 4：iOS 音訊（解鎖、背景暫停、靜音鍵）、存檔改原生儲存、原生分享
 - [ ] 階段 5：App Store Connect（App、內購商品、隱私問卷）、TestFlight、送審

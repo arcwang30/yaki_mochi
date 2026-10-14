@@ -151,7 +151,7 @@ const I18N = {
     '綠能未來': 'グリーン未来', '藤蔓、太陽能板與發光植物的未來攤': 'ツタとソーラーパネル、光る植物の未来屋台', '中華樓閣': '中華楼閣', '飛簷斗拱與宮燈的中式攤': '反り屋根と宮灯の中華屋台',
     '蒸汽龐克': 'スチームパンク', '黃銅管線、霓虹燈管與飛艇的機械攤': '真鍮パイプとネオン管、飛行船のメカ屋台',
     // 付費 VOL
-    '購買': '購入', '購買 {0}': '{0} を購入', '恢復購買': '購入を復元', '已解鎖 {0}！': '{0} を解放しました！', '已取消購買': '購入をキャンセルしました', '購買失敗，請稍後再試': '購入に失敗しました。しばらくしてからお試しください',
+    '購買': '購入', '購買 {0}': '{0} を購入', '恢復購買': '購入を復元', '已解鎖 {0}！': '{0} を解放しました！', '已取消購買': '購入をキャンセルしました', '等待核准中（例如家長同意），核准後會自動解鎖': '承認待ちです（保護者の承認など）。承認されると自動で解放されます', '購買失敗，請稍後再試': '購入に失敗しました。しばらくしてからお試しください',
     '已恢復購買': '購入を復元しました', '沒有可恢復的購買': '復元できる購入はありません', '恢復購買失敗': '購入の復元に失敗しました', '處理中…': '処理中…', '追加樂曲 {0} 首': '追加楽曲 {0} 曲', '選歌就可以先試聽': '曲を選ぶと試聴できます',
     '滑鼠': 'マウス', '左鍵點擊\n畫面任何地方': '画面のどこでも\n左クリック', '移動游標': 'カーソルを移動', '左鍵點擊按鈕': 'ボタンを左クリック',
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': '打つボタンはどれでも OK。マウスなら画面のどこをクリックしても OK（右上のポーズボタンを除く）。ポーズから再開すると 3 拍カウントしてから元のリズムに戻ります。',
@@ -288,7 +288,7 @@ const I18N = {
     '綠能未來': 'Green Future', '藤蔓、太陽能板與發光植物的未來攤': 'Vines, solar panels and glowing plants', '中華樓閣': 'Chinese Pavilion', '飛簷斗拱與宮燈的中式攤': 'Upturned eaves and palace lanterns',
     '蒸汽龐克': 'Steampunk', '黃銅管線、霓虹燈管與飛艇的機械攤': 'Brass pipes, neon tubes and an airship',
     // Paid volumes
-    '購買': 'BUY', '購買 {0}': 'BUY {0}', '恢復購買': 'Restore Purchases', '已解鎖 {0}！': '{0} unlocked!', '已取消購買': 'Purchase canceled', '購買失敗，請稍後再試': 'Purchase failed. Please try again later.',
+    '購買': 'BUY', '購買 {0}': 'BUY {0}', '恢復購買': 'Restore Purchases', '已解鎖 {0}！': '{0} unlocked!', '已取消購買': 'Purchase canceled', '等待核准中（例如家長同意），核准後會自動解鎖': 'Waiting for approval (e.g. Ask to Buy). It unlocks automatically once approved.', '購買失敗，請稍後再試': 'Purchase failed. Please try again later.',
     '已恢復購買': 'Purchases restored', '沒有可恢復的購買': 'No purchases to restore', '恢復購買失敗': 'Could not restore purchases', '處理中…': 'Processing…', '追加樂曲 {0} 首': '{0} more songs', '選歌就可以先試聽': 'Select a song to hear a preview',
     '滑鼠': 'Mouse', '左鍵點擊\n畫面任何地方': 'Left-click\nanywhere', '移動游標': 'Move cursor', '左鍵點擊按鈕': 'Click button',
     '打擊鍵按任何一顆都可以；用滑鼠時點擊畫面任何地方都算（右上暫停鈕除外）。暫停後選「繼續遊戲」會先倒數 3 拍，再接回原本的節拍。': 'Any hit button works. With a mouse, click anywhere on the screen (except the pause button at top right). After a pause, RESUME counts 3 beats and then rejoins the rhythm.',

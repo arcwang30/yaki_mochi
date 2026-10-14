@@ -486,7 +486,7 @@ Screens.shop = {
         Sound.play('confirm');
         Shop.buy(it.vol).then(r => {
           if (r === 'ok') { Sound.play('purchase'); if (A.ctx) SND.fanfare(A.ctx.currentTime + 0.6); S.say(tr('已解鎖 {0}！', it.name)); }
-          else S.say(tr(r === 'cancel' ? '已取消購買' : '購買失敗，請稍後再試'));
+          else S.say(tr(Shop.RESULT_TEXT[r]));
         });
       },
       // 額外按鈕：恢復購買（有商店時；iOS 規定要有）
@@ -897,7 +897,7 @@ Screens.songs = {
     Sound.play('confirm');
     Shop.buy(vol).then(r => {
       if (r === 'ok') { if (A.ctx) SND.fanfare(A.ctx.currentTime + 0.05); this.say(tr('已解鎖 {0}！', volName(vol))); }
-      else this.say(tr(r === 'cancel' ? '已取消購買' : '購買失敗，請稍後再試'));
+      else this.say(tr(Shop.RESULT_TEXT[r]));
     });
   },
   restore() {

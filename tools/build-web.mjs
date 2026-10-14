@@ -30,6 +30,19 @@ for (const f of fs.readdirSync(path.join(fontPkg, 'files'))) {
   if (f.endsWith('.woff2')) fs.copyFileSync(path.join(fontPkg, 'files', f), path.join(fontOut, 'files', f));
 }
 
+// ---- Capacitor 執行環境＋原生外掛（遊戲是一般 <script>、沒有打包工具，所以用各套件的瀏覽器版 dist 檔） ----
+//   capacitor.js：@capacitor/core（提供 registerPlugin）；native-purchases.js：App Store 內購（js/shop.js 的 AppleStore）
+const SCRIPTS = [
+  ['@capacitor/core/dist/capacitor.js', 'capacitor.js'],
+  ['@capgo/native-purchases/dist/plugin.js', 'plugins/native-purchases.js'],
+];
+for (const [src, dst] of SCRIPTS) {
+  const file = from('node_modules', src);
+  if (!fs.existsSync(file)) throw new Error(`找不到 ${src}，請先執行 npm install（見 docs/iOS上架.md）`);
+  fs.mkdirSync(path.dirname(path.join(out, dst)), { recursive: true });
+  fs.copyFileSync(file, path.join(out, dst));
+}
+
 // ---- index.html：拿掉網頁版才需要的連結，換成內附字型；每一項都必須找得到，找不到就停下來（代表 index.html 改過，這裡要跟著改） ----
 let html = fs.readFileSync(from('index.html'), 'utf8');
 const edit = (re, to, what) => {
@@ -41,6 +54,8 @@ edit(/[ \t]*<link rel="icon"[^>]*>\r?\n/, '', 'favicon');
 edit(/[ \t]*<link rel="apple-touch-icon"[^>]*>\r?\n/, '', 'apple-touch-icon');
 edit(/[ \t]*<link rel="preconnect"[^>]*>\r?\n/g, '', 'preconnect');
 edit(/<link href="https:\/\/fonts\.googleapis\.com[^>]*>/, '<link rel="stylesheet" href="fonts/mochiy-pop-one/font.css">', 'Google Fonts');
+edit(/([ \t]*)<script src="js\/config\.js"><\/script>/,
+  SCRIPTS.map(([, dst]) => `$1<script src="${dst}"></script>\n`).join('') + '$1<script src="js/config.js"></script>', 'js/config.js');
 fs.writeFileSync(path.join(out, 'index.html'), html);
 
 console.log('Built: www/');

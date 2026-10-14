@@ -38,13 +38,69 @@ const TestStore = {
   restore() { return new Promise(res => setTimeout(() => res(this.list().length), 800)); },
 };
 
+// ---- App Store（iOS App 版）：@capgo/native-purchases（StoreKit 2），由 tools/build-web.mjs 以 <script> 載入 ----
+// 商品 ID = Bundle ID ＋ '.' ＋ sku（例如 com.arcconceptgames.daioyaki.vol1），在 App Store Connect 建立（見 docs/iOS上架.md）
+// 擁有清單＝StoreKit 的 currentEntitlements（已退款 / 撤銷的不算；家人共享的算）；另存一份在存檔，開啟時先用，背景再跟 StoreKit 對一次
+const APP_ID = 'com.arcconceptgames.daioyaki';   // 和 capacitor.config.json 的 appId 一樣
+const AppleStore = {
+  name: 'apple',
+  plugin: null,
+  prices: {},
+  id: sku => APP_ID + '.' + sku,
+  sku: id => id.slice(APP_ID.length + 1),
+  list() { return Save.data.appleOwned || (Save.data.appleOwned = []); },
+
+  init() {
+    const C = window.Capacitor || {};
+    this.plugin = (window.capacitorNativePurchases && window.capacitorNativePurchases.NativePurchases)
+      || (C.Plugins && C.Plugins.NativePurchases) || (C.registerPlugin && C.registerPlugin('NativePurchases')) || null;
+    if (!this.plugin) { console.warn('NativePurchases plugin not found'); return; }
+    // 家長同意（Ask to Buy）通過、在別台裝置買的、退款：StoreKit 之後才通知，收到就重新整理擁有清單
+    this.plugin.addListener('transactionUpdated', () => this.refresh());
+    this.refresh();
+    this.plugin.getProducts({ productIdentifiers: Shop.skus().map(this.id), productType: 'inapp' })
+      .then(({ products }) => products.forEach(p => { this.prices[this.sku(p.identifier)] = p.priceString; }))
+      .catch(e => console.warn('getProducts failed', e));
+  },
+  // 跟 StoreKit 重新對一次擁有清單；回傳 Promise<擁有幾個>
+  refresh() {
+    return this.plugin.getPurchases({ productType: 'inapp', onlyCurrentEntitlements: true }).then(({ purchases }) => {
+      const owned = [...new Set(purchases.filter(t => !t.revocationDate && t.productIdentifier.startsWith(APP_ID + '.')).map(t => this.sku(t.productIdentifier)))];
+      Save.data.appleOwned = owned; Save.store();
+      return owned.length;
+    });
+  },
+  owns(sku) { return this.list().includes(sku); },
+  price(sku) { return this.prices[sku] || ''; },
+  // 回傳 Promise<true = 成功 | false = 取消 | 'pending' = 等家長同意>；其他錯誤 reject
+  buy(sku) {
+    if (!this.plugin) return Promise.reject(new Error('no plugin'));
+    return this.plugin.purchaseProduct({ productIdentifier: this.id(sku), productType: 'inapp', quantity: 1 }).then(
+      () => this.refresh().then(() => true),
+      e => {
+        const msg = String((e && e.message) || e);
+        if (/cancel/i.test(msg)) return false;
+        if (/pending/i.test(msg)) return 'pending';
+        throw e;
+      });
+  },
+  // 恢復購買：AppStore.sync()（會請玩家登入 Apple 帳號，所以只在按下「恢復購買」時呼叫）
+  restore() {
+    if (!this.plugin) return Promise.reject(new Error('no plugin'));
+    return this.plugin.restorePurchases().then(() => this.refresh());
+  },
+};
+
 const Shop = {
   store: null,
   busy: false,   // 付款 / 恢復購買進行中（期間不能再按）
 
   init() {
-    if (QS.get('shop') === 'test') this.store = TestStore;
+    if (NATIVE_APP) { this.store = AppleStore; AppleStore.init(); }
+    else if (QS.get('shop') === 'test') this.store = TestStore;
   },
+  // buy() 結果的提示文字（'ok' 由畫面自己顯示解鎖訊息）
+  RESULT_TEXT: { cancel: '已取消購買', pending: '等待核准中（例如家長同意），核准後會自動解鎖', error: '購買失敗，請稍後再試' },
   enabled() { return !!this.store; },
   isTest() { return this.store === TestStore; },
   paid(vol) { return !!PAID_VOLS[vol]; },
@@ -60,12 +116,12 @@ const Shop = {
   songOwned(song) { return this.owned(song.vol); },
   price(vol) { return this.paid(vol) && this.enabled() ? this.store.price(PAID_VOLS[vol].sku) : ''; },
 
-  // 回傳 Promise<'ok' | 'cancel' | 'error'>
+  // 回傳 Promise<'ok' | 'cancel' | 'pending' | 'error'>
   buy(vol) {
     if (this.busy || this.owned(vol)) return Promise.resolve(this.owned(vol) ? 'ok' : 'cancel');
     this.busy = true;
     return this.store.buy(PAID_VOLS[vol].sku)
-      .then(ok => (ok ? 'ok' : 'cancel'), () => 'error')
+      .then(r => (r === 'pending' ? 'pending' : r ? 'ok' : 'cancel'), e => { console.warn('purchase failed', e); return 'error'; })
       .finally(() => { this.busy = false; });
   },
   // 回傳 Promise<恢復了幾個商品 | -1 = 失敗>
