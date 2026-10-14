@@ -46,6 +46,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `docs/企畫書.md` | 遊戲企畫 |
 | `site/` | 公開網站（arcconceptgames.github.io）的檔案：首頁、`daioyaki/privacy/` 隱私權政策、`daioyaki/support/` 支援頁面（中／日／英）。複製到 `arcconceptgames.github.io` repo 發佈，見 `docs/iOS上架.md` |
 | `docs/iOS上架.md` | iOS App（Capacitor）建置步驟與上架進度；設定在 `capacitor.config.json`、`package.json` |
+| `docs/App Store 上架文字.md` | App Store Connect 各欄位的文字（中／日／英：名稱、副標題、宣傳文字、關鍵字、說明、內購商品、審核備註）；`tools/check-store-text.ps1` 檢查字數上限 |
 | `prototypes/stack-flip/` | 早期雛形「疊料＋翻面」 |
 | `builds/` | 封裝發佈版本（zip），**不進 git** |
 

@@ -147,6 +147,10 @@ App 版才會用到；網頁版行為不變。官方外掛（Haptics、Share、F
 
 ## 上架資料（階段 5）
 
+### 上架文字
+
+名稱、副標題、說明、關鍵字、內購商品名稱等，三語都在 `docs/App Store 上架文字.md`；改過後執行 `powershell -ExecutionPolicy Bypass -File tools\check-store-text.ps1` 檢查字數。
+
 ### 公開網站（隱私權政策、支援頁面）
 
 App Store Connect 必填「隱私權政策網址」和「支援網址」。放在一個**獨立的公開網站**，遊戲的 repo 維持私人（不推出網頁版，原始碼與付費內容不公開）。
