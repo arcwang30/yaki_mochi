@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  App 的隱私清單（Privacy Manifest）：npm run ios:setup 會複製到 ios/App/App/PrivacyInfo.xcprivacy
+  - 不追蹤、不收集任何資料（和 App Store Connect 的「未收集資料」、隱私權政策一致）
+  - 需要申報理由的 API（Required Reason API）：
+      File timestamp / C617.1：@capacitor/filesystem（底層 ion-ios-filesystem 的 attributesOfItem 讀建立／修改時間）
+        存檔備份（Library/save.json）、分享用的暫存檔，都在 App 自己的資料夾裡
+  - 其他套件（2026-10 檢查原始碼）：Capacitor 本體自帶隱私清單（沒有用到需申報的 API）；
+    Haptics、Share、@capgo/native-purchases 沒有用到需申報的 API
+  上傳後如果收到 Apple 的 ITMS-91053「Missing API declaration」信，照信裡列的類別加進 NSPrivacyAccessedAPITypes
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>C617.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -4,6 +4,7 @@
 //   - iPad：直式＋倒立直式（同樣 9:16 版面，左右空白掛廣島燒掛簾，見 js/sides.js）
 //   - 隱藏狀態列（全螢幕遊戲）
 //   - 加密出口合規：只用系統內建的 HTTPS，不另外用加密 → 上傳時不用每次回答問卷
+//   - 隱私清單：複製 tools/ios/PrivacyInfo.xcprivacy
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -32,3 +33,14 @@ for (const [key, value] of Object.entries(KEYS)) {
 }
 fs.writeFileSync(plistPath, xml);
 console.log('Updated: ios/App/App/Info.plist');
+
+// 隱私清單（Privacy Manifest）：tools/ios/PrivacyInfo.xcprivacy → ios/App/App/（內容說明見檔案開頭）
+// 第一次複製後，要在 Xcode 把它加進 App target（見 docs/iOS上架.md「隱私清單」），之後重複執行只會更新內容
+const manifestDst = path.join(root, 'ios', 'App', 'App', 'PrivacyInfo.xcprivacy');
+const firstTime = !fs.existsSync(manifestDst);
+fs.copyFileSync(path.join(root, 'tools', 'ios', 'PrivacyInfo.xcprivacy'), manifestDst);
+console.log('Updated: ios/App/App/PrivacyInfo.xcprivacy');
+const pbx = fs.readFileSync(path.join(root, 'ios', 'App', 'App.xcodeproj', 'project.pbxproj'), 'utf8');
+if (firstTime || !pbx.includes('PrivacyInfo.xcprivacy')) {
+  console.log('→ 請在 Xcode 把 PrivacyInfo.xcprivacy 加進 App target：左側 App 資料夾按右鍵 → Add Files to "App"… → 選 PrivacyInfo.xcprivacy、勾選 Target「App」');
+}

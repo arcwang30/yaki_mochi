@@ -147,6 +147,24 @@ App 版才會用到；網頁版行為不變。官方外掛（Haptics、Share、F
 
 ## 上架資料（階段 5）
 
+### 隱私清單（Privacy Manifest）
+
+Apple 要求 App 附 `PrivacyInfo.xcprivacy`，申報追蹤、收集的資料，以及用到哪些「需要說明理由的 API」。檔案在 `tools/ios/PrivacyInfo.xcprivacy`，`npm run ios:setup` 會複製到 `ios/App/App/`。
+
+| 項目 | 內容 |
+| --- | --- |
+| 追蹤（Tracking） | 否 |
+| 收集的資料 | 無（和 App 隱私問卷「未收集資料」、隱私權政策一致） |
+| 需說明理由的 API | **File timestamp／C617.1**（存取 App 自己資料夾內檔案的時間戳記）：`@capacitor/filesystem` 底層讀檔案建立／修改時間 |
+
+2026-10 檢查各套件原始碼的結果：Capacitor 本體自帶隱私清單（沒有用到需申報的 API）；Filesystem 用到 File timestamp 但沒有自帶清單，所以由 App 申報；Haptics、Share、`@capgo/native-purchases` 都沒有用到。
+
+**第一次（在 Xcode，只要做一次）**：`npm run ios:setup` 之後，左側 **App** 資料夾按右鍵 → **Add Files to "App"…** → 選 `PrivacyInfo.xcprivacy`，勾選 Target **App** → Add。
+
+**確認**：Product → Archive → Organizer 裡對這個封存按右鍵 → **Generate Privacy Report**，報告裡應該有 File Timestamp（C617.1），沒有其他收集項目。
+
+**之後**：加了新套件要重新檢查；上傳後如果收到 Apple 的 **ITMS-91053「Missing API declaration」** 信，照信裡列的 API 類別加進 `tools/ios/PrivacyInfo.xcprivacy`，再執行 `npm run ios:setup`。
+
 ### 截圖
 
 規格、現有宣傳圖能不能用、建議拍哪些畫面：`docs/App Store 截圖.md`。
