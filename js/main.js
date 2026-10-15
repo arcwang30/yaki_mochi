@@ -88,7 +88,6 @@
     Sound.tick();
     ctx.setTransform(RES, 0, 0, RES, 0, 0);
     App.frame(dt);
-    Sides.tick(performance.now(), cv);   // 手機上下空白：延伸畫面上下緣（js/sides.js；有節流）
     Input.endFrame();
   }
   window.__step = step;

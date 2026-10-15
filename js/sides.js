@@ -2,7 +2,7 @@
 
 // ===== 直式版面的空白處理 =====
 // 比 9:16 寬的螢幕（例如 iPad）：左右空白各掛一幅廣島燒的布簾（on）
-// 比 9:16 長的螢幕（一般 iPhone）：上下空白延伸遊戲畫面的上下緣（vOn，見 tick），下方空白的上半部也算打擊
+// 比 9:16 長的螢幕（一般 iPhone）：上下空白維持原本的深色底，不畫東西；只有下方空白的上半部算打擊（vOn）
 // 掛簾只在視窗大小改變、圖片與字型載入完成時重畫，平常不花效能。遊玩中點兩側也算打擊（iPad 手常放在兩邊）。
 const Sides = {
   el: null, ctx: null, on: false,
@@ -20,7 +20,7 @@ const Sides = {
   },
 
   // gameW、gameH = 遊戲畫面實際顯示的寬高（CSS px）
-  // 比 9:16 寬（iPad）→ 左右掛簾（on）；比 9:16 長（一般 iPhone）→ 上下延伸畫面（vOn，tick 裡畫）
+  // 比 9:16 寬（iPad）→ 左右掛簾（on）；比 9:16 長（一般 iPhone）→ 透明的打擊區（vOn，不畫）
   resize(gameW, gameH = window.innerHeight) {
     const vw = window.innerWidth, vh = window.innerHeight, side = (vw - gameW) / 2, vert = (vh - gameH) / 2;
     this.on = !LAND && side > 12;
@@ -31,45 +31,8 @@ const Sides = {
     this.el.width = Math.round(vw * dpr);
     this.el.height = Math.round(vh * dpr);
     this.vw = vw; this.vh = vh; this.side = side; this.dpr = dpr;
-    this.gameW = gameW; this.gameH = gameH; this.vert = vert; this.lastT = 0; this.bottomDrawn = false;
+    this.gameW = gameW; this.gameH = gameH; this.vert = vert;
     this.draw();
-  },
-
-  // ---- 手機上下空白：把遊戲畫面最上緣、最下緣幾行壓成一排色塊（只留顏色、不留細節，選單提示字也不會被複製），
-  //      再平滑放大到空白處，像畫面的光色往外延伸；外側壓暗融進螢幕邊緣，上方加幾顆星星。取的是當下的畫面，所以任何店面背景、任何畫面都會自動配色。
-  //      主迴圈每幀呼叫，實際約每秒 12 次（省電模式 6 次）重畫 ----
-  tick(now, src) {
-    if (!this.vOn || now - this.lastT < (ECO() ? 160 : 80)) return;
-    this.lastT = now;
-    const c = this.ctx, { vw, vh, vert, gameW } = this, gx = (vw - gameW) / 2;
-    // 遊玩中（遊戲、新手教學的練習）下方固定不更新：畫面底部的打擊光效不會讓下方空白跟著閃（進場 0.6 秒後固定；畫布被清空過就再畫一次）
-    const playing = App.name === 'game' || (App.name === 'tutorial' && Screens.tutorial.phase === 'play');
-    if (!playing) this.playSince = 0; else if (!this.playSince) this.playSince = now;
-    const freeze = playing && now - this.playSince > 600 && this.bottomDrawn;
-    if (!this.tmp) { this.tmp = document.createElement('canvas'); this.tmp.width = 24; this.tmp.height = 1; }
-    const t = this.tmp, tg = t.getContext('2d'), sh = Math.max(1, Math.round(src.height * 0.05));
-    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    c.clearRect(0, 0, vw, vert + 1); if (!freeze) c.clearRect(0, vh - vert - 1, vw, vert + 1);
-    c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; tg.imageSmoothingEnabled = true; tg.imageSmoothingQuality = 'high';
-    [[0, 0], [src.height - sh, vh - vert]].filter((_, k) => !(k && freeze)).forEach(([sy, y]) => {
-      tg.clearRect(0, 0, t.width, 1); tg.drawImage(src, 0, sy, src.width, sh, 0, 0, t.width, 1);   // 邊緣一段 → 24 格平均色
-      c.drawImage(t, 0.5, 0, t.width - 1, 1, gx, y, gameW, vert + 1);   // 平滑放大（左右漸層、上下同色）
-    });
-    // 外側壓暗（越靠螢幕邊緣越暗）
-    for (const [y0, y1] of freeze ? [[0, vert]] : [[0, vert], [vh, vh - vert]]) {
-      const g = c.createLinearGradient(0, y0, 0, y1);
-      g.addColorStop(0, 'rgba(5,6,22,.82)'); g.addColorStop(1, 'rgba(5,6,22,.12)');
-      c.fillStyle = g; c.fillRect(0, Math.min(y0, y1), vw, vert);
-    }
-    if (!freeze) this.bottomDrawn = true;
-    // 上方的星星（固定位置、輕輕閃）
-    const tm = now / 1000;
-    for (let i = 0; i < 14; i++) {
-      const x = ((i * 0.618034 + 0.13) % 1) * vw, y = ((i * 0.381966 + 0.07) % 1) * vert * 0.8;
-      c.globalAlpha = 0.35 + 0.35 * Math.sin(tm * (1.2 + (i % 5) * 0.3) + i * 2.1);
-      c.fillStyle = '#fff8e0'; c.beginPath(); c.arc(x, y, 0.8 + (i % 3) * 0.45, 0, Math.PI * 2); c.fill();
-    }
-    c.globalAlpha = 1;
   },
 
   draw() {
