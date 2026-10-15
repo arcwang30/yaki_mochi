@@ -1,6 +1,6 @@
 # App Store 上架文字
 
-App Store Connect 各欄位要填的文字，三個語系：**繁體中文（zh-Hant）**、**日文（ja）**、**英文（en-US）**。
+App Store Connect 各欄位要填的文字，四個語系：**繁體中文（zh-Hant）**、**日文（ja）**、**英文（en-US）**、**韓文（ko）**。
 每個欄位放在程式碼框裡，直接複製貼上。字數上限與實際字數在每節的表格裡（用 `tools/check-store-text.ps1` 檢查）。
 
 > 定價：App 本體**免費下載**（內建 15 首免費暢玩），追加樂曲 VOL.1～3 用 App 內購買。內購價格在 App Store Connect 設定，文字裡不寫價格。
@@ -14,7 +14,7 @@ App Store Connect 各欄位要填的文字，三個語系：**繁體中文（zh-
 | 主要類別 | 遊戲 → **音樂**（Games → Music） |
 | 次要類別 | 遊戲 → **休閒**（Games → Casual） |
 | 版權 | `2026 Arc Concept Games` |
-| 隱私權政策網址 | `https://arcconceptgames.github.io/daioyaki/privacy/`（日文、英文語系加 `?lang=ja`、`?lang=en`） |
+| 隱私權政策網址 | `https://arcconceptgames.github.io/daioyaki/privacy/`（日文、英文語系加 `?lang=ja`、`?lang=en`；韓文語系暫時用 `?lang=en`，網站還沒有韓文版） |
 | 支援網址 | `https://arcconceptgames.github.io/daioyaki/support/`（同上加 `?lang=`） |
 | 行銷網址 | `https://arcconceptgames.github.io/` |
 | App 隱私權 | 未收集資料（Data Not Collected） |
@@ -32,7 +32,7 @@ App Store Connect 各欄位要填的文字，三個語系：**繁體中文（zh-
 | 副標題 | 30 | 14 |
 | 宣傳文字 | 170 | 67 |
 | 關鍵字 | 100 | 61 |
-| 說明 | 4000 | 581 |
+| 說明 | 4000 | 585 |
 
 **名稱**
 ```
@@ -105,7 +105,7 @@ App Store Connect 各欄位要填的文字，三個語系：**繁體中文（zh-
 | 副標題 | 30 | 16 |
 | 宣傳文字 | 170 | 90 |
 | 關鍵字 | 100 | 68 |
-| 說明 | 4000 | 722 |
+| 說明 | 4000 | 726 |
 
 **名稱**
 ```
@@ -155,7 +155,7 @@ App Store Connect 各欄位要填的文字，三個語系：**繁體中文（zh-
 ・タイミング調整：Bluetooth イヤホンの遅延も自動補正
 ・iPhone と iPad に対応。iPad は縦画面で、左右にのれんと提灯を飾ります
 ・広告なし、オフラインでも遊べる
-・日本語／中文／English
+・日本語／中文／English／한국어
 
 鉄板はもうアツアツ。さあ、広島焼きを作ろう！
 ```
@@ -178,7 +178,7 @@ App Store Connect 各欄位要填的文字，三個語系：**繁體中文（zh-
 | 副標題 | 30 | 29 |
 | 宣傳文字 | 170 | 160 |
 | 關鍵字 | 100 | 99 |
-| 說明 | 4000 | 1556 |
+| 說明 | 4000 | 1562 |
 
 **Name**
 ```
@@ -228,7 +228,7 @@ Daio-yaki Rhythm Yatai is a one-button rhythm game set at a Japanese food stall.
 - Timing calibration, with auto-calibrate for Bluetooth headphone lag
 - Built for iPhone and iPad. On iPad you play in portrait, framed by okonomiyaki banners and lanterns
 - No ads, and you can play offline
-- English / 中文 / 日本語
+- English / 中文 / 日本語 / 한국어
 
 The griddle's hot. Let's make some okonomiyaki!
 ```
@@ -240,6 +240,81 @@ The griddle's hot. Let's make some okonomiyaki!
 | `com.arcconceptgames.daioyaki.vol1` | `Song Pack VOL.1` | `Unlock 10 new songs with 3 difficulties each.` |
 | `com.arcconceptgames.daioyaki.vol2` | `Song Pack VOL.2` | `Unlock 10 new songs with 3 difficulties each.` |
 | `com.arcconceptgames.daioyaki.vol3` | `Song Pack VOL.3` | `Unlock 10 new songs with 3 difficulties each.` |
+
+---
+
+## 한국어（ko）
+
+韓文商店頁：在 App Store Connect 新增「韓文（Korean）」在地化版本後貼上。名稱沿用遊戲內的韓文標題（分享文字也是這個名字）。
+
+| 欄位 | 上限 | 字數 |
+| --- | --- | --- |
+| 名稱 | 30 | 13 |
+| 副標題 | 30 | 20 |
+| 宣傳文字 | 170 | 108 |
+| 關鍵字 | 100 | 58 |
+| 說明 | 4000 | 828 |
+
+**Name**
+```
+다이오야키 리듬 포장마차
+```
+
+**Subtitle**
+```
+버튼 하나로 리듬 맞춰 오코노미야키!
+```
+
+**Promotional Text**
+```
+양옆에서 날아오는 재료가 철판에 떨어지는 순간 버튼을 눌러요! 버튼 하나로 즐기는 일본 포장마차 리듬 게임. 기본 곡 15곡은 무료로 마음껏, 3가지 난이도로 초보부터 고수까지 즐길 수 있어요.
+```
+
+**Keywords**
+```
+음악,리듬게임,음악게임,탭,캐주얼,요리,일본,축제,야시장,철판,타이코,원버튼,오리지널곡,박자,음감,난이도
+```
+
+**Description**
+```
+화면 양옆에서 철판을 향해 재료가 날아와요! 떨어지는 순간 버튼을 눌러 보세요.
+면, 양배추, 반죽, 베이컨. 네 가지 재료를 하나씩 손질하면 따끈따끈한 오코노미야키가 완성돼요.
+
+《다이오야키 리듬 포장마차》는 버튼 하나로 즐기는 일본 포장마차 리듬 게임이에요. 재료를 던질 때 "휙~퐁" 신호음이 나고, 2박자 뒤에 떨어져요. 먼저 듣고, 그다음에 누르기. 음악의 박자에 몸을 맡기면 OK!
+
+■ 버튼 하나, 누구나 바로 플레이
+・복잡한 조작 없이 화면을 탭하기만 하면 끝
+・재료가 없을 때 눌러도 감점 없음, 마음 편히 박자를 타세요
+・튜토리얼이 리듬의 요령을 차근차근 알려 줘요
+
+■ 오리지널 곡
+・기본 곡 15곡 무료: 로파이, 보사노바, 축제 타이코, 스윙 재즈, 스카, 애니송 팝, 8비트……
+・추가 곡 팩 VOL.1~VOL.3(각 10곡)은 앱 내 구매로 별도 구매할 수 있어요
+・모든 곡에 "쉬움" "보통" "어려움" 3가지 난이도
+・8마디마다 템포 업, 갈수록 뜨거워져요!
+
+■ 할수록 즐거움이 커져요
+・55개의 업적
+・플레이로 모은 코인으로 상점에서 포장마차 배경, 함께하는 펫, 타격음을 모아 보세요
+・리듬 분석: 한 번 한 번의 타이밍 차이를 기록해 음감 레벨과 연습 조언을 알려 줘요
+・좋은 성적은 탭 한 번으로 성적 이미지로 만들어 공유
+
+■ 세심한 기능
+・판정 보정: 블루투스 이어폰의 지연도 자동 보정
+・iPhone과 iPad 지원. iPad는 세로 화면으로, 양옆을 오코노미야키 깃발과 등롱이 장식해요
+・광고 없음, 오프라인에서도 플레이 가능
+・한국어 / 中文 / 日本語 / English
+
+철판은 이미 뜨거워요. 자, 오코노미야키를 만들어 볼까요!
+```
+
+**인앱 구매**
+
+| 商品 ID | 표시 이름（上限 30） | 설명（上限 45） |
+| --- | --- | --- |
+| `com.arcconceptgames.daioyaki.vol1` | `추가 곡 VOL.1` | `새로운 곡 10곡 해금, 모든 곡 3가지 난이도.` |
+| `com.arcconceptgames.daioyaki.vol2` | `추가 곡 VOL.2` | `새로운 곡 10곡 해금, 모든 곡 3가지 난이도.` |
+| `com.arcconceptgames.daioyaki.vol3` | `추가 곡 VOL.3` | `새로운 곡 10곡 해금, 모든 곡 3가지 난이도.` |
 
 ---
 

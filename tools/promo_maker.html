@@ -5,9 +5,9 @@
 <title>宣傳圖產生器</title>
 <!-- 宣傳圖／App Store 截圖產生器：遊戲畫面直接從目前的遊戲擷取（隱藏的 iframe，?noloop 逐格推進），再排進宣傳圖版面
      開啟：powershell -ExecutionPolicy Bypass -File tools\prep_server.ps1 -Port 5175 -Out promo\store → http://localhost:5175/tools/promo_maker.html
-     輸出到 promo/store：{語言}_{尺寸}_{編號}.jpg（語言 zh/ja/en；尺寸 social 1080×1920、iphone 1320×2868、ipad 2064×2752）
+     輸出到 promo/store：{語言}_{尺寸}_{編號}.jpg（語言 zh/ja/en/ko；尺寸 social 1080×1920、iphone 1320×2868、ipad 2064×2752）
      JPG：App Store 的截圖不能有透明（alpha）通道 -->
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@900&family=Noto+Sans+JP:wght@900&family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@900&family=Noto+Sans+JP:wght@900&family=Noto+Sans+KR:wght@900&family=Mochiy+Pop+One&display=swap" rel="stylesheet">
 <style>
   body { margin: 0; padding: 16px; background: #1b1b22; color: #ddd; font: 14px/1.5 system-ui, sans-serif; }
   #bar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
@@ -22,10 +22,11 @@
 </head>
 <body>
 <div id="bar">
-  <select id="lang"><option value="all">全部語言</option><option>zh</option><option>ja</option><option>en</option></select>
+  <select id="lang"><option value="all">全部語言</option><option>zh</option><option>ja</option><option>en</option><option>ko</option></select>
   <select id="size"><option value="all">全部尺寸</option><option>social</option><option>iphone</option><option>ipad</option></select>
   <button id="preview" disabled>預覽</button>
   <button id="save" disabled>預覽並輸出到 promo/store</button>
+  <button id="review" disabled>內購審核截圖</button>
   <span id="st">載入遊戲中…</span>
 </div>
 <div id="out"></div>
@@ -37,35 +38,41 @@ const st = t => { $('st').textContent = t; };
 // 讓出時間（給畫面更新、圖片載入）：用 MessageChannel，分頁在背景時 setTimeout 會被瀏覽器大幅節流
 const yieldNow = () => new Promise(r => { const ch = new MessageChannel(); ch.port1.onmessage = () => r(); ch.port2.postMessage(0); });
 const SIZES = { social: [1080, 1920, 'phone'], iphone: [1320, 2868, 'phone'], ipad: [2064, 2752, 'pad'] };
-const LANGS = ['zh', 'ja', 'en'];
-const FONTS = { zh: "'Noto Sans TC'", ja: "'Noto Sans JP'", en: "'Mochiy Pop One'" };
+const LANGS = ['zh', 'ja', 'en', 'ko'];
+const FONTS = { zh: "'Noto Sans TC'", ja: "'Noto Sans JP'", en: "'Mochiy Pop One'", ko: "'Noto Sans KR'" };
 
 // ===================== 文案：[ ] 括起來的字用金橘色強調 =====================
 const COPY = {
   1: { zh: ['[一顆按鈕]', '跟著節拍[做廣島燒]！', '食材從兩邊飛來，落下的瞬間按下去！'],
        ja: ['[ボタンひとつ]で', 'リズムに乗って[広島焼き]！', '左右から飛んでくる食材、落ちる瞬間に押せ！'],
        en: ['[ONE BUTTON]', 'Cook to the [BEAT]!', 'Tap the moment each ingredient lands!'],
-       badge: { zh: 'TAP!\n按下去', ja: 'TAP!\nタップ', en: 'TAP!' } },
+       ko: ['[버튼 하나]로', '리듬 맞춰 [오코노미야키]!', '양옆에서 날아오는 재료, 떨어지는 순간 눌러요!'],
+       badge: { zh: 'TAP!\n按下去', ja: 'TAP!\nタップ', en: 'TAP!', ko: 'TAP!\n탭!' } },
   2: { zh: ['[湊齊四種食材]', '廣島燒[完成]！', '連擊越多分數越高！每份廣島燒再加 1000 分'],
        ja: ['[4 つの食材]をそろえて', '広島焼き[完成]！', 'コンボで高得点！広島焼きひとつで +1000 点'],
        en: ['Collect [ALL FOUR]', 'Okonomiyaki [DONE]!', 'Chain combos, and every okonomiyaki is +1000!'],
-       badge: { zh: '+1000\n分！', ja: '+1000\n点！', en: '+1000!' } },
+       ko: ['[네 가지 재료]를 모아', '오코노미야키 [완성]!', '콤보가 쌓일수록 고득점! 오코노미야키 하나에 +1000점'],
+       badge: { zh: '+1000\n分！', ja: '+1000\n点！', en: '+1000!', ko: '+1000\n점!' } },
   3: { zh: ['[15 首]原創樂曲', '1～5 星[越來越快]！', '和琴 Lo-fi、巴薩諾瓦、祭典太鼓、爵士、8-bit…'],
        ja: ['オリジナル曲[15 曲]', '★1～5 で[どんどん速く]！', '和琴ローファイ、ボサノバ、祭り太鼓、ジャズ、8-bit…'],
        en: ['[15] ORIGINAL SONGS', '1-5 stars, [faster & faster]!', 'Lo-fi, bossa nova, taiko, jazz, 8-bit, and more'],
-       badge: { zh: '簡單\n普通\n困難', ja: 'かんたん\nふつう\nむずかしい', en: 'EASY\nNORMAL\nHARD' } },
+       ko: ['오리지널 곡 [15곡]', '★1~5로 [점점 빠르게]!', '로파이, 보사노바, 축제 타이코, 재즈, 8비트…'],
+       badge: { zh: '簡單\n普通\n困難', ja: 'かんたん\nふつう\nむずかしい', en: 'EASY\nNORMAL\nHARD', ko: '쉬움\n보통\n어려움' } },
   4: { zh: ['[節奏評價]', '挑戰[傳說的鐵板之神]！', '5 種趣味評價，看看你是哪一級！'],
        ja: ['[リズム評価]', '目指せ[伝説の鉄板の神]！', '5 段階の評価で、あなたの腕前をチェック！'],
        en: ['[RHYTHM RANK]', 'Become a [Griddle Legend]!', '5 fun ranks. Where do you stand?'],
-       badge: { zh: 'NEW\nRECORD', ja: 'NEW\nRECORD', en: 'NEW\nRECORD' } },
+       ko: ['[리듬 평가]', '노려라 [전설의 철판의 신]!', '5단계 평가로 내 실력을 확인해 보세요!'],
+       badge: { zh: 'NEW\nRECORD', ja: 'NEW\nRECORD', en: 'NEW\nRECORD', ko: 'NEW\nRECORD' } },
   5: { zh: ['[收集]店面背景', '和[陪伴寵物]！', '用遊玩得到的遊戲幣，打造你的屋台'],
        ja: ['屋台の背景と', '[おともペット]を[集めよう]！', 'プレイで貯めたコインで、自分だけの屋台に'],
        en: ['Collect [STALL STYLES]', 'and [PET BUDDIES]!', 'Spend the coins you earn to deck out your stall'],
-       badge: { zh: '寵物跟著\n節拍動！', ja: 'ペットも\nノリノリ！', en: 'Pets\ngroove\nalong!' } },
+       ko: ['포장마차 배경과', '[함께하는 펫]을 [모아요]!', '플레이로 모은 코인으로 나만의 포장마차를 꾸며요'],
+       badge: { zh: '寵物跟著\n節拍動！', ja: 'ペットも\nノリノリ！', en: 'Pets\ngroove\nalong!', ko: '펫도\n박자에\n맞춰요!' } },
   6: { zh: ['[{ach} 個成就]', '等你解鎖！', '節奏分析告訴你：是早了還是晚了？'],
        ja: ['[{ach} 個の実績]を', '解除しよう！', 'リズム分析で、早い？遅い？がわかる'],
        en: ['[{ach} ACHIEVEMENTS]', 'to unlock!', 'Rhythm analysis shows if you tap early or late'],
-       badge: { zh: '銅・銀\n金・白金', ja: '銅・銀\n金・白金', en: 'Bronze\nto\nPlatinum' } },
+       ko: ['[{ach}개의 업적]을', '해금해 보세요!', '리듬 분석으로 빨랐는지 늦었는지 알 수 있어요'],
+       badge: { zh: '銅・銀\n金・白金', ja: '銅・銀\n金・白金', en: 'Bronze\nto\nPlatinum', ko: '동・은\n금・백금' } },
 };
 
 // ===================== 遊戲（iframe）=====================
@@ -316,10 +323,44 @@ function compose(n, lang, sizeKey, game, achCount) {
   return c;
 }
 
+// ===================== 內購審核用截圖 =====================
+// App Store Connect 建立內購商品時必附「這個商品在 App 裡的樣子」：商店「追加樂曲」分頁選中該集（鎖著、顯示價格、購買鈕）
+// 純遊戲畫面（不加標語、外框），做成 iPhone 6.9 吋全螢幕（1320×2868，遊戲上下留邊，跟實機一樣）
+// 價格：App 裡顯示的是 App Store 回傳的當地價格；這裡先放 REVIEW_PRICE，定價後改掉再輸出一次
+const REVIEW_PRICE = 'NT$90';
+async function captureReview(lang, vol) {
+  run(`Save.data.lang = '${lang}';
+    Shop.store = { name: 'review', owns: () => false, price: () => ${JSON.stringify(REVIEW_PRICE)}, buy: () => Promise.resolve(false), restore: () => Promise.resolve(0) };
+    App.cut('shop');`);
+  for (const t0 = performance.now(); performance.now() - t0 < 15000 && !run(`BACKGROUNDS.every(b => IMG['bg_' + b.id])`);) await yieldNow();
+  run(`Screens.shop.setCat(0); Screens.shop.pick(${vol - 1});`); step(60, false);
+  const game = snap(), c = document.createElement('canvas'); c.width = 1320; c.height = 2868;
+  const g = c.getContext('2d'), bg = g.createRadialGradient(660, 860, 0, 660, 860, 2000);
+  bg.addColorStop(0, '#2a2050'); bg.addColorStop(0.7, '#0d1024'); g.fillStyle = bg; g.fillRect(0, 0, 1320, 2868);
+  const h = 1320 * game.height / game.width; g.drawImage(game, 0, (2868 - h) / 2, 1320, h);
+  return c;
+}
+async function makeReview() {
+  const langs = $('lang').value === 'all' ? ['zh', 'en'] : [$('lang').value];   // 審核人員看英文最方便；中文是主要語系
+  $('preview').disabled = $('save').disabled = $('review').disabled = true; $('out').innerHTML = '';
+  try {
+    for (const lang of langs) for (let v = 1; v <= RELEASED; v++) {
+      const name = `review_${lang}_vol${v}.jpg`; st(`${name}…`); await yieldNow();
+      const c = await captureReview(lang, v), blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+      const fig = document.createElement('figure'), img = new Image(); img.src = URL.createObjectURL(blob);
+      fig.append(img, Object.assign(document.createElement('figcaption'), { textContent: `${name}  ${c.width}×${c.height}` })); $('out').append(fig);
+      const r = await fetch('/__save?name=' + name, { method: 'POST', body: blob }); if (!r.ok) throw new Error('存檔失敗：' + name);
+    }
+    st('完成，內購審核截圖已輸出到 promo/store');
+  } catch (e) { st('錯誤：' + e.message); console.error(e); }
+  $('preview').disabled = $('save').disabled = $('review').disabled = false;
+}
+const RELEASED = 3;   // 首發的 VOL 數（和 js/config.js 的 RELEASED_VOLS 一樣）
+
 // ===================== 執行 =====================
 async function make(save) {
   const langs = $('lang').value === 'all' ? LANGS : [$('lang').value], sizes = $('size').value === 'all' ? Object.keys(SIZES) : [$('size').value];
-  $('preview').disabled = $('save').disabled = true; $('out').innerHTML = '';
+  $('preview').disabled = $('save').disabled = $('review').disabled = true; $('out').innerHTML = '';
   try {
     for (const lang of langs) {
       st(`擷取遊戲畫面（${lang}）…`); await yieldNow();
@@ -334,17 +375,18 @@ async function make(save) {
     }
     st(save ? '完成，已輸出到 promo/store' : '預覽完成');
   } catch (e) { st('錯誤：' + e.message); console.error(e); }
-  $('preview').disabled = $('save').disabled = false;
+  $('preview').disabled = $('save').disabled = $('review').disabled = false;
 }
 $('preview').onclick = () => make(false);
 $('save').onclick = () => make(true);
+$('review').onclick = makeReview;
 
 (async () => {
   await waitGame();
-  await Promise.all(['Noto Sans TC', 'Noto Sans JP', 'Mochiy Pop One'].map(f => document.fonts.load(`900 40px '${f}'`)));
+  await Promise.all(['Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', 'Mochiy Pop One'].map(f => document.fonts.load(`900 40px '${f}'`)));
   await win().document.fonts.ready;
   setupGame(); ready = true;
-  st('準備好了'); $('preview').disabled = $('save').disabled = false;
+  st('準備好了'); $('preview').disabled = $('save').disabled = $('review').disabled = false;
 })();
 </script>
 </body>

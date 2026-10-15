@@ -67,18 +67,20 @@ iPad 的截圖會自然帶到兩側的廣島燒掛簾和燈籠，是 iPad 版的
 
 ## 產生器：`tools/promo_maker.html`
 
-照「建議的截圖內容」6 個畫面，自動輸出 **3 個語系 × 3 種尺寸 = 54 張**到 `promo/store/`：
+照「建議的截圖內容」6 個畫面，自動輸出 **4 個語系（中／日／英／韓）× 3 種尺寸 = 72 張**到 `promo/store/`：
 
 | 檔名 | 尺寸 | 用途 |
 | --- | --- | --- |
-| `{zh,ja,en}_iphone_{1-6}.jpg` | 1320 × 2868 | App Store iPhone 6.9 吋 |
-| `{zh,ja,en}_ipad_{1-6}.jpg` | 2064 × 2752 | App Store iPad 13 吋（兩側有掛簾與燈籠） |
-| `{zh,ja,en}_social_{1-6}.jpg` | 1080 × 1920 | 社群貼文、限時動態 |
+| `{zh,ja,en,ko}_iphone_{1-6}.jpg` | 1320 × 2868 | App Store iPhone 6.9 吋 |
+| `{zh,ja,en,ko}_ipad_{1-6}.jpg` | 2064 × 2752 | App Store iPad 13 吋（兩側有掛簾與燈籠） |
+| `{zh,ja,en,ko}_social_{1-6}.jpg` | 1080 × 1920 | 社群貼文、限時動態 |
 
 - 遊戲畫面**直接從目前的遊戲擷取**（隱藏的 iframe 載入 `index.html?noloop&vols=3`：主迴圈不跑，由工具逐格推進、控制樂曲時鐘、自動打擊），所以遊戲改版後重新輸出就是最新畫面
 - 只開放 VOL.1～3（跟 App 版一樣）；手機的操作提示；不寫存檔
 - 版面：夜空、燈籠串、大標語、手機／平板外框、星形標章、食材與音符；下方是暖光散景（**沒有**遊戲 LOGO、名稱、©，改名時不用重做）
 - JPG 輸出（App Store 截圖不能有透明通道）
+
+**內購審核截圖**：按「內購審核截圖」輸出 `review_{zh,en}_vol{1-3}.jpg`（1320×2868）：商店「追加樂曲」分頁選中各集的實際畫面（鎖著、價格、購買鈕），App Store Connect 建立內購商品時每個商品附一張。價格先放 `REVIEW_PRICE`（NT$90），定價後改掉再輸出一次。
 
 **使用方式**：Code 分頁的預覽啟動 `promo`（或 `powershell -ExecutionPolicy Bypass -File tools\prep_server.ps1 -Port 5175 -Out promo\store`）→ 開 `http://localhost:5175/tools/promo_maker.html` → 選語言、尺寸 →「預覽並輸出」（全部約 2 分鐘）
 

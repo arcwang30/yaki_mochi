@@ -168,7 +168,7 @@ Apple 要求 App 附 `PrivacyInfo.xcprivacy`，申報追蹤、收集的資料，
 ### ⚠ 韓文（2026-10 新增）注意事項
 
 - [ ] **Mac 上補裝韓文字型**：在 Mac 的專案資料夾執行 `npm install @fontsource/jua`，否則 `npm run build` 會停下來並顯示「找不到 @fontsource/jua」。
-- [ ] **韓國商店頁的韓文版**：遊戲內已有韓文，但 App Store 的商店頁要另外在 App Store Connect 加**韓文（Korean）在地化版本**，才會顯示韓文名稱、說明、截圖。`docs/App Store 上架文字.md` 目前只有中／日／英三語，要先補上韓文的名稱、副標題、說明、關鍵字、內購商品名稱。
+- [ ] **韓國商店頁的韓文版**：遊戲內已有韓文，但 App Store 的商店頁要另外在 App Store Connect 加**韓文（Korean）在地化版本**，才會顯示韓文名稱、說明、截圖。文字已備妥（`docs/App Store 上架文字.md` 的「한국어」），韓文截圖用 `tools/promo_maker.html` 產生（`ko_*.jpg`）；剩下到 App Store Connect 貼上、上傳。
 
 ### 截圖
 
