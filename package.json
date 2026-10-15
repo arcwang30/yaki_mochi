@@ -2,7 +2,7 @@
   "name": "daioyaki",
   "version": "0.1.0",
   "private": true,
-  "description": "大王焼き リズム屋台：iOS App（Capacitor）的建置設定；網頁版本身不需要 Node",
+  "description": "節奏大王燒（Tap King Yaki）：iOS App（Capacitor）的建置設定；網頁版本身不需要 Node",
   "scripts": {
     "build": "node tools/build-web.mjs",
     "ios:setup": "node tools/ios-setup.mjs",

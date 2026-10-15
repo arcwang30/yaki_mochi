@@ -40,7 +40,7 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 | 項目 | 位置 | 內容 |
 | --- | --- | --- |
 | Bundle ID | `capacitor.config.json` 的 `appId` | `com.arcconceptgames.daioyaki`。**在 App Store Connect 註冊後就不能改**，要換請在 `npx cap add ios` 之前改好 |
-| App 名稱（主畫面下方的字） | `capacitor.config.json` 的 `appName` | 大王焼き |
+| App 名稱（主畫面下方的字） | `tools/ios-setup.mjs` 的 `DISPLAY_NAMES` | 依 iPhone 語言：節奏大王燒／リズム大王焼／Tap King Yaki／리듬 대왕야키（`capacitor.config.json` 的 `appName` 是 Xcode 專案名：節奏大王燒） |
 | 方向 | `tools/ios-setup.mjs` | iPhone 直式；iPad 直式＋倒立直式（左右空白掛廣島燒掛簾與燈籠，見 `js/sides.js`；點兩側也算打擊） |
 | 原生版判斷 | `js/config.js` 的 `NATIVE_APP` | 不註冊 Service Worker、不顯示「安裝到主畫面」、忽略網址測試參數（`?fast`、`?shop=test` 等） |
 | 字型 | `tools/build-web.mjs` | 改用 App 內附的 Mochiy Pop One 和 Jua（韓文；都是 OFL 授權），不連 Google Fonts |
@@ -146,6 +146,14 @@ App 版才會用到；網頁版行為不變。官方外掛（Haptics、Share、F
 - [ ] 階段 5：App Store Connect（App、內購商品、隱私問卷）、TestFlight、送審
 
 ## 上架資料（階段 5）
+
+### 主畫面名稱（依 iPhone 語言）
+
+圖示下面的名字跟著 iPhone 的語言：中文「節奏大王燒」、日文「リズム大王焼」、英文「Tap King Yaki」、韓文「리듬 대왕야키」（其他語言顯示中文）。`npm run ios:setup` 會產生 `ios/App/App/{zh-Hant,ja,en,ko}.lproj/InfoPlist.strings`，並在 Info.plist 寫入 `CFBundleLocalizations`（App 支援的語言）。
+
+**第一次（在 Xcode，只要做一次）**：左側 **App** 資料夾按右鍵 → **Add Files to "App"…** → 一次選取 `zh-Hant.lproj`、`ja.lproj`、`en.lproj`、`ko.lproj` 四個資料夾 → 勾選 Target **App** → Add。
+
+**確認**：模擬器或 iPhone 的「設定 → 一般 → 語言與地區」切換語言，主畫面的 App 名稱會跟著變。
 
 ### 隱私清單（Privacy Manifest）
 

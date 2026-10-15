@@ -12,7 +12,7 @@ const Share = {
     const c = this.card(r, song);
     const url = c.toDataURL('image/png'), name = `daioyaki-${song.id}-${r.score}.png`;
     const R = RATINGS[r.rating];
-    const text = tr('我在《大王焼き リズム屋台》的「{0}」拿到 {1} 分！評價：{2}', songName(song), r.score, tr(R.title))
+    const text = tr('我在《節奏大王燒》的「{0}」拿到 {1} 分！評價：{2}', songName(song), r.score, tr(R.title))
       + (/^https?:/.test(location.href) ? ' ' + location.origin + location.pathname : '');
     // App 版：寫成暫存檔，叫出 iOS 分享選單（WKWebView 的 navigator.share 不一定能分享檔案、也沒辦法下載）
     if (NATIVE_APP) { Native.shareFile(name, url.split(',')[1], text).catch(e => console.warn('share failed', e)); return; }
@@ -47,7 +47,7 @@ const Share = {
     const dk = g.createLinearGradient(0, 0, 0, H); dk.addColorStop(0, 'rgba(10,12,40,.82)'); dk.addColorStop(0.5, 'rgba(10,12,40,.45)'); dk.addColorStop(1, 'rgba(10,12,40,.9)');
     g.fillStyle = dk; g.fillRect(0, 0, W, H);
     // 標題
-    text('大王焼き リズム屋台', W / 2, 92, 64, { fill: '#ffd23f', stroke: '#7a1608', sw: 14 });
+    text(gameName(), W / 2, 92, 64, { fill: '#ffd23f', stroke: '#7a1608', sw: 14, maxW: 960 });
     text(tr('節奏熱炒遊戲'), W / 2, 158, 30, { fill: '#ffe8b0', stroke: 'rgba(0,0,0,.6)', sw: 8 });
     // 成績卡
     const px = 90, py = 220, pw = W - 180, ph = 900, cx = W / 2;

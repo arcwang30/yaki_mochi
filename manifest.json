@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "大王焼き リズム屋台",
-  "short_name": "大王焼き",
+  "name": "節奏大王燒",
+  "short_name": "節奏大王燒",
   "description": "跟著節拍按一顆按鈕，處理食材、合成廣島燒的日式屋台節奏遊戲。",
   "lang": "zh-Hant",
   "start_url": "./",

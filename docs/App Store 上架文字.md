@@ -5,7 +5,7 @@ App Store Connect 各欄位要填的文字，四個語系：**繁體中文（zh-
 
 > 定價：App 本體**免費下載**（內建 15 首免費暢玩），追加樂曲 VOL.1～3 用 App 內購買。內購價格在 App Store Connect 設定，文字裡不寫價格。
 >
-> 名稱：**暫定**，之後可能會改。改名時要一起改的地方見文末「改名清單」。
+> 名稱（2026-10-15 定案）：**節奏大王燒**／**リズム大王焼**／**Tap King Yaki**／**리듬 대왕야키**。以後再改名時，要一起改的地方見文末「改名清單」。
 
 ## 共用設定（不分語系）
 
@@ -28,15 +28,15 @@ App Store Connect 各欄位要填的文字，四個語系：**繁體中文（zh-
 
 | 欄位 | 上限 | 字數 |
 | --- | --- | --- |
-| 名稱 | 30 | 10 |
+| 名稱 | 30 | 5 |
 | 副標題 | 30 | 14 |
 | 宣傳文字 | 170 | 67 |
 | 關鍵字 | 100 | 61 |
-| 說明 | 4000 | 585 |
+| 說明 | 4000 | 580 |
 
 **名稱**
 ```
-大王焼き リズム屋台
+節奏大王燒
 ```
 
 **副標題**
@@ -51,7 +51,7 @@ App Store Connect 各欄位要填的文字，四個語系：**繁體中文（zh-
 
 **關鍵字**（逗號分隔、不要空格；名稱和副標題裡的字不用重複）
 ```
-音樂,音遊,節奏,打擊,休閒,御好燒,大阪燒,料理,日式,和風,祭典,夜市,鐵板,太鼓,單鍵,點擊,反應,原創,音感,手速
+音樂,音遊,拍子,打擊,休閒,御好燒,大阪燒,料理,日式,和風,祭典,夜市,鐵板,太鼓,單鍵,點擊,反應,原創,音感,手速
 ```
 
 **說明**
@@ -59,7 +59,7 @@ App Store Connect 各欄位要填的文字，四個語系：**繁體中文（zh-
 食材從畫面左右兩邊拋向鐵板，在落下的瞬間按下按鈕！
 炒麵、高麗菜、煎餅、培根，四種食材各處理好一個，就會合成一份香噴噴的廣島燒。
 
-《大王焼き リズム屋台》是只用一顆按鈕就能玩的日式屋台節奏遊戲。食材丟出時會發出「咻～啵」的提示音，兩拍之後落下——先聽、再按，跟著音樂的節拍就對了。
+《節奏大王燒》是只用一顆按鈕就能玩的日式屋台節奏遊戲。食材丟出時會發出「咻～啵」的提示音，兩拍之後落下——先聽、再按，跟著音樂的節拍就對了。
 
 ■ 一顆按鈕，誰都能上手
 ・不用記複雜的操作，點畫面就能玩
@@ -101,15 +101,15 @@ App Store Connect 各欄位要填的文字，四個語系：**繁體中文（zh-
 
 | 欄位 | 上限 | 字數 |
 | --- | --- | --- |
-| 名稱 | 30 | 10 |
+| 名稱 | 30 | 6 |
 | 副標題 | 30 | 16 |
 | 宣傳文字 | 170 | 90 |
 | 關鍵字 | 100 | 68 |
-| 說明 | 4000 | 726 |
+| 說明 | 4000 | 722 |
 
 **名稱**
 ```
-大王焼き リズム屋台
+リズム大王焼
 ```
 
 **副標題**
@@ -132,7 +132,7 @@ App Store Connect 各欄位要填的文字，四個語系：**繁體中文（zh-
 画面の左右から鉄板めがけて食材が飛んでくる！落ちる瞬間にボタンを押そう。
 焼きそば、キャベツ、生地、ベーコン、4 種類の食材をひとつずつ仕上げると、アツアツの広島焼きが完成！
 
-『大王焼き リズム屋台』は、ボタンひとつで遊べる和風屋台リズムゲーム。食材が投げられるときに「ヒュ～ポン」と合図の音が鳴り、2 拍後に落ちてきます。まず聴いて、それから押す。音楽のリズムに乗ればOK！
+『リズム大王焼』は、ボタンひとつで遊べる和風屋台リズムゲーム。食材が投げられるときに「ヒュ～ポン」と合図の音が鳴り、2 拍後に落ちてきます。まず聴いて、それから押す。音楽のリズムに乗ればOK！
 
 ■ ボタンひとつで誰でも遊べる
 ・難しい操作は不要、画面をタップするだけ
@@ -174,15 +174,15 @@ App Store Connect 各欄位要填的文字，四個語系：**繁體中文（zh-
 
 | 欄位 | 上限 | 字數 |
 | --- | --- | --- |
-| 名稱 | 30 | 22 |
+| 名稱 | 30 | 13 |
 | 副標題 | 30 | 29 |
 | 宣傳文字 | 170 | 160 |
-| 關鍵字 | 100 | 99 |
-| 說明 | 4000 | 1562 |
+| 關鍵字 | 100 | 95 |
+| 說明 | 4000 | 1553 |
 
 **Name**
 ```
-Daio-yaki Rhythm Yatai
+Tap King Yaki
 ```
 
 **Subtitle**
@@ -197,7 +197,7 @@ Ingredients fly in from both sides. Tap the moment they hit the griddle! A one-b
 
 **Keywords**
 ```
-music,beat,tap,casual,cooking,okonomiyaki,japanese,festival,food,stall,chef,taiko,one button,timing
+music,beat,rhythm,casual,cooking,okonomiyaki,japanese,festival,food,stall,chef,taiko,one button
 ```
 
 **Description**
@@ -205,7 +205,7 @@ music,beat,tap,casual,cooking,okonomiyaki,japanese,festival,food,stall,chef,taik
 Ingredients come flying at the griddle from both sides of the screen. Tap the button the moment they land!
 Prep one each of noodles, cabbage, crepe, and bacon, and they come together into a sizzling okonomiyaki.
 
-Daio-yaki Rhythm Yatai is a one-button rhythm game set at a Japanese food stall. Every ingredient is thrown with a "whoosh-pop" cue and lands two beats later. Listen first, then tap: just ride the beat.
+Tap King Yaki is a one-button rhythm game set at a Japanese food stall. Every ingredient is thrown with a "whoosh-pop" cue and lands two beats later. Listen first, then tap: just ride the beat.
 
 ■ ONE BUTTON, ANYONE CAN PLAY
 - No complicated controls. Just tap the screen
@@ -245,19 +245,19 @@ The griddle's hot. Let's make some okonomiyaki!
 
 ## 한국어（ko）
 
-韓文商店頁：在 App Store Connect 新增「韓文（Korean）」在地化版本後貼上。名稱沿用遊戲內的韓文標題（分享文字也是這個名字）。
+韓文商店頁：在 App Store Connect 新增「韓文（Korean）」在地化版本後貼上。名稱和遊戲內的韓文名稱一致（CREDIT、分享文字）。
 
 | 欄位 | 上限 | 字數 |
 | --- | --- | --- |
-| 名稱 | 30 | 13 |
+| 名稱 | 30 | 7 |
 | 副標題 | 30 | 20 |
 | 宣傳文字 | 170 | 108 |
 | 關鍵字 | 100 | 58 |
-| 說明 | 4000 | 828 |
+| 說明 | 4000 | 822 |
 
 **Name**
 ```
-다이오야키 리듬 포장마차
+리듬 대왕야키
 ```
 
 **Subtitle**
@@ -280,7 +280,7 @@ The griddle's hot. Let's make some okonomiyaki!
 화면 양옆에서 철판을 향해 재료가 날아와요! 떨어지는 순간 버튼을 눌러 보세요.
 면, 양배추, 반죽, 베이컨. 네 가지 재료를 하나씩 손질하면 따끈따끈한 오코노미야키가 완성돼요.
 
-《다이오야키 리듬 포장마차》는 버튼 하나로 즐기는 일본 포장마차 리듬 게임이에요. 재료를 던질 때 "휙~퐁" 신호음이 나고, 2박자 뒤에 떨어져요. 먼저 듣고, 그다음에 누르기. 음악의 박자에 몸을 맡기면 OK!
+《리듬 대왕야키》는 버튼 하나로 즐기는 일본 포장마차 리듬 게임이에요. 재료를 던질 때 "휙~퐁" 신호음이 나고, 2박자 뒤에 떨어져요. 먼저 듣고, 그다음에 누르기. 음악의 박자에 몸을 맡기면 OK!
 
 ■ 버튼 하나, 누구나 바로 플레이
 ・복잡한 조작 없이 화면을 탭하기만 하면 끝
@@ -329,31 +329,27 @@ The game plays audio even when the device is in silent mode, because music is es
 
 ---
 
-## 改名清單（遊戲名稱確定後）
+## 改名清單（以後再改名時用）
+
+2026-10-15 從「大王焼き リズム屋台」改成目前的名稱。各語言名稱都保留「大王燒」，所以畫著「大王焼」的美術圖（屋台招牌、主角圍裙、App 圖示）不用重畫。
 
 **不用改、也不能改的**：Bundle ID `com.arcconceptgames.daioyaki`、內購商品 ID（`….daioyaki.vol1` 等）、網站網址的 `/daioyaki/`。這些玩家看不到，而且 Bundle ID 與商品 ID 註冊後不能改。
 
 **App Store Connect**
-- 每個語系的「名稱」（30 字內，全 App Store 不能和別人重複）
-- 說明、宣傳文字裡提到名稱的句子（本文件三個語系的「說明」開頭第三段都有）
+- 每個語系的「名稱」（30 字內，全 App Store 不能和別人重複；建立 App 時如果名稱已被使用，會直接提示）
+- 說明裡提到名稱的句子（本文件四個語系的「說明」開頭第三段）
 - 注意：送審過的版本改名稱要跟新版本一起送審
 
-**遊戲裡的文字**（`git grep -n "大王焼き"` 可以全部找出來）
+**遊戲裡的文字**：名稱只在一個地方——`js/i18n.js` 各語言表裡的 `'節奏大王燒'`（中文是鍵本身），遊戲用 `gameName()` 取得：CREDIT、成績圖、分享文字（主畫面的藍色暖簾固定寫「リズム鉄板」，不跟著名稱）（分享文字的翻譯另外寫了名稱，也要改）
+
+**iOS App**
 
 | 檔案 | 內容 |
 | --- | --- |
-| `capacitor.config.json` 的 `appName` | 主畫面 App 圖示下面的名字（改完要 `npm run sync`） |
-| `index.html` | 網頁標題 |
-| `js/share.js` | 成績圖上的大標題、分享文字 |
-| `js/i18n.js` | 分享文字的日文、英文翻譯（兩處） |
-| `js/screens.js` | CREDIT 畫面的遊戲名稱 |
+| `tools/ios-setup.mjs` 的 `DISPLAY_NAMES` | 主畫面圖示下面的名字（依 iPhone 語言） |
+| `capacitor.config.json` 的 `appName` | Xcode 專案的名字（`npx cap add ios` 時用） |
+| `index.html`、`manifest.json` | 網頁版標題（開發測試用） |
 
-**圖片裡畫著名稱的**（要重畫或重新製作）
-- 屋台招牌「大王焼」：`assets/images/bg_stall.jpg` 與各店面背景 `bg_*.jpg`
-- 主角圍裙上的字：`assets/images/chef_*.png`
-- App 圖示：`assets/icons/`、`site/daioyaki/icon.png`，以及 Xcode 裡的 AppIcon
-- 宣傳圖：`promo/`
+**公開網站** `site/`：三個頁面的標題、作品名稱，改完執行 `bash tools/deploy-site.sh "改名"`
 
-**公開網站** `site/`：三個頁面的標題、作品名稱（中日英），改完執行 `bash tools/deploy-site.sh "改名"`
-
-**文件**：`README.md`、`docs/企畫書.md`、本文件
+**文件**：`README.md`、`docs/企畫書.md`、`docs/成就表.md`、本文件

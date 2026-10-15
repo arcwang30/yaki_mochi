@@ -47,7 +47,7 @@ const UI = {
 
   dim(a) { ctx.fillStyle = `rgba(8,10,30,${a})`; ctx.fillRect(0, 0, W, H); },
 
-  // 紅色標題帶（主畫面的「リズム屋台」與各頁標題）
+  // 紅色標題帶（各頁標題）
   ribbon(cx, cy, label, size, w) {
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.03);
     w = w || 520; const h = size * 1.6;

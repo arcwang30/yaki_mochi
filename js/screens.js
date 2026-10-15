@@ -304,7 +304,7 @@ Screens.intro = {
       const bounce = k < 1 ? Math.sin(k * Math.PI * 2.5) * (1 - k) * 40 : 0;
       const y = lerp(-180, TITLE.y, Math.min(1, k * 1.6)) + bounce;
       this.once('noren', () => { if (this.bus) nz(A.ctx.currentTime, 0.25, 0.25, this.bus, { f: 900, to: 300, q: 1 }); });
-      UI.noren(TITLE.x, y, TITLE.w, TITLE.h, 'リズム屋台');
+      UI.noren(TITLE.x, y, TITLE.w, TITLE.h, 'リズム鉄板');   // 暖簾固定顯示這幾個字（不分語言）
     }
     UI.text('SKIP ▶▶', W - 20, H - 26, 20, { align: 'right', fill: 'rgba(255,255,255,.75)', stroke: 'rgba(0,0,0,.6)', sw: 4, raw: true });
     if (t >= T.end) this.finish();
@@ -377,7 +377,7 @@ Screens.menu = {
     const gr = ctx.createLinearGradient(0, 930, 0, H);   // 下方壓暗，讓木牌清楚
     gr.addColorStop(0, 'rgba(8,10,30,0)'); gr.addColorStop(1, 'rgba(8,10,30,.82)');
     ctx.fillStyle = gr; ctx.fillRect(0, 930, W, H - 930);
-    UI.noren(TITLE.x, TITLE.y, TITLE.w, TITLE.h, 'リズム屋台');
+    UI.noren(TITLE.x, TITLE.y, TITLE.w, TITLE.h, 'リズム鉄板');   // 暖簾固定顯示這幾個字（不分語言）
     UI.tanzaku(TITLE.x, TITLE.ty, '節奏熱炒遊戲', lay(22, 28));
 
     UI.begin(this);
@@ -398,7 +398,7 @@ Screens.menu = {
     const gr = ctx.createLinearGradient(1240, 0, W, 0);   // 右側壓暗，讓木牌清楚
     gr.addColorStop(0, 'rgba(8,10,30,0)'); gr.addColorStop(0.35, 'rgba(8,10,30,.55)'); gr.addColorStop(1, 'rgba(8,10,30,.8)');
     ctx.fillStyle = gr; ctx.fillRect(1240, 0, W - 1240, H);
-    UI.noren(TITLE.x, TITLE.y, TITLE.w, TITLE.h, 'リズム屋台');
+    UI.noren(TITLE.x, TITLE.y, TITLE.w, TITLE.h, 'リズム鉄板');   // 暖簾固定顯示這幾個字（不分語言）
     UI.tanzaku(TITLE.x, TITLE.ty, '節奏熱炒遊戲', 28);
     UI.begin(this);
     const top = DESKTOP_APP ? 230 : 270;
@@ -2287,7 +2287,7 @@ Screens.credits = {
     const okoK = clamp((this.t - idx * 0.15) * 4, 0, 1);
     line(idx++, L.oy, yy => drawImgW(IMG.okonomiyaki, L.ox, yy, lay(240, 300)));
     if (okoK >= 1) this.steam(dt, L.ox, L.oy - 10);
-    line(idx++, L.ty, yy => UI.text('大王焼き  リズム屋台', L.ox, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
+    line(idx++, L.ty, yy => UI.text(gameName(), L.ox, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
     line(idx++, L.ty + 44, yy => UI.text("©Arc's Concept Games", L.ox, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
     line(idx++, L.ty + 76, yy => UI.text(tr('樂曲') + '：' + tr('全曲原創（AI 協助製作）'), L.ox, yy, 18, { fill: '#cfd8ff', stroke: null, raw: true, maxW: lay(560, 520) }));
     line(idx++, L.ty + 104, yy => UI.text(tr('語音') + '：' + VOICE_CREDIT, L.ox, yy, 18, { fill: '#cfd8ff', stroke: null, raw: true, maxW: lay(560, 520) }));
