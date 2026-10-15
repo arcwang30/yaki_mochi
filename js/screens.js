@@ -2288,7 +2288,7 @@ Screens.credits = {
     line(idx++, L.oy, yy => drawImgW(IMG.okonomiyaki, L.ox, yy, lay(240, 300)));
     if (okoK >= 1) this.steam(dt, L.ox, L.oy - 10);
     line(idx++, L.ty, yy => UI.text(gameName(), L.ox, yy, 26, { fill: '#ffe8b0', stroke: null, raw: true }));
-    line(idx++, L.ty + 44, yy => UI.text("©Arc's Concept Games", L.ox, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
+    line(idx++, L.ty + 44, yy => UI.text('© 2026 Arc Concept Games', L.ox, yy, 20, { fill: '#cfd8ff', stroke: null, raw: true }));
     line(idx++, L.ty + 76, yy => UI.text(tr('樂曲') + '：' + tr('全曲原創（AI 協助製作）'), L.ox, yy, 18, { fill: '#cfd8ff', stroke: null, raw: true, maxW: lay(560, 520) }));
     line(idx++, L.ty + 104, yy => UI.text(tr('語音') + '：' + VOICE_CREDIT, L.ox, yy, 18, { fill: '#cfd8ff', stroke: null, raw: true, maxW: lay(560, 520) }));
     UI.begin(this);
