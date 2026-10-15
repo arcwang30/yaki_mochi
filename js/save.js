@@ -49,7 +49,7 @@ const Save = {
     if (!(d.coins >= 0)) d.coins = 0;
     if (!d.lang) {   // 第一次：依瀏覽器語言
       const l = (navigator.language || 'zh').toLowerCase();
-      d.lang = l.startsWith('ja') ? 'ja' : l.startsWith('zh') ? 'zh' : 'en';
+      d.lang = l.startsWith('ja') ? 'ja' : l.startsWith('zh') ? 'zh' : l.startsWith('ko') ? 'ko' : 'en';
     }
   },
 

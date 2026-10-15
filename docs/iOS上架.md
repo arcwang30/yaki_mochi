@@ -10,7 +10,7 @@
 ## 第一次設定
 
 ```sh
-npm install @capacitor/core @capacitor/ios @capacitor/haptics @capacitor/share @capacitor/filesystem @capgo/native-purchases @fontsource/mochiy-pop-one
+npm install @capacitor/core @capacitor/ios @capacitor/haptics @capacitor/share @capacitor/filesystem @capgo/native-purchases @fontsource/mochiy-pop-one @fontsource/jua
 npm install -D @capacitor/cli
 npm run build            # 產生 www/
 npx cap add ios          # 產生 Xcode 專案 ios/
@@ -43,7 +43,7 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 | App 名稱（主畫面下方的字） | `capacitor.config.json` 的 `appName` | 大王焼き |
 | 方向 | `tools/ios-setup.mjs` | iPhone 直式；iPad 直式＋倒立直式（左右空白掛廣島燒掛簾與燈籠，見 `js/sides.js`；點兩側也算打擊） |
 | 原生版判斷 | `js/config.js` 的 `NATIVE_APP` | 不註冊 Service Worker、不顯示「安裝到主畫面」、忽略網址測試參數（`?fast`、`?shop=test` 等） |
-| 字型 | `tools/build-web.mjs` | 改用 App 內附的 Mochiy Pop One（OFL 授權），不連 Google Fonts |
+| 字型 | `tools/build-web.mjs` | 改用 App 內附的 Mochiy Pop One 和 Jua（韓文；都是 OFL 授權），不連 Google Fonts |
 
 ## iOS 原生功能（`js/native.js`）
 
@@ -164,6 +164,11 @@ Apple 要求 App 附 `PrivacyInfo.xcprivacy`，申報追蹤、收集的資料，
 **確認**：Product → Archive → Organizer 裡對這個封存按右鍵 → **Generate Privacy Report**，報告裡應該有 File Timestamp（C617.1），沒有其他收集項目。
 
 **之後**：加了新套件要重新檢查；上傳後如果收到 Apple 的 **ITMS-91053「Missing API declaration」** 信，照信裡列的 API 類別加進 `tools/ios/PrivacyInfo.xcprivacy`，再執行 `npm run ios:setup`。
+
+### ⚠ 韓文（2026-10 新增）注意事項
+
+- [ ] **Mac 上補裝韓文字型**：在 Mac 的專案資料夾執行 `npm install @fontsource/jua`，否則 `npm run build` 會停下來並顯示「找不到 @fontsource/jua」。
+- [ ] **韓國商店頁的韓文版**：遊戲內已有韓文，但 App Store 的商店頁要另外在 App Store Connect 加**韓文（Korean）在地化版本**，才會顯示韓文名稱、說明、截圖。`docs/App Store 上架文字.md` 目前只有中／日／英三語，要先補上韓文的名稱、副標題、說明、關鍵字、內購商品名稱。
 
 ### 截圖
 

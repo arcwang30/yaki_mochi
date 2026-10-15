@@ -12,7 +12,7 @@ body {
   height: 100lvh;
   overflow: hidden;
   background-color: #0d1024;
-  font-family: "Mochiy Pop One", "Microsoft JhengHei", sans-serif;
+  font-family: "Mochiy Pop One", "Jua", "Microsoft JhengHei", sans-serif;
   overscroll-behavior: none;
   touch-action: none;
   user-select: none;

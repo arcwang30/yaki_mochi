@@ -1,7 +1,7 @@
 // 把遊戲整理成 iOS App（Capacitor）要包進去的網頁檔：輸出到 www/（不進 git）
 // 用法（Mac）：npm run build　→ 之後 npx cap sync ios 會把 www/ 複製進 Xcode 專案
 // 和網頁版的差別：
-//   - 字型 Mochiy Pop One 改用 App 內附的檔案（@fontsource/mochiy-pop-one，OFL 授權），不連 Google Fonts，離線也正常
+//   - 字型 Mochiy Pop One、Jua（韓文）改用 App 內附的檔案（@fontsource/mochiy-pop-one、@fontsource/jua，OFL 授權），不連 Google Fonts，離線也正常
 //   - 不放 Service Worker、manifest、網頁圖示（App 圖示在 Xcode 的 Assets 裡設定）
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,16 +18,20 @@ for (const item of ['css', 'js', 'assets/images', 'assets/audio']) {
 }
 
 // ---- 字型：只複製 woff2（WKWebView 都支援），CSS 裡的 woff 備援不會被讀到 ----
-const fontPkg = from('node_modules', '@fontsource', 'mochiy-pop-one');
-if (!fs.existsSync(fontPkg)) {
-  throw new Error('找不到 @fontsource/mochiy-pop-one，請先執行 npm install（見 docs/iOS上架.md）');
-}
-const fontOut = path.join(out, 'fonts', 'mochiy-pop-one');
-fs.mkdirSync(path.join(fontOut, 'files'), { recursive: true });
-const fontCss = ['400.css', 'index.css'].map(f => path.join(fontPkg, f)).find(f => fs.existsSync(f));
-fs.copyFileSync(fontCss, path.join(fontOut, 'font.css'));
-for (const f of fs.readdirSync(path.join(fontPkg, 'files'))) {
-  if (f.endsWith('.woff2')) fs.copyFileSync(path.join(fontPkg, 'files', f), path.join(fontOut, 'files', f));
+// Mochiy Pop One（主要字型）＋ Jua（韓文；Mochiy 沒有韓文字），兩個都是 OFL 授權
+const FONTS = ['mochiy-pop-one', 'jua'];
+for (const name of FONTS) {
+  const fontPkg = from('node_modules', '@fontsource', name);
+  if (!fs.existsSync(fontPkg)) {
+    throw new Error(`找不到 @fontsource/${name}，請先執行 npm install（見 docs/iOS上架.md）`);
+  }
+  const fontOut = path.join(out, 'fonts', name);
+  fs.mkdirSync(path.join(fontOut, 'files'), { recursive: true });
+  const fontCss = ['400.css', 'index.css'].map(f => path.join(fontPkg, f)).find(f => fs.existsSync(f));
+  fs.copyFileSync(fontCss, path.join(fontOut, 'font.css'));
+  for (const f of fs.readdirSync(path.join(fontPkg, 'files'))) {
+    if (f.endsWith('.woff2')) fs.copyFileSync(path.join(fontPkg, 'files', f), path.join(fontOut, 'files', f));
+  }
 }
 
 // ---- Capacitor 執行環境＋原生外掛（遊戲是一般 <script>、沒有打包工具，所以用各套件的瀏覽器版 dist 檔） ----
@@ -53,7 +57,7 @@ edit(/[ \t]*<link rel="manifest"[^>]*>\r?\n/, '', 'manifest');
 edit(/[ \t]*<link rel="icon"[^>]*>\r?\n/, '', 'favicon');
 edit(/[ \t]*<link rel="apple-touch-icon"[^>]*>\r?\n/, '', 'apple-touch-icon');
 edit(/[ \t]*<link rel="preconnect"[^>]*>\r?\n/g, '', 'preconnect');
-edit(/<link href="https:\/\/fonts\.googleapis\.com[^>]*>/, '<link rel="stylesheet" href="fonts/mochiy-pop-one/font.css">', 'Google Fonts');
+edit(/<link href="https:\/\/fonts\.googleapis\.com[^>]*>/, FONTS.map(n => `<link rel="stylesheet" href="fonts/${n}/font.css">`).join('\n  '), 'Google Fonts');
 edit(/([ \t]*)<script src="js\/config\.js"><\/script>/,
   SCRIPTS.map(([, dst]) => `$1<script src="${dst}"></script>\n`).join('') + '$1<script src="js/config.js"></script>', 'js/config.js');
 fs.writeFileSync(path.join(out, 'index.html'), html);

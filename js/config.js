@@ -1,7 +1,7 @@
 'use strict';
 
 // ===== 全域參數（調整難度、計分、版面改這裡） =====
-const FONT = "'Mochiy Pop One','Microsoft JhengHei','PingFang TC',sans-serif";
+const FONT = "'Mochiy Pop One','Jua','Microsoft JhengHei','PingFang TC',sans-serif";   // Jua：韓文（Mochiy 沒有韓文字，韓文字自動改用 Jua）
 // iOS App 版（Capacitor 原生殼，會在頁面腳本之前放好 window.Capacitor）：沒有 Service Worker、沒有「安裝到主畫面」，也不吃網址上的測試參數
 const NATIVE_APP = !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
 const QS = new URLSearchParams(NATIVE_APP ? '' : location.search);

@@ -91,7 +91,7 @@ const ACHIEVEMENTS = [
   { id: 'shop_complete', cat: 9, tier: 'plat', name: '商店全收藏', desc: '擁有商店全部商品', shop: true,
     prog: achHas(() => AchStat.shopAll('bg', BACKGROUNDS) && AchStat.shopAll('hit', HIT_SOUNDS) && AchStat.shopAll('pet', PETS)) },
   // K. 趣味・隱藏
-  { id: 'polyglot', cat: 10, tier: 'bronze', name: '國際化屋台', desc: '切換過中文、日本語、English 三種語言', hidden: true, prog: achCnt(() => Save.data.langsUsed.length, 3) },
+  { id: 'polyglot', cat: 10, tier: 'bronze', name: '國際化屋台', desc: '切換過三種以上的語言', hidden: true, prog: achCnt(() => Save.data.langsUsed.length, 3) },
   { id: 'night_owl', cat: 10, tier: 'bronze', name: '深夜食堂', desc: '在凌晨 0:00～4:00 完成一場', hidden: true },
   { id: 'pause_fc', cat: 10, tier: 'silver', name: '臨危不亂', desc: '中途暫停過、繼續後仍拿到全連擊', hidden: true },
   { id: 'cat_ag', cat: 10, tier: 'gold', name: '喵喵完美', desc: '使用「貓咪」打擊音效拿到全 GREAT', hidden: true },

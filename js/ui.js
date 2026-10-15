@@ -23,7 +23,7 @@ const UI = {
   lines(str, maxW, size) {
     ctx.font = `${size}px ${FONT}`;
     const out = []; let cur = '';
-    const units = Save.data.lang === 'en' ? str.split(/(?<= )|(?=\n)|(?<=\n)/) : str;
+    const units = Save.data.lang === 'en' || Save.data.lang === 'ko' ? str.split(/(?<= )|(?=\n)|(?<=\n)/) : str;
     for (const ch of units) {
       if (ch === '\n') { out.push(cur); cur = ''; continue; }
       if (ctx.measureText(cur + ch).width > maxW && cur) { out.push(cur.trimEnd()); cur = ch.trimStart(); } else cur += ch;

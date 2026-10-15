@@ -87,7 +87,7 @@ const HYPER = {
 const SONGS = [
   {
     id: 'tsukimi', title: '月見ちょうちん', stars: 1, color: '#9cc8ff',
-    sub: { zh: '月見燈籠', ja: 'Moon-Viewing Lanterns', en: 'Moon-Viewing Lanterns' },
+    sub: { zh: '月見燈籠', ja: 'Moon-Viewing Lanterns', en: 'Moon-Viewing Lanterns', ko: '달맞이 등롱' },
     genre: { zh: 'Lo-fi・和琴', ja: 'ローファイ・お琴', en: 'Lo-fi Koto' },
     sections: [{ bpm: 80, lv: [0] }, { bpm: 86, lv: [0] }, { bpm: 92, lv: [0, 1] }, { bpm: 98, lv: [1] }, { bpm: 104, lv: [1, 2] }],
     arrange(ms, add) {
@@ -118,7 +118,7 @@ const SONGS = [
   },
   {
     id: 'yatai', title: '屋台ばやし', stars: 2, color: '#ffb84a',
-    sub: { zh: '屋台祭典囃子', ja: 'Yatai Festival', en: 'Yatai Festival' },
+    sub: { zh: '屋台祭典囃子', ja: 'Yatai Festival', en: 'Yatai Festival', ko: '포장마차 축제' },
     genre: { zh: '祭典太鼓・三味線', ja: '祭り囃子', en: 'Taiko & Shamisen' },
     sections: [{ bpm: 100, lv: [0] }, { bpm: 108, lv: [0, 1] }, { bpm: 114, lv: [1] }, { bpm: 120, lv: [1, 2] }, { bpm: 128, lv: [2] }, { bpm: 136, lv: [2, 3] }],
     arrange(ms, add) {
@@ -146,7 +146,7 @@ const SONGS = [
   },
   {
     id: 'swing', title: '鉄板スウィング', stars: 3, color: '#ffd76a', swing: 0.64,
-    sub: { zh: '鐵板搖擺', ja: 'Teppan Swing', en: 'Teppan Swing' },
+    sub: { zh: '鐵板搖擺', ja: 'Teppan Swing', en: 'Teppan Swing', ko: '철판 스윙' },
     genre: { zh: '搖擺爵士', ja: 'スウィングジャズ', en: 'Big Band Jazz' },
     sections: [{ bpm: 112, lv: [1] }, { bpm: 118, lv: [1] }, { bpm: 124, lv: [1, 2] }, { bpm: 132, lv: [2] }, { bpm: 140, lv: [2, 3] }, { bpm: 148, lv: [3] }],
     arrange(ms, add) {
@@ -170,7 +170,7 @@ const SONGS = [
   },
   {
     id: 'funk', title: 'ソース・ファンク', stars: 4, color: '#ff8ad0',
-    sub: { zh: '醬汁放克', ja: 'Sauce Funk', en: 'Sauce Funk' },
+    sub: { zh: '醬汁放克', ja: 'Sauce Funk', en: 'Sauce Funk', ko: '소스 펑크' },
     genre: { zh: '迪斯可放克', ja: 'ディスコファンク', en: '70s Disco Groove' },
     sections: [{ bpm: 118, lv: [1] }, { bpm: 124, lv: [1, 2] }, { bpm: 132, lv: [2] }, { bpm: 140, lv: [2, 3] }, { bpm: 150, lv: [3] }, { bpm: 158, lv: [3] }],
     arrange(ms, add) {
@@ -198,7 +198,7 @@ const SONGS = [
   },
   {
     id: 'hyper', title: '大王ハイパービート', stars: 5, color: '#7dffb0',
-    sub: { zh: '大王超速節拍', ja: 'Daio Hyper Beat', en: 'Daio Hyper Beat' },
+    sub: { zh: '大王超速節拍', ja: 'Daio Hyper Beat', en: 'Daio Hyper Beat', ko: '다이오 하이퍼 비트' },
     genre: { zh: '歐陸節拍', ja: 'ユーロビート', en: 'High-Energy Eurodance' },
     sections: [{ bpm: 148, lv: [2] }, { bpm: 156, lv: [2, 3] }, { bpm: 164, lv: [3] }, { bpm: 170, lv: [3] }, { bpm: 176, lv: [3] }, { bpm: 182, lv: [3] }],
     arrange(ms, add) {
@@ -291,7 +291,7 @@ const DNB = {
 SONGS.push(
   {
     id: 'bossa', title: '縁側ボサノバ', stars: 1, color: '#ffd1a1',
-    sub: { zh: '簷廊巴薩諾瓦', ja: 'Veranda Bossa Nova', en: 'Veranda Bossa Nova' },
+    sub: { zh: '簷廊巴薩諾瓦', ja: 'Veranda Bossa Nova', en: 'Veranda Bossa Nova', ko: '툇마루 보사노바' },
     genre: { zh: '巴薩諾瓦・吉他', ja: 'ボサノバ', en: 'Brazilian Guitar' },
     sections: [{ bpm: 84, lv: [0] }, { bpm: 90, lv: [0] }, { bpm: 96, lv: [0, 1] }, { bpm: 102, lv: [1] }, { bpm: 108, lv: [1, 2] }],
     arrange(ms, add) {
@@ -314,7 +314,7 @@ SONGS.push(
   },
   {
     id: 'chindon', title: 'ちんどん行進曲', stars: 2, color: '#ff9a8a',
-    sub: { zh: '街頭樂隊進行曲', ja: 'Chindon March', en: 'Chindon March' },
+    sub: { zh: '街頭樂隊進行曲', ja: 'Chindon March', en: 'Chindon March', ko: '친돈 행진곡' },
     genre: { zh: '單簧管・鉦與太鼓', ja: 'ちんどん屋', en: 'Japanese Street Band' },
     sections: [{ bpm: 104, lv: [0] }, { bpm: 110, lv: [0, 1] }, { bpm: 116, lv: [1] }, { bpm: 124, lv: [1, 2] }, { bpm: 130, lv: [2] }, { bpm: 136, lv: [2, 3] }],
     arrange(ms, add) {
@@ -340,7 +340,7 @@ SONGS.push(
   },
   {
     id: 'ska', title: '鉄板スカ', stars: 3, color: '#a8f07a',
-    sub: { zh: '鐵板斯卡', ja: 'Teppan Ska', en: 'Teppan Ska' },
+    sub: { zh: '鐵板斯卡', ja: 'Teppan Ska', en: 'Teppan Ska', ko: '철판 스카' },
     genre: { zh: '斯卡・銅管', ja: 'スカ', en: 'Jamaican Brass' },
     sections: [{ bpm: 116, lv: [1] }, { bpm: 122, lv: [1] }, { bpm: 128, lv: [1, 2] }, { bpm: 136, lv: [2] }, { bpm: 144, lv: [2, 3] }, { bpm: 150, lv: [3] }],
     arrange(ms, add) {
@@ -363,7 +363,7 @@ SONGS.push(
   },
   {
     id: 'chip', title: '8ビット・ヤタイ', stars: 4, color: '#7ad8ff',
-    sub: { zh: '8 位元屋台', ja: '8-bit Yatai', en: '8-bit Yatai' },
+    sub: { zh: '8 位元屋台', ja: '8-bit Yatai', en: '8-bit Yatai', ko: '8비트 포장마차' },
     genre: { zh: '8 位元電玩', ja: 'チップチューン', en: 'Chiptune' },
     sections: [{ bpm: 124, lv: [1, 2] }, { bpm: 132, lv: [2] }, { bpm: 140, lv: [2, 3] }, { bpm: 148, lv: [3] }, { bpm: 156, lv: [3] }, { bpm: 164, lv: [3] }],
     arrange(ms, add) {
@@ -391,7 +391,7 @@ SONGS.push(
   },
   {
     id: 'dnb', title: '炎のドラムンベース', stars: 5, color: '#ff6a5a',
-    sub: { zh: '烈焰鼓打貝斯', ja: 'Flame Drum & Bass', en: 'Flame Drum & Bass' },
+    sub: { zh: '烈焰鼓打貝斯', ja: 'Flame Drum & Bass', en: 'Flame Drum & Bass', ko: '불꽃 드럼 앤 베이스' },
     genre: { zh: '鼓打貝斯', ja: 'ドラムンベース', en: 'Jungle Breakbeat' },
     sections: [{ bpm: 156, lv: [2, 3] }, { bpm: 164, lv: [3] }, { bpm: 170, lv: [3] }, { bpm: 176, lv: [3] }, { bpm: 184, lv: [3] }, { bpm: 190, lv: [3] }],
     arrange(ms, add) {
@@ -540,7 +540,7 @@ const HOEDOWN = {
 SONGS.push(
   {
     id: 'musicbox', title: 'オルゴール夜市', stars: 1, color: '#f5c4ff',
-    sub: { zh: '音樂盒夜市', ja: 'Music Box Night Market', en: 'Music Box Night Market' },
+    sub: { zh: '音樂盒夜市', ja: 'Music Box Night Market', en: 'Music Box Night Market', ko: '오르골 야시장' },
     genre: { zh: '音樂盒・搖籃曲', ja: 'オルゴール', en: 'Lullaby Chimes' },
     sections: [{ bpm: 72, lv: [0] }, { bpm: 78, lv: [0] }, { bpm: 84, lv: [0, 1] }, { bpm: 90, lv: [1] }, { bpm: 96, lv: [1, 2] }],
     arrange(ms, add) {
@@ -565,7 +565,7 @@ SONGS.push(
   },
   {
     id: 'reggae', title: '南国屋台レゲエ', stars: 1, color: '#7ee08a', swing: 0.58,
-    sub: { zh: '南國屋台雷鬼', ja: 'Tropical Yatai Reggae', en: 'Tropical Yatai Reggae' },
+    sub: { zh: '南國屋台雷鬼', ja: 'Tropical Yatai Reggae', en: 'Tropical Yatai Reggae', ko: '남국 포장마차 레게' },
     genre: { zh: '雷鬼・口風琴', ja: 'レゲエ', en: 'Island Melodica' },
     sections: [{ bpm: 76, lv: [0] }, { bpm: 82, lv: [0] }, { bpm: 88, lv: [0, 1] }, { bpm: 94, lv: [1] }, { bpm: 100, lv: [1, 2] }],
     arrange(ms, add) {
@@ -591,7 +591,7 @@ SONGS.push(
   },
   {
     id: 'citypop', title: '夜市シティポップ', stars: 3, color: '#ff9ec7',
-    sub: { zh: '夜市城市流行', ja: 'Night Market City Pop', en: 'Night Market City Pop' },
+    sub: { zh: '夜市城市流行', ja: 'Night Market City Pop', en: 'Night Market City Pop', ko: '야시장 시티팝' },
     genre: { zh: '城市流行・電鋼琴', ja: 'シティポップ', en: '80s Electric Piano' },
     sections: [{ bpm: 110, lv: [1] }, { bpm: 116, lv: [1] }, { bpm: 124, lv: [1, 2] }, { bpm: 132, lv: [2] }, { bpm: 140, lv: [2, 3] }, { bpm: 146, lv: [3] }],
     arrange(ms, add) {
@@ -617,7 +617,7 @@ SONGS.push(
   },
   {
     id: 'ondo', title: '鉄板音頭', stars: 2, color: '#ffcf6e', swing: 0.66,
-    sub: { zh: '鐵板盆踊音頭', ja: 'Teppan Ondo', en: 'Teppan Ondo' },
+    sub: { zh: '鐵板盆踊音頭', ja: 'Teppan Ondo', en: 'Teppan Ondo', ko: '철판 온도' },
     genre: { zh: '盆踊・音頭', ja: '盆踊り', en: 'Bon Dance Folk' },
     sections: [{ bpm: 104, lv: [0] }, { bpm: 110, lv: [0, 1] }, { bpm: 116, lv: [1] }, { bpm: 122, lv: [1, 2] }, { bpm: 128, lv: [2] }, { bpm: 136, lv: [2, 3] }],
     arrange(ms, add) {
@@ -642,7 +642,7 @@ SONGS.push(
   },
   {
     id: 'samba', title: '鉄板サンバ', stars: 3, color: '#ffe14a',
-    sub: { zh: '鐵板森巴', ja: 'Teppan Samba', en: 'Teppan Samba' },
+    sub: { zh: '鐵板森巴', ja: 'Teppan Samba', en: 'Teppan Samba', ko: '철판 삼바' },
     genre: { zh: '森巴・打擊樂', ja: 'サンバ', en: 'Carnival Percussion' },
     sections: [{ bpm: 112, lv: [1] }, { bpm: 118, lv: [1] }, { bpm: 126, lv: [1, 2] }, { bpm: 134, lv: [2] }, { bpm: 142, lv: [2, 3] }, { bpm: 148, lv: [3] }],
     arrange(ms, add) {
@@ -671,7 +671,7 @@ SONGS.push(
   },
   {
     id: 'surf', title: '波乗りヤタイ', stars: 3, color: '#6ad6ff',
-    sub: { zh: '衝浪屋台', ja: "Surfin' Yatai", en: "Surfin' Yatai" },
+    sub: { zh: '衝浪屋台', ja: "Surfin' Yatai", en: "Surfin' Yatai", ko: '서핑 포장마차' },
     genre: { zh: '衝浪搖滾', ja: 'サーフロック', en: '60s Reverb Guitar' },
     sections: [{ bpm: 116, lv: [1] }, { bpm: 122, lv: [1] }, { bpm: 130, lv: [1, 2] }, { bpm: 138, lv: [2] }, { bpm: 144, lv: [2, 3] }, { bpm: 150, lv: [3] }],
     arrange(ms, add) {
@@ -695,7 +695,7 @@ SONGS.push(
   },
   {
     id: 'disco', title: 'ミラーボール屋台', stars: 4, color: '#c79bff',
-    sub: { zh: '迪斯可燈球屋台', ja: 'Mirrorball Yatai', en: 'Mirrorball Yatai' },
+    sub: { zh: '迪斯可燈球屋台', ja: 'Mirrorball Yatai', en: 'Mirrorball Yatai', ko: '미러볼 포장마차' },
     genre: { zh: '迪斯可浩室', ja: 'ディスコハウス', en: 'Disco House' },
     sections: [{ bpm: 122, lv: [1] }, { bpm: 128, lv: [1, 2] }, { bpm: 136, lv: [2] }, { bpm: 144, lv: [2, 3] }, { bpm: 152, lv: [3] }, { bpm: 160, lv: [3] }],
     arrange(ms, add) {
@@ -724,7 +724,7 @@ SONGS.push(
   },
   {
     id: 'boogie', title: '鉄板ブギウギ', stars: 4, color: '#ffa860', swing: 0.66,
-    sub: { zh: '鐵板布基烏基', ja: 'Teppan Boogie-Woogie', en: 'Teppan Boogie-Woogie' },
+    sub: { zh: '鐵板布基烏基', ja: 'Teppan Boogie-Woogie', en: 'Teppan Boogie-Woogie', ko: '철판 부기우기' },
     genre: { zh: '布基烏基・鋼琴', ja: 'ブギウギ', en: 'Barrelhouse Piano' },
     sections: [{ bpm: 124, lv: [1, 2] }, { bpm: 130, lv: [2] }, { bpm: 138, lv: [2, 3] }, { bpm: 146, lv: [3] }, { bpm: 152, lv: [3] }, { bpm: 160, lv: [3] }],
     arrange(ms, add) {
@@ -751,7 +751,7 @@ SONGS.push(
   },
   {
     id: 'jrock', title: '灼熱テッパンロック', stars: 5, color: '#ff5050',
-    sub: { zh: '灼熱鐵板搖滾', ja: 'Scorching Teppan Rock', en: 'Scorching Teppan Rock' },
+    sub: { zh: '灼熱鐵板搖滾', ja: 'Scorching Teppan Rock', en: 'Scorching Teppan Rock', ko: '작열하는 철판 록' },
     genre: { zh: '日系搖滾', ja: 'J-ロック', en: 'Japanese Guitar Band' },
     sections: [{ bpm: 150, lv: [2] }, { bpm: 158, lv: [2, 3] }, { bpm: 166, lv: [3] }, { bpm: 172, lv: [3] }, { bpm: 180, lv: [3] }, { bpm: 186, lv: [3] }],
     arrange(ms, add) {
@@ -779,7 +779,7 @@ SONGS.push(
   },
   {
     id: 'hoedown', title: '屋台ホーダウン', stars: 5, color: '#d8b07a',
-    sub: { zh: '屋台方塊舞', ja: 'Yatai Hoedown', en: 'Yatai Hoedown' },
+    sub: { zh: '屋台方塊舞', ja: 'Yatai Hoedown', en: 'Yatai Hoedown', ko: '포장마차 호다운' },
     genre: { zh: '藍草・斑鳩琴', ja: 'ブルーグラス', en: 'Bluegrass' },
     sections: [{ bpm: 152, lv: [2, 3] }, { bpm: 160, lv: [3] }, { bpm: 168, lv: [3] }, { bpm: 176, lv: [3] }, { bpm: 182, lv: [3] }, { bpm: 188, lv: [3] }],
     arrange(ms, add) {
@@ -925,7 +925,7 @@ const WAMETAL = {
 SONGS.push(
   {
     id: 'gamelan', title: 'ガムラン夜市', stars: 1, color: '#e8c070',
-    sub: { zh: '甘美朗夜市', ja: 'Gamelan Night Market', en: 'Gamelan Night Market' },
+    sub: { zh: '甘美朗夜市', ja: 'Gamelan Night Market', en: 'Gamelan Night Market', ko: '가믈란 야시장' },
     genre: { zh: '峇里島甘美朗・鑼', ja: 'ガムラン', en: 'Balinese Gongs' },
     sections: [{ bpm: 70, lv: [0] }, { bpm: 76, lv: [0] }, { bpm: 82, lv: [0, 1] }, { bpm: 88, lv: [1] }, { bpm: 94, lv: [1, 2] }],
     patterns: [   // 甘美朗的重音在第 4 拍（鑼落在句尾）
@@ -961,7 +961,7 @@ SONGS.push(
   },
   {
     id: 'hawaii', title: 'ウクレレ浜辺屋台', stars: 1, color: '#7ee8d0', swing: 0.62,
-    sub: { zh: '烏克麗麗海灘屋台', ja: 'Ukulele Beach Yatai', en: 'Ukulele Beach Yatai' },
+    sub: { zh: '烏克麗麗海灘屋台', ja: 'Ukulele Beach Yatai', en: 'Ukulele Beach Yatai', ko: '우쿨렐레 해변 포장마차' },
     genre: { zh: '夏威夷・滑棒吉他', ja: 'ハワイアン', en: 'Hawaiian' },
     sections: [{ bpm: 78, lv: [0] }, { bpm: 84, lv: [0] }, { bpm: 90, lv: [0, 1] }, { bpm: 96, lv: [1] }, { bpm: 102, lv: [1, 2] }],
     patterns: [   // 跳拍的反拍（.5 落在搖擺的後半）
@@ -988,7 +988,7 @@ SONGS.push(
   },
   {
     id: 'synthwave', title: 'ネオン屋台ウェーブ', stars: 3, color: '#ff6ad5',
-    sub: { zh: '霓虹屋台浪潮', ja: 'Neon Yatai Wave', en: 'Neon Yatai Wave' },
+    sub: { zh: '霓虹屋台浪潮', ja: 'Neon Yatai Wave', en: 'Neon Yatai Wave', ko: '네온 포장마차 웨이브' },
     genre: { zh: '合成器浪潮（電音）', ja: 'シンセウェイヴ', en: '80s Retro Synth' },
     sections: [{ bpm: 106, lv: [1] }, { bpm: 112, lv: [1] }, { bpm: 118, lv: [1] }, { bpm: 126, lv: [1, 2] }, { bpm: 134, lv: [2] }, { bpm: 142, lv: [2, 3] }],
     patterns: [   // 一路往前推的連續八分音符
@@ -1016,7 +1016,7 @@ SONGS.push(
   },
   {
     id: 'future', title: 'フューチャー屋台ベース', stars: 2, color: '#8ad8ff',
-    sub: { zh: '未來屋台貝斯', ja: 'Future Yatai Bass', en: 'Future Yatai Bass' },
+    sub: { zh: '未來屋台貝斯', ja: 'Future Yatai Bass', en: 'Future Yatai Bass', ko: '퓨처 포장마차 베이스' },
     genre: { zh: '未來貝斯（電音）', ja: 'フューチャーベース', en: 'Supersaw EDM' },
     sections: [{ bpm: 100, lv: [0] }, { bpm: 106, lv: [0, 1] }, { bpm: 112, lv: [1] }, { bpm: 120, lv: [1, 2] }, { bpm: 128, lv: [2] }, { bpm: 136, lv: [2, 3] }],
     patterns: [   // 半速節奏＋切分（踩在空拍上）
@@ -1046,7 +1046,7 @@ SONGS.push(
   },
   {
     id: 'anime', title: '鉄板ヒーロー！', stars: 3, color: '#ff8a3c',
-    sub: { zh: '鐵板英雄！', ja: 'Teppan Hero!', en: 'Teppan Hero!' },
+    sub: { zh: '鐵板英雄！', ja: 'Teppan Hero!', en: 'Teppan Hero!', ko: '철판 히어로!' },
     genre: { zh: '動漫片頭曲', ja: 'アニソン', en: 'Anime Opening' },
     sections: [{ bpm: 120, lv: [1] }, { bpm: 126, lv: [1] }, { bpm: 132, lv: [1, 2] }, { bpm: 138, lv: [2] }, { bpm: 146, lv: [2, 3] }, { bpm: 152, lv: [3] }],
     patterns: [
@@ -1078,7 +1078,7 @@ SONGS.push(
   },
   {
     id: 'britpop', title: 'ブリティッシュ屋台アンセム', stars: 4, color: '#5a8cff',
-    sub: { zh: '英倫屋台頌歌', ja: 'British Yatai Anthem', en: 'British Yatai Anthem' },
+    sub: { zh: '英倫屋台頌歌', ja: 'British Yatai Anthem', en: 'British Yatai Anthem', ko: '브리티시 포장마차 앤섬' },
     genre: { zh: '英式搖滾 Britpop', ja: 'ブリットポップ', en: '90s UK Guitar Pop' },
     sections: [{ bpm: 120, lv: [1] }, { bpm: 126, lv: [1, 2] }, { bpm: 134, lv: [2] }, { bpm: 142, lv: [2, 3] }, { bpm: 150, lv: [3] }, { bpm: 158, lv: [3] }],
     patterns: [
@@ -1106,7 +1106,7 @@ SONGS.push(
   },
   {
     id: 'dancepunk', title: 'インディー屋台ダンス', stars: 4, color: '#c8ff5a',
-    sub: { zh: '獨立屋台舞曲', ja: 'Indie Yatai Dance', en: 'Indie Yatai Dance' },
+    sub: { zh: '獨立屋台舞曲', ja: 'Indie Yatai Dance', en: 'Indie Yatai Dance', ko: '인디 포장마차 댄스' },
     genre: { zh: '英式獨立舞曲龐克', ja: 'UKダンスパンク', en: 'UK Post-Punk Revival' },
     sections: [{ bpm: 126, lv: [1] }, { bpm: 132, lv: [1, 2] }, { bpm: 140, lv: [2] }, { bpm: 148, lv: [2, 3] }, { bpm: 156, lv: [3] }, { bpm: 164, lv: [3] }],
     patterns: [
@@ -1135,7 +1135,7 @@ SONGS.push(
   },
   {
     id: 'thrash', title: 'スラッシュ鉄板', stars: 5, color: '#b0b8c8',
-    sub: { zh: '鞭擊鐵板', ja: 'Thrash Teppan', en: 'Thrash Teppan' },
+    sub: { zh: '鞭擊鐵板', ja: 'Thrash Teppan', en: 'Thrash Teppan', ko: '스래시 철판' },
     genre: { zh: '鞭擊金屬', ja: 'スラッシュメタル', en: 'Speed Metal' },
     sections: [{ bpm: 140, lv: [2] }, { bpm: 146, lv: [2] }, { bpm: 152, lv: [2, 3] }, { bpm: 158, lv: [3] }, { bpm: 164, lv: [3] }, { bpm: 170, lv: [3] }],
     patterns: [
@@ -1164,7 +1164,7 @@ SONGS.push(
   },
   {
     id: 'power', title: 'ドラゴン鉄板', stars: 5, color: '#ffd23f',
-    sub: { zh: '飛龍鐵板', ja: 'Dragon Teppan', en: 'Dragon Teppan' },
+    sub: { zh: '飛龍鐵板', ja: 'Dragon Teppan', en: 'Dragon Teppan', ko: '드래곤 철판' },
     genre: { zh: '力量金屬', ja: 'パワーメタル', en: 'Power Metal' },
     sections: [{ bpm: 138, lv: [2] }, { bpm: 144, lv: [2] }, { bpm: 150, lv: [2, 3] }, { bpm: 156, lv: [3] }, { bpm: 162, lv: [3] }, { bpm: 168, lv: [3] }],
     patterns: [
@@ -1195,7 +1195,7 @@ SONGS.push(
   },
   {
     id: 'wametal', title: '鬼焼きメタル', stars: 5, color: '#ff3a6a',
-    sub: { zh: '鬼燒金屬', ja: 'Oni-yaki Metal', en: 'Oni-yaki Metal' },
+    sub: { zh: '鬼燒金屬', ja: 'Oni-yaki Metal', en: 'Oni-yaki Metal', ko: '오니야키 메탈' },
     genre: { zh: '和風金屬・太鼓・三味線', ja: '和風メタル', en: 'Taiko & Shamisen Shred' },
     sections: [{ bpm: 136, lv: [2] }, { bpm: 142, lv: [2] }, { bpm: 148, lv: [2, 3] }, { bpm: 154, lv: [3] }, { bpm: 160, lv: [3] }, { bpm: 166, lv: [3] }],
     patterns: [
@@ -1340,7 +1340,7 @@ const GABBER = {
 SONGS.push(
   {
     id: 'enka', title: '港町屋台演歌', stars: 1, color: '#e07aa0',
-    sub: { zh: '港町屋台演歌', ja: 'Harbor Yatai Enka', en: 'Harbor Yatai Enka' },
+    sub: { zh: '港町屋台演歌', ja: 'Harbor Yatai Enka', en: 'Harbor Yatai Enka', ko: '항구 포장마차 엔카' },
     genre: { zh: '演歌・尺八・弦樂', ja: '演歌', en: 'Enka Ballad' },
     sections: [{ bpm: 72, lv: [0] }, { bpm: 78, lv: [0] }, { bpm: 84, lv: [0, 1] }, { bpm: 90, lv: [1] }, { bpm: 96, lv: [1, 2] }],
     patterns: [   // 長音為主，重音在第 1、3 拍
@@ -1369,7 +1369,7 @@ SONGS.push(
   },
   {
     id: 'blues', title: '夜更けブルース', stars: 1, color: '#5a8adf', swing: 0.66,
-    sub: { zh: '深夜藍調', ja: 'Late Night Blues', en: 'Late Night Blues' },
+    sub: { zh: '深夜藍調', ja: 'Late Night Blues', en: 'Late Night Blues', ko: '심야 블루스' },
     genre: { zh: '藍調・風琴・吉他', ja: 'ブルース', en: 'Shuffle Blues' },
     sections: [{ bpm: 76, lv: [0] }, { bpm: 82, lv: [0] }, { bpm: 88, lv: [0, 1] }, { bpm: 94, lv: [1] }, { bpm: 100, lv: [1, 2] }],
     patterns: [   // 搖擺的反拍（.5 落在三連音的後面）
@@ -1398,7 +1398,7 @@ SONGS.push(
   },
   {
     id: 'polka', title: '鉄板ポルカ', stars: 3, color: '#ff7a7a',
-    sub: { zh: '鐵板波卡', ja: 'Teppan Polka', en: 'Teppan Polka' },
+    sub: { zh: '鐵板波卡', ja: 'Teppan Polka', en: 'Teppan Polka', ko: '철판 폴카' },
     genre: { zh: '波卡・手風琴・低音號', ja: 'ポルカ', en: 'Accordion Polka' },
     sections: [{ bpm: 110, lv: [1] }, { bpm: 116, lv: [1] }, { bpm: 124, lv: [1, 2] }, { bpm: 132, lv: [2] }, { bpm: 140, lv: [2, 3] }, { bpm: 146, lv: [3] }],
     patterns: [   // 碰—恰：反拍的「恰」也要打
@@ -1427,7 +1427,7 @@ SONGS.push(
   },
   {
     id: 'tango', title: '夜霧のタンゴ', stars: 2, color: '#d83a5a',
-    sub: { zh: '夜霧探戈', ja: 'Night Mist Tango', en: 'Night Mist Tango' },
+    sub: { zh: '夜霧探戈', ja: 'Night Mist Tango', en: 'Night Mist Tango', ko: '밤안개 탱고' },
     genre: { zh: '阿根廷探戈・班多鈕', ja: 'アルゼンチン・タンゴ', en: 'Argentine Tango' },
     sections: [{ bpm: 100, lv: [0] }, { bpm: 106, lv: [0, 1] }, { bpm: 112, lv: [1] }, { bpm: 118, lv: [1, 2] }, { bpm: 126, lv: [2] }, { bpm: 132, lv: [2, 3] }],
     patterns: [   // 3-3-2：第 1 拍、第 2 拍半、第 4 拍
@@ -1455,7 +1455,7 @@ SONGS.push(
   },
   {
     id: 'celtic', title: 'ケルト屋台リール', stars: 3, color: '#4ac07a',
-    sub: { zh: '凱爾特屋台里爾舞', ja: 'Celtic Yatai Reel', en: 'Celtic Yatai Reel' },
+    sub: { zh: '凱爾特屋台里爾舞', ja: 'Celtic Yatai Reel', en: 'Celtic Yatai Reel', ko: '켈틱 포장마차 릴' },
     genre: { zh: '愛爾蘭・小提琴・錫笛', ja: 'アイリッシュ', en: 'Irish Fiddle & Whistle' },
     sections: [{ bpm: 112, lv: [1] }, { bpm: 118, lv: [1] }, { bpm: 124, lv: [1, 2] }, { bpm: 132, lv: [2] }, { bpm: 140, lv: [2, 3] }, { bpm: 148, lv: [3] }],
     patterns: [   // 一路往前跑的八分音符
@@ -1485,7 +1485,7 @@ SONGS.push(
   },
   {
     id: 'bhangra', title: 'バングラ鉄板', stars: 3, color: '#ffb020', swing: 0.6,
-    sub: { zh: '旁遮普鐵板', ja: 'Bhangra Teppan', en: 'Bhangra Teppan' },
+    sub: { zh: '旁遮普鐵板', ja: 'Bhangra Teppan', en: 'Bhangra Teppan', ko: '방그라 철판' },
     genre: { zh: '旁遮普舞曲・多爾鼓', ja: 'バングラ', en: 'Punjabi Dhol Beat' },
     sections: [{ bpm: 116, lv: [1] }, { bpm: 122, lv: [1] }, { bpm: 128, lv: [1, 2] }, { bpm: 136, lv: [2] }, { bpm: 144, lv: [2, 3] }, { bpm: 150, lv: [3] }],
     patterns: [   // 多爾鼓的跳躍感（反拍落在搖擺的後半）
@@ -1514,7 +1514,7 @@ SONGS.push(
   },
   {
     id: 'salsa', title: 'サルサ・デ・テッパン', stars: 4, color: '#ff5a3a',
-    sub: { zh: '鐵板騷莎', ja: 'Salsa de Teppan', en: 'Salsa de Teppan' },
+    sub: { zh: '鐵板騷莎', ja: 'Salsa de Teppan', en: 'Salsa de Teppan', ko: '철판 살사' },
     genre: { zh: '騷莎・康加鼓・銅管', ja: 'サルサ', en: 'Salsa & Brass' },
     sections: [{ bpm: 120, lv: [1] }, { bpm: 126, lv: [1, 2] }, { bpm: 134, lv: [2] }, { bpm: 142, lv: [2, 3] }, { bpm: 150, lv: [3] }, { bpm: 158, lv: [3] }],
     patterns: [   // 跟著克拉維打（第 1 拍、第 2 拍半、第 4 拍…）
@@ -1548,7 +1548,7 @@ SONGS.push(
   },
   {
     id: 'flamenco', title: 'フラメンコ鉄板ルンバ', stars: 5, color: '#ff3a3a',
-    sub: { zh: '佛朗明哥鐵板倫巴', ja: 'Flamenco Teppan Rumba', en: 'Flamenco Teppan Rumba' },
+    sub: { zh: '佛朗明哥鐵板倫巴', ja: 'Flamenco Teppan Rumba', en: 'Flamenco Teppan Rumba', ko: '플라멩코 철판 룸바' },
     genre: { zh: '佛朗明哥・吉他・拍手', ja: 'フラメンコ', en: 'Flamenco Rumba' },
     sections: [{ bpm: 144, lv: [2] }, { bpm: 150, lv: [2, 3] }, { bpm: 156, lv: [3] }, { bpm: 162, lv: [3] }, { bpm: 168, lv: [3] }, { bpm: 176, lv: [3] }],
     patterns: [   // 3-3-2 的刷弦重音
@@ -1579,7 +1579,7 @@ SONGS.push(
   },
   {
     id: 'gabber', title: 'ガバ鉄板ハードコア', stars: 5, color: '#a0ff3a',
-    sub: { zh: '硬核鐵板', ja: 'Gabber Teppan', en: 'Gabber Teppan Hardcore' },
+    sub: { zh: '硬核鐵板', ja: 'Gabber Teppan', en: 'Gabber Teppan Hardcore', ko: '개버 철판 하드코어' },
     genre: { zh: '硬核電音（Gabber）', ja: 'ガバ・ハードコア', en: 'Gabber Hardcore' },
     sections: [{ bpm: 150, lv: [2] }, { bpm: 156, lv: [2, 3] }, { bpm: 164, lv: [3] }, { bpm: 170, lv: [3] }, { bpm: 176, lv: [3] }, { bpm: 182, lv: [3] }],
     patterns: [   // 跟著四拍破音大鼓一路敲
@@ -1689,7 +1689,7 @@ const PUNK = {   // A 大調（強力和弦三和弦循環）
 SONGS.push(
   {
     id: 'soul', title: 'ソウル屋台', stars: 2, color: '#e8a050',
-    sub: { zh: '靈魂屋台', ja: 'Soul Yatai', en: 'Soul Yatai' }, genre: { zh: '靈魂樂・Motown', ja: 'ソウル', en: 'Motown Soul' },
+    sub: { zh: '靈魂屋台', ja: 'Soul Yatai', en: 'Soul Yatai', ko: '소울 포장마차' }, genre: { zh: '靈魂樂・Motown', ja: 'ソウル', en: 'Motown Soul' },
     sections: secs(2, 100, 132), patterns: PT.BACK,
     arrange(ms, add) {
       const S = SOUL, mi = ms.idx % 8, ch = S.CHORD[mi], r = S.ROOT[mi], rest = ms.kind === 'rest';
@@ -1705,7 +1705,7 @@ SONGS.push(
   },
   {
     id: 'boombap', title: 'ブーンバップ屋台', stars: 2, color: '#8a7a6a', swing: 0.58,
-    sub: { zh: '嘻哈屋台', ja: 'Boom Bap Yatai', en: 'Boom Bap Yatai' }, genre: { zh: '嘻哈・Boom bap', ja: 'ブーンバップ', en: 'Boom Bap Hip-Hop' },
+    sub: { zh: '嘻哈屋台', ja: 'Boom Bap Yatai', en: 'Boom Bap Yatai', ko: '붐뱁 포장마차' }, genre: { zh: '嘻哈・Boom bap', ja: 'ブーンバップ', en: 'Boom Bap Hip-Hop' },
     sections: secs(2, 96, 128), patterns: PT.SYNC,
     arrange(ms, add) {
       const B = BOOMBAP, mi = ms.idx % 8, ch = B.CHORD[mi], r = B.ROOT[mi], rest = ms.kind === 'rest';
@@ -1721,7 +1721,7 @@ SONGS.push(
   },
   {
     id: 'gospel', title: '鉄板ゴスペル', stars: 3, color: '#f0d070', swing: 0.66,
-    sub: { zh: '鐵板福音', ja: 'Teppan Gospel', en: 'Teppan Gospel' }, genre: { zh: '福音合唱・風琴', ja: 'ゴスペル', en: 'Gospel Choir' },
+    sub: { zh: '鐵板福音', ja: 'Teppan Gospel', en: 'Teppan Gospel', ko: '철판 가스펠' }, genre: { zh: '福音合唱・風琴', ja: 'ゴスペル', en: 'Gospel Choir' },
     sections: secs(3, 108, 142), patterns: PT.BACK,
     arrange(ms, add) {
       const G = GOSPEL, mi = ms.idx % 8, ch = G.CHORD[mi], r = G.ROOT[mi], rest = ms.kind === 'rest';
@@ -1738,7 +1738,7 @@ SONGS.push(
   },
   {
     id: 'afrobeat', title: 'アフロ鉄板ビート', stars: 3, color: '#e85a2a',
-    sub: { zh: '非洲鐵板節拍', ja: 'Afro Teppan Beat', en: 'Afro Teppan Beat' }, genre: { zh: '非洲節拍・銅管', ja: 'アフロビート', en: 'Afrobeat' },
+    sub: { zh: '非洲鐵板節拍', ja: 'Afro Teppan Beat', en: 'Afro Teppan Beat', ko: '아프로 철판 비트' }, genre: { zh: '非洲節拍・銅管', ja: 'アフロビート', en: 'Afrobeat' },
     sections: secs(3, 112, 148), patterns: PT.SYNC,
     arrange(ms, add) {
       const F = AFRO, mi = ms.idx % 8, ch = F.CHORD[mi], r = F.ROOT[mi], rest = ms.kind === 'rest';
@@ -1756,7 +1756,7 @@ SONGS.push(
   },
   {
     id: 'kpop', title: 'K-POP鉄板ダンス', stars: 4, color: '#ff6ab0',
-    sub: { zh: 'K-POP 鐵板舞曲', ja: 'K-Pop Teppan Dance', en: 'K-Pop Teppan Dance' }, genre: { zh: 'K-POP 舞曲', ja: 'K-POP', en: 'K-Pop Dance' },
+    sub: { zh: 'K-POP 鐵板舞曲', ja: 'K-Pop Teppan Dance', en: 'K-Pop Teppan Dance', ko: 'K-POP 철판 댄스' }, genre: { zh: 'K-POP 舞曲', ja: 'K-POP', en: 'K-Pop Dance' },
     sections: secs(4, 122, 160), patterns: PT.OFF,
     arrange(ms, add) {
       const K = KPOP, mi = ms.idx % 8, ch = K.CHORD[mi], r = K.ROOT[mi], rest = ms.kind === 'rest';
@@ -1773,7 +1773,7 @@ SONGS.push(
   },
   {
     id: 'trance', title: '夜市トランス', stars: 4, color: '#6ad0ff',
-    sub: { zh: '夜市迷幻舞曲', ja: 'Night Market Trance', en: 'Night Market Trance' }, genre: { zh: 'Trance（電音）', ja: 'トランス', en: 'Uplifting Trance' },
+    sub: { zh: '夜市迷幻舞曲', ja: 'Night Market Trance', en: 'Night Market Trance', ko: '야시장 트랜스' }, genre: { zh: 'Trance（電音）', ja: 'トランス', en: 'Uplifting Trance' },
     sections: secs(4, 126, 162), patterns: PT.RUN,
     arrange(ms, add) {
       const T = TRANCE, mi = ms.idx % 8, ch = T.CHORD[mi], r = T.ROOT[mi], rest = ms.kind === 'rest';
@@ -1789,7 +1789,7 @@ SONGS.push(
   },
   {
     id: 'eswing', title: 'エレクトロ・スウィング屋台', stars: 4, color: '#d8b04a', swing: 0.64,
-    sub: { zh: '電子搖擺屋台', ja: 'Electro Swing Yatai', en: 'Electro Swing Yatai' }, genre: { zh: '電子搖擺', ja: 'エレクトロスウィング', en: 'Electro Swing' },
+    sub: { zh: '電子搖擺屋台', ja: 'Electro Swing Yatai', en: 'Electro Swing Yatai', ko: '일렉트로 스윙 포장마차' }, genre: { zh: '電子搖擺', ja: 'エレクトロスウィング', en: 'Electro Swing' },
     sections: secs(4, 118, 156), patterns: PT.SYNC,
     arrange(ms, add) {
       const E = ESWING, mi = ms.idx % 8, ch = E.CHORD[mi], r = E.ROOT[mi], rest = ms.kind === 'rest';
@@ -1807,7 +1807,7 @@ SONGS.push(
   },
   {
     id: 'bigbeat', title: 'ビッグビート鉄板', stars: 5, color: '#ff4a2a',
-    sub: { zh: '大節拍鐵板', ja: 'Big Beat Teppan', en: 'Big Beat Teppan' }, genre: { zh: 'Big beat（碎拍電子）', ja: 'ビッグビート', en: 'Big Beat Breaks' },
+    sub: { zh: '大節拍鐵板', ja: 'Big Beat Teppan', en: 'Big Beat Teppan', ko: '빅비트 철판' }, genre: { zh: 'Big beat（碎拍電子）', ja: 'ビッグビート', en: 'Big Beat Breaks' },
     sections: secs(5, 144, 176), patterns: PT.SYNC,
     arrange(ms, add) {
       const B = BIGBEAT, mi = ms.idx % 8, r = B.ROOT[mi], rest = ms.kind === 'rest';
@@ -1824,7 +1824,7 @@ SONGS.push(
   },
   {
     id: 'punk', title: 'パンク屋台', stars: 5, color: '#ff3a8a',
-    sub: { zh: '龐克屋台', ja: 'Punk Yatai', en: 'Punk Yatai' }, genre: { zh: '龐克搖滾', ja: 'パンク', en: 'Punk Rock' },
+    sub: { zh: '龐克屋台', ja: 'Punk Yatai', en: 'Punk Yatai', ko: '펑크 포장마차' }, genre: { zh: '龐克搖滾', ja: 'パンク', en: 'Punk Rock' },
     sections: secs(5, 150, 182), patterns: PT.DRIVE,
     arrange(ms, add) {
       const P = PUNK, mi = ms.idx % 8, r = P.ROOT[mi], rest = ms.kind === 'rest';
@@ -1904,7 +1904,7 @@ const SAMUL = {   // 韓國五聲（太平簫）
 SONGS.push(
   {
     id: 'calypso', title: 'カリプソ鉄板', stars: 2, color: '#3ad0c0',
-    sub: { zh: '鐵板卡利普索', ja: 'Calypso Teppan', en: 'Calypso Teppan' }, genre: { zh: '加勒比海 Calypso・鋼鼓', ja: 'カリプソ', en: 'Caribbean Steel Drum' },
+    sub: { zh: '鐵板卡利普索', ja: 'Calypso Teppan', en: 'Calypso Teppan', ko: '철판 칼립소' }, genre: { zh: '加勒比海 Calypso・鋼鼓', ja: 'カリプソ', en: 'Caribbean Steel Drum' },
     sections: secs(2, 100, 134), patterns: PT.OFF,
     arrange(ms, add) {
       const C = CALYPSO, mi = ms.idx % 8, ch = C.CHORD[mi], r = C.ROOT[mi], rest = ms.kind === 'rest';
@@ -1920,7 +1920,7 @@ SONGS.push(
   },
   {
     id: 'okinawa', title: '島唄屋台', stars: 2, color: '#4ab0e0', swing: 0.62,
-    sub: { zh: '島唄屋台', ja: 'Shima-uta Yatai', en: 'Okinawan Island Song' }, genre: { zh: '沖繩島唄・三線', ja: '沖縄民謡', en: 'Okinawan Sanshin' },
+    sub: { zh: '島唄屋台', ja: 'Shima-uta Yatai', en: 'Okinawan Island Song', ko: '오키나와 섬 노래' }, genre: { zh: '沖繩島唄・三線', ja: '沖縄民謡', en: 'Okinawan Sanshin' },
     sections: secs(2, 98, 132), patterns: PT.SYNC,
     arrange(ms, add) {
       const O = OKINAWA, mi = ms.idx % 8, ch = O.CHORD[mi], r = O.ROOT[mi], rest = ms.kind === 'rest';
@@ -1936,7 +1936,7 @@ SONGS.push(
   },
   {
     id: 'minyue', title: '屋台民楽', stars: 3, color: '#d83a3a',
-    sub: { zh: '屋台國樂', ja: 'Yatai Folk Orchestra', en: 'Chinese Folk Orchestra' }, genre: { zh: '中國民樂・二胡・古箏', ja: '中国民楽', en: 'Erhu & Guzheng' },
+    sub: { zh: '屋台國樂', ja: 'Yatai Folk Orchestra', en: 'Chinese Folk Orchestra', ko: '중국 민속 악단' }, genre: { zh: '中國民樂・二胡・古箏', ja: '中国民楽', en: 'Erhu & Guzheng' },
     sections: secs(3, 112, 148), patterns: PT.RUN,
     arrange(ms, add) {
       const M = MINYUE, mi = ms.idx % 8, ch = M.CHORD[mi], r = M.ROOT[mi], rest = ms.kind === 'rest';
@@ -1953,7 +1953,7 @@ SONGS.push(
   },
   {
     id: 'arabic', title: 'ベリーダンス夜市', stars: 3, color: '#b04ad0',
-    sub: { zh: '肚皮舞夜市', ja: 'Belly Dance Bazaar', en: 'Belly Dance Bazaar' }, genre: { zh: '阿拉伯肚皮舞・烏德琴', ja: 'アラビアン', en: 'Arabic Belly Dance' },
+    sub: { zh: '肚皮舞夜市', ja: 'Belly Dance Bazaar', en: 'Belly Dance Bazaar', ko: '벨리댄스 야시장' }, genre: { zh: '阿拉伯肚皮舞・烏德琴', ja: 'アラビアン', en: 'Arabic Belly Dance' },
     sections: secs(3, 114, 148), patterns: PT.SYNC,
     arrange(ms, add) {
       const Q = ARABIC, mi = ms.idx % 8, r = Q.ROOT[mi], rest = ms.kind === 'rest';
@@ -1968,7 +1968,7 @@ SONGS.push(
   },
   {
     id: 'cumbia', title: 'クンビア屋台', stars: 3, color: '#5ac04a',
-    sub: { zh: '昆比亞屋台', ja: 'Cumbia Yatai', en: 'Cumbia Yatai' }, genre: { zh: 'Cumbia・手風琴・刮瓜', ja: 'クンビア', en: 'Colombian Cumbia' },
+    sub: { zh: '昆比亞屋台', ja: 'Cumbia Yatai', en: 'Cumbia Yatai', ko: '쿰비아 포장마차' }, genre: { zh: 'Cumbia・手風琴・刮瓜', ja: 'クンビア', en: 'Colombian Cumbia' },
     sections: secs(3, 108, 142), patterns: PT.OFF,
     arrange(ms, add) {
       const C = CUMBIA, mi = ms.idx % 8, ch = C.CHORD[mi], r = C.ROOT[mi], rest = ms.kind === 'rest';
@@ -1984,7 +1984,7 @@ SONGS.push(
   },
   {
     id: 'baroque', title: 'バロック鉄板', stars: 4, color: '#c8a070',
-    sub: { zh: '巴洛克鐵板', ja: 'Baroque Teppan', en: 'Baroque Teppan' }, genre: { zh: '巴洛克・大鍵琴・弦樂', ja: 'バロック', en: 'Baroque Harpsichord' },
+    sub: { zh: '巴洛克鐵板', ja: 'Baroque Teppan', en: 'Baroque Teppan', ko: '바로크 철판' }, genre: { zh: '巴洛克・大鍵琴・弦樂', ja: 'バロック', en: 'Baroque Harpsichord' },
     sections: secs(4, 122, 158), patterns: PT.RUN,
     arrange(ms, add) {
       const B = BAROQUE, mi = ms.idx % 8, ch = B.CHORD[mi], r = B.ROOT[mi], rest = ms.kind === 'rest';
@@ -1999,7 +1999,7 @@ SONGS.push(
   },
   {
     id: 'ragtime', title: 'ラグタイム屋台', stars: 4, color: '#a07a50',
-    sub: { zh: '拉格泰姆屋台', ja: 'Ragtime Yatai', en: 'Ragtime Yatai' }, genre: { zh: 'Ragtime 鋼琴', ja: 'ラグタイム', en: 'Ragtime Piano' },
+    sub: { zh: '拉格泰姆屋台', ja: 'Ragtime Yatai', en: 'Ragtime Yatai', ko: '래그타임 포장마차' }, genre: { zh: 'Ragtime 鋼琴', ja: 'ラグタイム', en: 'Ragtime Piano' },
     sections: secs(4, 120, 156), patterns: PT.SYNC,
     arrange(ms, add) {
       const R = RAGTIME, mi = ms.idx % 8, ch = R.CHORD[mi], r = R.ROOT[mi], rest = ms.kind === 'rest';
@@ -2014,7 +2014,7 @@ SONGS.push(
   },
   {
     id: 'kalinka', title: 'カリンカ鉄板', stars: 5, color: '#e8483a',
-    sub: { zh: '卡林卡鐵板', ja: 'Kalinka Teppan', en: 'Kalinka Teppan' }, genre: { zh: '俄羅斯民謠・巴拉萊卡', ja: 'ロシア民謡', en: 'Russian Balalaika' },
+    sub: { zh: '卡林卡鐵板', ja: 'Kalinka Teppan', en: 'Kalinka Teppan', ko: '칼린카 철판' }, genre: { zh: '俄羅斯民謠・巴拉萊卡', ja: 'ロシア民謡', en: 'Russian Balalaika' },
     sections: secs(5, 140, 180), patterns: PT.RUN,
     arrange(ms, add) {
       const K = KALINKA, mi = ms.idx % 8, ch = K.CHORD[mi], r = K.ROOT[mi], rest = ms.kind === 'rest';
@@ -2029,7 +2029,7 @@ SONGS.push(
   },
   {
     id: 'balkan', title: 'バルカン・ブラス屋台', stars: 5, color: '#c87a20',
-    sub: { zh: '巴爾幹銅管屋台', ja: 'Balkan Brass Yatai', en: 'Balkan Brass Yatai' }, genre: { zh: '巴爾幹銅管樂隊', ja: 'バルカン・ブラス', en: 'Balkan Brass Band' },
+    sub: { zh: '巴爾幹銅管屋台', ja: 'Balkan Brass Yatai', en: 'Balkan Brass Yatai', ko: '발칸 브라스 포장마차' }, genre: { zh: '巴爾幹銅管樂隊', ja: 'バルカン・ブラス', en: 'Balkan Brass Band' },
     sections: secs(5, 146, 178), patterns: PT.OFF,
     arrange(ms, add) {
       const B = BALKAN, mi = ms.idx % 8, ch = B.CHORD[mi], r = B.ROOT[mi], rest = ms.kind === 'rest';
@@ -2043,7 +2043,7 @@ SONGS.push(
   },
   {
     id: 'samul', title: 'サムルノリ鉄板', stars: 5, color: '#4a7ad8',
-    sub: { zh: '四物遊戲鐵板', ja: 'Samulnori Teppan', en: 'Samulnori Teppan' }, genre: { zh: '韓國四物打擊・長鼓', ja: 'サムルノリ', en: 'Korean Samulnori' },
+    sub: { zh: '四物遊戲鐵板', ja: 'Samulnori Teppan', en: 'Samulnori Teppan', ko: '사물놀이 철판' }, genre: { zh: '韓國四物打擊・長鼓', ja: 'サムルノリ', en: 'Korean Samulnori' },
     sections: secs(5, 140, 176), patterns: PT.SYNC,
     arrange(ms, add) {
       const S = SAMUL, mi = ms.idx % 8, r = S.ROOT[mi], rest = ms.kind === 'rest';
@@ -2118,7 +2118,7 @@ const JERSEY = {   // F 小調（Jersey club 的三連發大鼓）
 SONGS.push(
   {
     id: 'trap', title: 'トラップ屋台', stars: 2, color: '#8a5ad8',
-    sub: { zh: '陷阱屋台', ja: 'Trap Yatai', en: 'Trap Yatai' }, genre: { zh: 'Trap（電音）・808', ja: 'トラップ', en: 'Trap 808' },
+    sub: { zh: '陷阱屋台', ja: 'Trap Yatai', en: 'Trap Yatai', ko: '트랩 포장마차' }, genre: { zh: 'Trap（電音）・808', ja: 'トラップ', en: 'Trap 808' },
     sections: secs(2, 100, 136), patterns: PT.HALF,
     arrange(ms, add) {
       const T = TRAP, mi = ms.idx % 8, r = T.ROOT[mi], rest = ms.kind === 'rest';
@@ -2133,7 +2133,7 @@ SONGS.push(
   },
   {
     id: 'vapor', title: 'ヴェイパー夜市', stars: 2, color: '#ff8ad8',
-    sub: { zh: '蒸氣波夜市', ja: 'Vapor Night Market', en: 'Vapor Night Market' }, genre: { zh: 'Vaporwave（慢速電子）', ja: 'ヴェイパーウェイヴ', en: 'Vaporwave' },
+    sub: { zh: '蒸氣波夜市', ja: 'Vapor Night Market', en: 'Vapor Night Market', ko: '베이퍼 야시장' }, genre: { zh: 'Vaporwave（慢速電子）', ja: 'ヴェイパーウェイヴ', en: 'Vaporwave' },
     sections: secs(2, 96, 128), patterns: PT.BACK,
     arrange(ms, add) {
       const V = VAPOR, mi = ms.idx % 8, ch = V.CHORD[mi], r = V.ROOT[mi], rest = ms.kind === 'rest';
@@ -2150,7 +2150,7 @@ SONGS.push(
   },
   {
     id: 'garage', title: 'UKガラージ屋台', stars: 3, color: '#5ad0a0', swing: 0.6,
-    sub: { zh: '英倫車庫屋台', ja: 'UK Garage Yatai', en: 'UK Garage Yatai' }, genre: { zh: 'UK Garage（2-step）', ja: 'UKガラージ', en: '2-Step Garage' },
+    sub: { zh: '英倫車庫屋台', ja: 'UK Garage Yatai', en: 'UK Garage Yatai', ko: 'UK 개러지 포장마차' }, genre: { zh: 'UK Garage（2-step）', ja: 'UKガラージ', en: '2-Step Garage' },
     sections: secs(3, 110, 142), patterns: PT.OFF,
     arrange(ms, add) {
       const G = GARAGE, mi = ms.idx % 8, ch = G.CHORD[mi], r = G.ROOT[mi], rest = ms.kind === 'rest';
@@ -2166,7 +2166,7 @@ SONGS.push(
   },
   {
     id: 'house', title: '夜市ハウス', stars: 3, color: '#4ab0ff',
-    sub: { zh: '夜市浩室', ja: 'Night Market House', en: 'Night Market House' }, genre: { zh: 'House・鋼琴和弦', ja: 'ハウス', en: 'Piano House' },
+    sub: { zh: '夜市浩室', ja: 'Night Market House', en: 'Night Market House', ko: '야시장 하우스' }, genre: { zh: 'House・鋼琴和弦', ja: 'ハウス', en: 'Piano House' },
     sections: secs(3, 116, 148), patterns: PT.OFF,
     arrange(ms, add) {
       const H = HOUSE, mi = ms.idx % 8, ch = H.CHORD[mi], r = H.ROOT[mi], rest = ms.kind === 'rest';
@@ -2182,7 +2182,7 @@ SONGS.push(
   },
   {
     id: 'glitch', title: 'グリッチホップ屋台', stars: 3, color: '#3ae0e0', swing: 0.58,
-    sub: { zh: '故障嘻哈屋台', ja: 'Glitch Hop Yatai', en: 'Glitch Hop Yatai' }, genre: { zh: 'Glitch hop（故障電子）', ja: 'グリッチホップ', en: 'Glitch Hop' },
+    sub: { zh: '故障嘻哈屋台', ja: 'Glitch Hop Yatai', en: 'Glitch Hop Yatai', ko: '글리치 합 포장마차' }, genre: { zh: 'Glitch hop（故障電子）', ja: 'グリッチホップ', en: 'Glitch Hop' },
     sections: secs(3, 110, 146), patterns: PT.SYNC,
     arrange(ms, add) {
       const G = GLITCH, mi = ms.idx % 8, r = G.ROOT[mi], rest = ms.kind === 'rest';
@@ -2198,7 +2198,7 @@ SONGS.push(
   },
   {
     id: 'mathrock', title: 'マスロック鉄板', stars: 4, color: '#f0a040',
-    sub: { zh: '數學搖滾鐵板', ja: 'Math Rock Teppan', en: 'Math Rock Teppan' }, genre: { zh: '數學搖滾・點弦吉他', ja: 'マスロック', en: 'Math Rock Tapping' },
+    sub: { zh: '數學搖滾鐵板', ja: 'Math Rock Teppan', en: 'Math Rock Teppan', ko: '매스록 철판' }, genre: { zh: '數學搖滾・點弦吉他', ja: 'マスロック', en: 'Math Rock Tapping' },
     sections: secs(4, 124, 160), patterns: PT.SYNC,
     arrange(ms, add) {
       const M = MATHROCK, mi = ms.idx % 8, ch = M.CHORD[mi], r = M.ROOT[mi], rest = ms.kind === 'rest';
@@ -2213,7 +2213,7 @@ SONGS.push(
   },
   {
     id: 'moombah', title: 'ムーンバートン屋台', stars: 4, color: '#ff6fae',
-    sub: { zh: '慕巴頓屋台', ja: 'Moombahton Yatai', en: 'Moombahton Yatai' }, genre: { zh: 'Moombahton（拉丁電子・dembow）', ja: 'ムーンバートン', en: 'Moombahton' },
+    sub: { zh: '慕巴頓屋台', ja: 'Moombahton Yatai', en: 'Moombahton Yatai', ko: '뭄바톤 포장마차' }, genre: { zh: 'Moombahton（拉丁電子・dembow）', ja: 'ムーンバートン', en: 'Moombahton' },
     sections: secs(4, 108, 146), patterns: PT.SYNC,
     arrange(ms, add) {
       const M = MOOMBAH, mi = ms.idx % 8, ch = M.CHORD[mi], r = M.ROOT[mi], rest = ms.kind === 'rest';
@@ -2242,7 +2242,7 @@ SONGS.push(
   },
   {
     id: 'jersey', title: 'ジャージークラブ屋台', stars: 5, color: '#ffa03a',
-    sub: { zh: '澤西俱樂部屋台', ja: 'Jersey Club Yatai', en: 'Jersey Club Yatai' }, genre: { zh: 'Jersey club（三連發大鼓）', ja: 'ジャージークラブ', en: 'Jersey Club' },
+    sub: { zh: '澤西俱樂部屋台', ja: 'Jersey Club Yatai', en: 'Jersey Club Yatai', ko: '저지 클럽 포장마차' }, genre: { zh: 'Jersey club（三連發大鼓）', ja: 'ジャージークラブ', en: 'Jersey Club' },
     sections: secs(5, 140, 172), patterns: PT.SYNC,
     arrange(ms, add) {
       const J = JERSEY, mi = ms.idx % 8, ch = J.CHORD[mi], r = J.ROOT[mi], rest = ms.kind === 'rest';
@@ -2288,7 +2288,7 @@ const HYPERPOP = {   // E 大調（E－C#m－A－B）；甜亮的高音、大跳
 SONGS.push(
   {
     id: 'newjack', title: 'ニュージャック鉄板', stars: 3, color: '#ff8a4a', swing: 0.6,
-    sub: { zh: '新傑克搖擺鐵板', ja: 'New Jack Teppan', en: 'New Jack Teppan' }, genre: { zh: 'New Jack Swing（搖擺節奏藍調）', ja: 'ニュージャックスウィング', en: 'New Jack Swing' },
+    sub: { zh: '新傑克搖擺鐵板', ja: 'New Jack Teppan', en: 'New Jack Teppan', ko: '뉴잭 철판' }, genre: { zh: 'New Jack Swing（搖擺節奏藍調）', ja: 'ニュージャックスウィング', en: 'New Jack Swing' },
     sections: secs(3, 108, 142), patterns: PT.SYNC,
     arrange(ms, add) {
       const N = NEWJACK, mi = ms.idx % 8, ch = N.CHORD[mi], r = N.ROOT[mi], rest = ms.kind === 'rest';
@@ -2305,7 +2305,7 @@ SONGS.push(
   },
   {
     id: 'dixie', title: 'ディキシー屋台', stars: 4, color: '#f0c040', swing: 0.62,
-    sub: { zh: '迪克西蘭屋台', ja: 'Dixieland Yatai', en: 'Dixieland Yatai' }, genre: { zh: '1920 年代熱爵士（Dixieland）', ja: 'ディキシーランド', en: 'Dixieland Hot Jazz' },
+    sub: { zh: '迪克西蘭屋台', ja: 'Dixieland Yatai', en: 'Dixieland Yatai', ko: '딕실랜드 포장마차' }, genre: { zh: '1920 年代熱爵士（Dixieland）', ja: 'ディキシーランド', en: 'Dixieland Hot Jazz' },
     sections: secs(4, 124, 160), patterns: PT.SYNC,
     arrange(ms, add) {
       const X = DIXIE, mi = ms.idx % 8, ch = X.CHORD[mi], r = X.ROOT[mi], rest = ms.kind === 'rest';
@@ -2324,7 +2324,7 @@ SONGS.push(
   },
   {
     id: 'bounce', title: 'バウンス鉄板', stars: 3, color: '#3ad0ff',
-    sub: { zh: '彈跳鐵板', ja: 'Bounce Teppan', en: 'Bounce Teppan' }, genre: { zh: 'Melbourne Bounce（彈跳電音）', ja: 'メルボルン・バウンス', en: 'Melbourne Bounce' },
+    sub: { zh: '彈跳鐵板', ja: 'Bounce Teppan', en: 'Bounce Teppan', ko: '바운스 철판' }, genre: { zh: 'Melbourne Bounce（彈跳電音）', ja: 'メルボルン・バウンス', en: 'Melbourne Bounce' },
     sections: secs(3, 118, 148), patterns: PT.OFF,
     arrange(ms, add) {
       const B = BOUNCE, mi = ms.idx % 8, ch = B.CHORD[mi], r = B.ROOT[mi], rest = ms.kind === 'rest';
@@ -2340,7 +2340,7 @@ SONGS.push(
   },
   {
     id: 'hyperpop', title: 'ハイパーポップ屋台', stars: 5, color: '#ff7ae0',
-    sub: { zh: '超流行屋台', ja: 'Hyperpop Yatai', en: 'Hyperpop Yatai' }, genre: { zh: 'Hyperpop（甜亮電子流行）', ja: 'ハイパーポップ', en: 'Hyperpop' },
+    sub: { zh: '超流行屋台', ja: 'Hyperpop Yatai', en: 'Hyperpop Yatai', ko: '하이퍼팝 포장마차' }, genre: { zh: 'Hyperpop（甜亮電子流行）', ja: 'ハイパーポップ', en: 'Hyperpop' },
     sections: secs(5, 148, 178), patterns: PT.SYNC,
     arrange(ms, add) {
       const H = HYPERPOP, mi = ms.idx % 8, ch = H.CHORD[mi], r = H.ROOT[mi], rest = ms.kind === 'rest';
@@ -2390,7 +2390,7 @@ const BREAKS = {   // F 小調：碎拍鼓組＋酸性低音（16 分音符、�
 SONGS.push(
   {
     id: 'bitboss', title: 'ピコピコ・ボスラッシュ', stars: 5, color: '#5ad6a0',
-    sub: { zh: '像素魔王連戰', ja: 'Pico Pico Boss Rush', en: 'Pixel Boss Rush' }, genre: { zh: '8 位元魔王戰', ja: 'チップチューン・ボス戦', en: 'Chiptune Boss Battle' },
+    sub: { zh: '像素魔王連戰', ja: 'Pico Pico Boss Rush', en: 'Pixel Boss Rush', ko: '픽셀 보스 러시' }, genre: { zh: '8 位元魔王戰', ja: 'チップチューン・ボス戦', en: 'Chiptune Boss Battle' },
     sections: secs(5, 150, 184), patterns: PT.RUN,
     arrange(ms, add) {
       const P = BITBOSS, mi = ms.idx % 8, ch = P.CHORD[mi], r = P.ROOT[mi], rest = ms.kind === 'rest';
@@ -2412,7 +2412,7 @@ SONGS.push(
   },
   {
     id: 'gtrock', title: '夜空ダンスロック', stars: 4, color: '#4a8aff',
-    sub: { zh: '夜空舞曲搖滾', ja: 'Night Sky Dance Rock', en: 'Night Sky Dance Rock' }, genre: { zh: '舞曲搖滾', ja: 'ダンスロック', en: 'Dance Rock' },
+    sub: { zh: '夜空舞曲搖滾', ja: 'Night Sky Dance Rock', en: 'Night Sky Dance Rock', ko: '밤하늘 댄스 록' }, genre: { zh: '舞曲搖滾', ja: 'ダンスロック', en: 'Dance Rock' },
     sections: secs(4, 128, 160), patterns: PT.BACK,
     arrange(ms, add) {
       const G = GTROCK, mi = ms.idx % 8, ch = G.CHORD[mi], r = G.ROOT[mi], rest = ms.kind === 'rest', chorus = ms.sec >= 2;
@@ -2436,7 +2436,7 @@ SONGS.push(
   },
   {
     id: 'animepop', title: 'キラキラ★ステージ', stars: 3, color: '#ff7ad0',
-    sub: { zh: '閃亮亮★舞台', ja: 'Kira Kira Stage', en: 'Sparkle Stage' }, genre: { zh: '動漫流行（鋼琴 J-POP）', ja: 'アニメ・J-POP', en: 'Anime J-Pop' },
+    sub: { zh: '閃亮亮★舞台', ja: 'Kira Kira Stage', en: 'Sparkle Stage', ko: '반짝반짝★스테이지' }, genre: { zh: '動漫流行（鋼琴 J-POP）', ja: 'アニメ・J-POP', en: 'Anime J-Pop' },
     sections: secs(3, 118, 152), patterns: PT.SYNC,
     arrange(ms, add) {
       const N = ANIMEPOP, mi = ms.idx % 8, ch = N.CHORD[mi], r = N.ROOT[mi], rest = ms.kind === 'rest';
@@ -2458,7 +2458,7 @@ SONGS.push(
   },
   {
     id: 'kawaii', title: 'きゅんきゅん鉄板メタル', stars: 4, color: '#ff4a9a',
-    sub: { zh: '心動鐵板金屬', ja: 'Kyun Kyun Teppan Metal', en: 'Kyun Kyun Teppan Metal' }, genre: { zh: '可愛金屬（日式金屬搖滾）', ja: 'カワイイメタル', en: 'Kawaii Metal' },
+    sub: { zh: '心動鐵板金屬', ja: 'Kyun Kyun Teppan Metal', en: 'Kyun Kyun Teppan Metal', ko: '두근두근 철판 메탈' }, genre: { zh: '可愛金屬（日式金屬搖滾）', ja: 'カワイイメタル', en: 'Kawaii Metal' },
     sections: secs(4, 130, 160), patterns: PT.SYNC,
     arrange(ms, add) {
       const K = KAWAII, mi = ms.idx % 8, r = K.ROOT[mi], rest = ms.kind === 'rest', heavy = ms.sec >= 2;
@@ -2481,7 +2481,7 @@ SONGS.push(
   },
   {
     id: 'breaks', title: 'ブレイクビーツ鉄板', stars: 3, color: '#c8ff3a',
-    sub: { zh: '碎拍鐵板', ja: 'Breakbeat Teppan', en: 'Breakbeat Teppan' }, genre: { zh: 'Big Beat 碎拍（酸性低音）', ja: 'ブレイクビーツ', en: 'Big Beat Breaks' },
+    sub: { zh: '碎拍鐵板', ja: 'Breakbeat Teppan', en: 'Breakbeat Teppan', ko: '브레이크비트 철판' }, genre: { zh: 'Big Beat 碎拍（酸性低音）', ja: 'ブレイクビーツ', en: 'Big Beat Breaks' },
     sections: secs(3, 120, 150), patterns: PT.OFF,
     arrange(ms, add) {
       const B = BREAKS, mi = ms.idx % 8, r = B.ROOT[mi], rest = ms.kind === 'rest';
@@ -2540,9 +2540,9 @@ const DIFFS = [
   { key: 'hard', name: '困難', color: '#c8321e', card: '#d9a196', delta: 1, suffix: '_hard' },
 ];
 const curDiff = () => clamp(Save.data.diff === undefined ? 1 : Save.data.diff, 0, DIFFS.length - 1);
-// 歌名與小標（依語言；選曲、遊戲中、結算、分享圖共用）：中文 = 中文歌名＋英文小標；日文 = 原本的日文歌名＋日文小標；英文 = 英文歌名＋英文曲風
-const songName = song => !song.sub ? song.title : Save.data.lang === 'zh' ? song.sub.zh : Save.data.lang === 'en' ? song.sub.en : song.title;
-const songSub = song => Save.data.lang === 'zh' ? song.sub.en + '・' + song.genre.en : Save.data.lang === 'en' ? song.genre.en : song.sub.ja + '・' + song.genre.ja;
+// 歌名與小標（依語言；選曲、遊戲中、結算、分享圖共用）：中文 = 中文歌名＋英文小標；日文 = 原本的日文歌名＋日文小標；英文 = 英文歌名＋英文曲風；韓文 = 韓文歌名＋英文小標（同中文）
+const songName = song => !song.sub ? song.title : Save.data.lang === 'zh' ? song.sub.zh : Save.data.lang === 'en' ? song.sub.en : Save.data.lang === 'ko' ? (song.sub.ko || song.sub.en) : song.title;
+const songSub = song => Save.data.lang === 'zh' || Save.data.lang === 'ko' ? song.sub.en + '・' + song.genre.en : Save.data.lang === 'en' ? song.genre.en : song.sub.ja + '・' + song.genre.ja;
 const recId = (song, d = curDiff()) => song.id + DIFFS[d].suffix;
 // 5 星歌選困難 = 6 星（第 6 顆是紅的）；1 星歌選簡單 = 0 星（空心，跟普通的 1 星分得出來）
 const diffStars = (song, d = curDiff()) => clamp(song.stars + DIFFS[d].delta, 0, 6);

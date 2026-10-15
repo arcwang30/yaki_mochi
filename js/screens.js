@@ -1718,15 +1718,16 @@ Screens.settings = {
     if (UI.tapIn(X, y, 620, h)) { this.sel = i; flip(); }
     if (this.sel === i && (Input.was('left') || Input.was('right') || Input.was('confirm'))) flip();
   },
-  // 三選一的列（語言、解析度）：opts = [[值, 標籤]]；← → 循環切換
+  // 多選一的列（語言 4 個、解析度 3 個）：opts = [[值, 標籤]]；← → 循環切換
   choice(k, label, opts, cur, set) {
     const [X, y, i] = this.panel(k, 114);
     UI.text(label, X + 34, y + 28, 30, { align: 'left' });
+    const bw = (572 - (opts.length - 1) * 12) / opts.length;   // 選項平均分配寬度（3 個約 183、4 個約 134）
     opts.forEach(([v, text], j) => {
-      const x = X + 24 + j * 196, on = cur === v;
-      UI.panel(x, y + 52, 180, 50, 25, on ? '#e8502a' : 'rgba(255,255,255,.16)', on ? '#fff' : 'rgba(255,255,255,.4)');
-      UI.text(text, x + 90, y + 77, 24, { fill: '#fff', stroke: on ? '#5a0f05' : null, raw: true, maxW: 164 });
-      if (UI.tapIn(x, y + 52, 180, 50)) { this.sel = i; set(v); }
+      const x = X + 24 + j * (bw + 12), on = cur === v;
+      UI.panel(x, y + 52, bw, 50, 25, on ? '#e8502a' : 'rgba(255,255,255,.16)', on ? '#fff' : 'rgba(255,255,255,.4)');
+      UI.text(text, x + bw / 2, y + 77, 24, { fill: '#fff', stroke: on ? '#5a0f05' : null, raw: true, maxW: bw - 16 });
+      if (UI.tapIn(x, y + 52, bw, 50)) { this.sel = i; set(v); }
     });
     if (this.sel === i) {
       const j = Math.max(0, opts.findIndex(o => o[0] === cur)), n = opts.length;
@@ -2411,7 +2412,7 @@ Screens.result = {
     ctx.fillStyle = 'rgba(255,255,255,.15)'; rrect(bx, by, bw, 14, 7); ctx.fill();
     const f = b.need ? b.cur / b.need : 1; if (f > 0) { ctx.fillStyle = '#7ae07a'; rrect(bx, by, Math.max(14, bw * f), 14, 7); ctx.fill(); }
     if (b.need) UI.text(b.cur + ' / ' + b.need, px + pw - 20, by + 30, 14, { align: 'right', fill: '#9fb0e0', stroke: null, raw: true });
-    const sep = Save.data.lang === 'en' ? ', ' : '、', names = l => l.map(g => tr(g.it.name)).join(sep);
+    const sep = Save.data.lang === 'en' || Save.data.lang === 'ko' ? ', ' : '、', names = l => l.map(g => tr(g.it.name)).join(sep);
     const line = S.fresh.length && k >= 1 ? tr('開放：{0}', names(S.fresh)) : !b.need ? tr('已達最高等級') : Stall.nextItems(b.lv).length ? tr('下一級開放：{0}', names(Stall.nextItems(b.lv))) : '';
     if (line) UI.text(line, bx, py + ph - 26, 18, { align: 'left', fill: S.fresh.length && k >= 1 ? '#ffd23f' : '#cfd8ff', stroke: null, raw: true, maxW: bw });   // 一行（太長就縮小）
   },

@@ -28,7 +28,7 @@
 
   Input.init(cv);
   rotate.textContent = tr('請將手機直立握持');
-  document.documentElement.lang = { zh: 'zh-Hant', ja: 'ja', en: 'en' }[Save.data.lang] || 'zh-Hant';
+  document.documentElement.lang = { zh: 'zh-Hant', ja: 'ja', en: 'en', ko: 'ko' }[Save.data.lang] || 'zh-Hant';
 
   // 瀏覽器在使用者操作後才允許播放聲音：第一次點擊 / 按鍵時解鎖（開場會先無聲播放）
   const unlock = () => Sound.unlock();
@@ -51,7 +51,7 @@
   setInterval(() => { if (scheduling()) Game.schedule(); Sound.tick(); }, 25);
 
   App.start('logo');   // 團隊 LOGO 兼載入畫面（js/screens.js）
-  const fonts = Promise.race([document.fonts.load('40px "Mochiy Pop One"'), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
+  const fonts = Promise.race([Promise.all([document.fonts.load('40px "Mochiy Pop One"'), document.fonts.load('40px "Jua"')]), new Promise(r => setTimeout(r, 2000))]).catch(() => {});
   Promise.all([Assets.load(), fonts]).then(() => { Screens.logo.ready = true; Sides.draw(); });   // 載入完成：LOGO 停留夠久就接標題
 
   // 遊戲中每 4 秒看一次平均幀間隔：明顯跟不上目標幀率（> 1.3 倍）就把解析度降 15%（不低於 1 倍），避免越玩越卡

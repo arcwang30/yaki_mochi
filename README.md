@@ -37,7 +37,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `js/save.js` | 設定與成績（localStorage；HISCORE = 自己的最高分；存檔碼備份） |
 | `js/native.js` | iOS App 版的原生功能：震動、分享選單、存檔備份檔（網頁版不使用） |
 | `js/pwa.js`, `sw.js`, `manifest.json` | PWA：Service Worker（離線快取）、安裝提示、APP 設定 |
-| `js/i18n.js` | 中文／日本語／English 翻譯表（以中文原文為鍵，新增文字時在此補翻譯） |
+| `js/i18n.js` | 中文／日本語／English／한국어 翻譯表（以中文原文為鍵，新增文字時在此補翻譯） |
 | `assets/images/` | 遊戲用圖（已去背、裁切、壓縮） |
 | `assets/icons/` | APP 圖示（192／512／maskable／Apple／favicon） |
 | `assets/audio/` | 語音（開場「いらっしゃいませ！」、選曲「select song」）；音量與起始位置在 `js/audio.js` 的 `VOICES`。遊戲實際讀的是內嵌版 `js/voices.js`（file:// 開啟的桌面版也能播），換了音檔後執行 `tools/embed_voices.ps1` 重新產生 |
