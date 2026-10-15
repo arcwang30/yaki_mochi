@@ -1157,27 +1157,25 @@ Screens.songs = {
       UI.glow(x, y, w, h, 16, 'rgba(255,170,60,.95)', blur(26), { fill: 'rgba(255,170,60,.6)' });   // 光暈貼圖（不每幀模糊）
     }
     rrect(x + 4, y + 7, w, h, 16); ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fill();
-    UI.wood(x, y, w, h, { r: 16, seed: 'song' + i, light: on });
-    // 木板依難度換木頭色（簡單 = 原木、普通 = 胡桃木、困難 = 紅木）
-    const D = DIFFS[curDiff()];
-    if (D.card) { ctx.save(); rrect(x, y, w, h, 16); ctx.clip(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = D.card; ctx.fillRect(x, y, w, h); ctx.restore(); }
+    const D = DIFFS[curDiff()], T = CARD_TONES[D.key];   // 木板依難度換配色（見 songs.js 的 CARD_TONES）
+    UI.wood(x, y, w, h, { r: 16, seed: 'song' + i, light: on, tone: T });
     // 編號圓牌（樂曲代表色）
     const bx = x + 54, by = y + h / 2;
     ctx.fillStyle = song.color; ctx.beginPath(); ctx.arc(bx, by, 34, 0, 7); ctx.fill();
     ctx.lineWidth = 4; ctx.strokeStyle = '#3e2210'; ctx.stroke();
     UI.text(String(song.no), bx, by + 2, 34, { fill: '#fff', stroke: '#3e2210', sw: 6, raw: true });   // 這一集裡的編號 1～10
-    const ink = on ? '#9a1a08' : '#3a1d0a', soft = on ? '#8a3a10' : '#6a3c18';
+    const ink = on ? T.inkOn : T.ink, soft = on ? T.softOn : T.soft;
     UI.text(songName(song), x + 104, y + 40, 32, { align: 'left', fill: ink, stroke: null, raw: true, maxW: w - 320 });
     UI.text(songSub(song), x + 104, y + 80, 18, { align: 'left', fill: soft, stroke: null, raw: true, maxW: w - 340 });
     const S = song.sections;
     UI.text(`BPM ${S[0].bpm}–${S[S.length - 1].bpm}`, x + 104, y + 116, 17, { align: 'left', fill: soft, stroke: null, raw: true });
     if (on && this.previewIdx === i) {
       const b = Math.abs(Math.sin(Game.time * 5)) * 4;
-      const hot = D.key === 'hard' ? '#5a0a00' : '#c43a1a';   // 困難的紅木板上改用深色，才看得清楚
+      const hot = T.hot;
       UI.text('♪', x + 262, y + 114 - b, 20, { fill: hot, stroke: null, raw: true });
       UI.text(tr('試聽中'), x + 280, y + 116, 16, { align: 'left', fill: hot, stroke: null, raw: true });
     }
-    drawStars(x + w - 118, y + 40, diffStars(song), 24);   // 目前難度的星級
+    drawStars(x + w - 112, y + 40, diffStars(song), 29);   // 目前難度的星級
     drawSongMedal(recId(song), x + w - 196, y + 84, 22);   // 曲目獎章（目前難度：最佳評價＋全連擊／全 GREAT）
     UI.text('HISCORE', x + w - 24, y + 84, 14, { align: 'right', fill: soft, stroke: null, raw: true });
     UI.text(pad(Save.best(recId(song)), 7), x + w - 24, y + 114, 24, { align: 'right', fill: ink, stroke: null, raw: true });

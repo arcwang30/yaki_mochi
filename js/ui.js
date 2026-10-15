@@ -69,7 +69,7 @@ const UI = {
   woodCache: new Map(),
   wood(x, y, w, h, o = {}) {
     const r = o.r === undefined ? 10 : o.r, P = 3;
-    const key = [Math.round(w), Math.round(h), r, o.seed || 'wood', o.light ? 1 : 0, o.lacquer ? 1 : 0, RES].join('|');
+    const key = [Math.round(w), Math.round(h), r, o.seed || 'wood', o.light ? 1 : 0, o.lacquer ? 1 : 0, o.tone ? o.tone.name : '', RES].join('|');
     let c = this.woodCache.get(key);
     if (!c) {
       if (this.woodCache.size > 120) this.woodCache.clear();
@@ -87,20 +87,20 @@ const UI = {
     g.save();
     path();
     const gr = g.createLinearGradient(0, y, 0, y + h);
-    const cols = o.lacquer ? (o.light ? ['#ff6b4a', '#c42a14'] : ['#e04a30', '#9e1f0e'])
+    const cols = o.tone ? (o.light ? o.tone.cl : o.tone.c) : o.lacquer ? (o.light ? ['#ff6b4a', '#c42a14'] : ['#e04a30', '#9e1f0e'])
       : (o.light ? ['#f3cf98', '#c88d50'] : ['#d6a268', '#9a6332']);
     gr.addColorStop(0, cols[0]); gr.addColorStop(1, cols[1]);
     g.fillStyle = gr; g.fill();
     g.clip();
     if (!o.lacquer) {
-      g.strokeStyle = 'rgba(90,45,15,.24)'; g.lineWidth = 1.6;
+      g.strokeStyle = o.tone ? o.tone.grain : 'rgba(90,45,15,.24)'; g.lineWidth = 1.6;
       for (let k = 0; k < 7; k++) {
         const yy = y + 4 + R() * (h - 8);
         g.beginPath(); g.moveTo(x, yy);
         g.bezierCurveTo(x + w * 0.3, yy + (R() - 0.5) * 9, x + w * 0.65, yy + (R() - 0.5) * 9, x + w, yy + (R() - 0.5) * 6);
         g.stroke();
       }
-      g.fillStyle = 'rgba(90,45,15,.22)';
+      g.fillStyle = o.tone ? o.tone.grain : 'rgba(90,45,15,.22)';
       g.beginPath(); g.ellipse(x + w * (0.2 + R() * 0.6), y + h * (0.3 + R() * 0.4), 7, 3, 0, 0, 7); g.fill();
     } else {
       g.fillStyle = 'rgba(255,255,255,.22)'; g.fillRect(x, y + 4, w, h * 0.22);   // 漆的光澤
