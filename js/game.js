@@ -318,7 +318,7 @@ const Game = {
       chart: tut ? tutChart(this.song, t0) : buildChart(this.song, t0, this.diff), tut: tut ? { pat: null, sec: 0 } : null,
       off: 0, paused: false, pauseAt: 0, resumeT: 0, ended: false,
       score: 0, combo: 0, maxCombo: 0, grades: { GREAT: 0, NICE: 0, GOOD: 0, BAD: 0 },
-      stock: { noodles: 0, cabbage: 0, crepe: 0, bacon: 0 }, oko: 0, errs: [],
+      stock: { noodles: 0, cabbage: 0, crepe: 0, bacon: 0 }, oko: 0, errs: [], raw: [],
       bump: {}, okoAnims: [], gradeFx: null, pressT: -9,
     };
     Object.assign(Sound.sayState, { end: 0, last: {}, src: null, any: -99 });
@@ -453,6 +453,7 @@ const Game = {
     s.pressT = this.time;
     const delay = Math.max(0, (performance.now() - tMs) / 1000);
     const jt = this.clock() - delay - Sound.latency() - Save.data.offset / 1000;
+    this.measure(jt);
     let best = null, bd = 1e9;
     for (const n of s.chart.notes) {
       if (n.state !== 'fly') continue;
@@ -464,6 +465,21 @@ const Game = {
     const grade = bd <= WIN.GREAT ? 'GREAT' : bd <= WIN.NICE ? 'NICE' : bd <= WIN.GOOD ? 'GOOD' : 'BAD';
     s.errs.push(jt - best.t);
     this.judge(best, grade);
+  },
+  // 時機量測（給新手教學的自動校正、結算畫面的修正建議用）：每一下都記「離最近的食材差多少秒」。
+  // 不受判定範圍限制 —— 藍牙耳機常晚 150～300ms，超過 BAD（±180ms）會被當成揮空，一般的誤差紀錄量不到。
+  // 只量「前後 0.5 秒內沒有別的食材」的那種（密集處分不出按的是哪一個）
+  measure(jt) {
+    const s = this.s, ns = s.chart.notes;
+    let i = -1, nd = 1e9;
+    for (let k = 0; k < ns.length; k++) {
+      const d = jt - ns[k].t;
+      if (Math.abs(d) < Math.abs(nd)) { nd = d; i = k; }
+      if (ns[k].t > jt + 1) break;
+    }
+    if (i < 0 || Math.abs(nd) > 0.4) return;
+    const t = ns[i].t, prev = i > 0 ? t - ns[i - 1].t : 9, next = i < ns.length - 1 ? ns[i + 1].t - t : 9;
+    if (Math.min(prev, next) >= 0.5) s.raw.push(nd);
   },
   judge(n, grade) {
     const s = this.s;
@@ -523,6 +539,7 @@ const Game = {
   finish() {
     const s = this.s;
     s.ended = true;
+    this.timingTip = timingFix(s.raw, 12, 0.6);   // 結算畫面：時機穩定偏晚／偏早時建議一鍵修正（毫秒；0 = 不用）
     const e = s.errs, avg = e.length ? e.reduce((a, b) => a + b, 0) / e.length : 0;
     const ratio = s.score / maxScoreFor(s.chart.notes.length);
     this.result = { song: this.song.id, score: s.score, oko: s.oko, grades: { ...s.grades }, maxCombo: s.maxCombo, avgErr: Math.round(avg * 1000), hits: e.length,
@@ -854,4 +871,23 @@ function drawGradeText(g, x, y, s = 1, a = 1, size = 86) {
   ctx.strokeStyle = c3; ctx.lineWidth = size * 0.15; ctx.strokeText(text, 0, 0);
   const gr = ctx.createLinearGradient(0, -size * 0.47, 0, size * 0.47); gr.addColorStop(0, c1); gr.addColorStop(0.55, c2); gr.addColorStop(1, c3);
   ctx.fillStyle = gr; ctx.fillText(text, 0, 0); ctx.restore();
+}
+
+// ---------- 時機校正的分析（新手教學自動校正、結算畫面的修正建議共用） ----------
+// errs = 每一下離食材差幾秒（Game.measure）；至少 minN 下、中位數偏 60ms 以上、
+// 而且 fit 比例以上的點落在中位數 ±70ms 內（穩定地偏，不是亂按）才建議。回傳要加到判定校正的毫秒數（10ms 為單位；0 = 不用改）
+function timingFix(errs, minN, fit) {
+  if (!errs || errs.length < minN) return 0;
+  const s = errs.slice().sort((a, b) => a - b), med = s[s.length >> 1];
+  if (Math.abs(med) < 0.06) return 0;
+  const near = errs.filter(e => Math.abs(e - med) <= 0.07).length / errs.length;
+  if (near < fit) return 0;
+  const cur = Save.data.offset, next = clamp(cur + Math.round(med * 100) * 10, -200, 400);   // 和設定畫面同樣的範圍
+  return next - cur;
+}
+// 套用：判定校正加上 ms（回傳實際加了多少）
+function applyTimingFix(ms) {
+  const cur = Save.data.offset;
+  Save.data.offset = clamp(cur + ms, -200, 400); Save.store();
+  return Save.data.offset - cur;
 }

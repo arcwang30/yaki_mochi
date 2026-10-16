@@ -1295,6 +1295,7 @@ Screens.tutorial = {
     Sound.play('confirm'); Sound.stopBgm();
     Game.newRun(this.song(), true);
     this.phase = 'play'; this.step = 0; this.clearT = -1; this.sel = 0;
+    this.calFrom = 0; this.calN = 0; this.calMs = 0; this.calT = -9;
     this.setStep(0);
     Input.onHit = (x, y, t) => {
       if (x !== undefined && Math.hypot(x - PAUSE_BTN.x, y - PAUSE_BTN.y) < PAUSE_BTN.r + 16) { this.pauseReq = true; return; }
@@ -1329,12 +1330,35 @@ Screens.tutorial = {
     if (this.phase === 'play') {
       if (!s.paused) this.advance();
       this.drawGuide();
-      if (!s.paused) this.drawCard();
+      if (!s.paused) { this.drawCard(); this.drawCalNote(); }
       if (s.paused) this.pauseMenu();
     } else this.doneCard(dt);
   },
+  // 自動校正：第一次玩常戴藍牙耳機，聲音晚 150～300ms → 一直判 BAD、甚至算揮空，教學過不去。
+  // 每量到 5 下分析一次（Game.measure 的時機紀錄）：穩定地偏晚／偏早 60ms 以上就直接修正判定校正（最多 2 次），畫面上告訴玩家
+  autoCal() {
+    const s = Game.s, r = s.raw.slice(this.calFrom);
+    if (this.calN >= 2 || r.length < 5) return;
+    const ms = timingFix(r, 5, 0.7);
+    if (ms) {
+      this.calMs += applyTimingFix(ms); this.calN++; this.calFrom = s.raw.length; this.calT = Game.time;
+      Sound.play('confirm');
+    } else if (r.length >= 10) this.calFrom = s.raw.length - 5;   // 還不穩定：只看最近 5 下
+  },
+  drawCalNote() {
+    const k = Game.time - this.calT;
+    if (k > 4) return;
+    const a = clamp(Math.min(k / 0.2, (4 - k) / 0.4), 0, 1), y = lay(196, 150);
+    const text = tr('偵測到聲音延遲（可能是藍牙耳機），已自動調整時機 {0}ms', (this.calMs > 0 ? '+' : '') + this.calMs);
+    ctx.save(); ctx.globalAlpha *= a;
+    ctx.font = `22px ${FONT}`; const w = Math.min(W - 40, ctx.measureText(text).width + 60);
+    UI.panel(W / 2 - w / 2, y - 26, w, 52, 26, 'rgba(20,90,50,.94)', '#8dff8a');
+    UI.text(text, W / 2, y + 1, 22, { fill: '#fff', stroke: null, raw: true, maxW: w - 30 });
+    ctx.restore();
+  },
   // 達成目標 → 卡片顯示「完成！」1.8 秒（這段只有伴奏）→ 下一步；最後一步完成且食材都處理完 → 完成卡片
   advance() {
+    this.autoCal();
     const s = Game.s, last = this.step === this.STEPS.length - 1;
     if (this.clearT < 0) {
       if (this.progress() >= this.STEPS[this.step].goal) {
@@ -1453,6 +1477,8 @@ Screens.tutorial = {
       ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(x + 46, y + 92 + i * 64, 7, 0, 7); ctx.fill();
       UI.wrap(t, x + 66, y + 92 + i * 64, w - 100, 26, 21, { fill: '#fff' });
     });
+    // 教學中自動校正過：卡片下緣註明（之後可以到設定改）
+    if (this.calMs) UI.text(tr('判定時機已自動調整 {0}ms（可在「設定 → 判定校正」修改）', (this.calMs > 0 ? '+' : '') + this.calMs), W / 2, y + 350, 18, { fill: '#8dff8a', raw: true, sw: 5, maxW: w + 40 });
     ctx.restore();
     if (this.doneT < 0.5) return;
     UI.begin(this);
@@ -2425,6 +2451,27 @@ Screens.result = {
     SND.fanfare(A.ctx.currentTime + 0.2);
     const o = this.r.oko;
     chef.queue = []; chef.idlePose = o >= 8 ? 'cheer' : o >= 3 ? 'nice' : 'bad';
+    // 時機修正建議（Game.finish 算好的毫秒數）：玩家按過「不用了」之後，接下來 3 局不再問
+    this.tip = Game.timingTip || 0; this.tipSel = 0; this.tipMsg = null;
+    if (this.tip && Save.data.tipSkip > 0) { Save.data.tipSkip--; Save.store(); this.tip = 0; }
+  },
+  // 結算畫面的修正建議（成績蓋章後跳出）：「自動修正」直接加到判定校正；「不用了」→ 3 局內不再問
+  drawTip() {
+    const ms = this.tip, late = ms > 0, w = lay(620, 720), h = 300, x = (W - w) / 2, y = (H - h) / 2;
+    UI.dim(0.55);
+    UI.panel(x, y, w, h, 26, 'rgba(16,22,52,.97)', '#ffd23f');
+    UI.text(late ? '按的時機好像都晚了一點？' : '按的時機好像都早了一點？', W / 2, y + 52, 30, { fill: '#ffd23f', sw: 6, maxW: w - 60 });
+    const body = tr('這一局平均{0}了 {1}ms。', tr(late ? '晚' : '早'), Math.abs(ms)) + (late ? tr('戴藍牙耳機時聲音會延遲，這很常見。') : '') + tr('要自動修正判定時機嗎？');
+    UI.wrap(body, x + 40, y + 104, w - 80, 32, 22, { fill: '#fff', raw: true });
+    const fix = () => {
+      const d = applyTimingFix(ms); this.tip = 0; Sound.play('confirm');
+      this.tipMsg = { text: tr('判定校正已調整 {0}ms（可在「設定 → 判定校正」修改）', (d > 0 ? '+' : '') + d), t: Game.time };
+    };
+    const skip = () => { this.tip = 0; Save.data.tipSkip = 3; Save.store(); Sound.play('back'); };
+    const q = { sel: this.tipSel, n: 0 }, bw = (w - 100) / 2, by = y + h - 96;
+    if (UI.button(q, '自動修正', x + 40, by, bw, 70, { lacquer: true, size: 30 })) fix();
+    else if (UI.button(q, '不用了', x + 60 + bw, by, bw, 70, { back: true, size: 28 }) || Input.was('back')) skip();
+    if (Input.was('left')) this.tipSel = 0; else if (Input.was('right')) this.tipSel = 1; else this.tipSel = q.sel;
   },
   leave() { chef.idlePose = 'wave'; },
   frame(dt) {
@@ -2473,6 +2520,12 @@ Screens.result = {
 
     if (t < 1.6) { if (t > 0.4 && (Input.taps.length || Input.was('confirm'))) { this.t = 1.6; Input.taps.length = 0; Input.pressed.delete('confirm'); } return; }
     this.drawStall(r, t);
+    // 時機修正建議：評價蓋章後跳出，選完之前其他按鈕不能按
+    if (this.tip) { if (t > 2.1) this.drawTip(); return; }
+    if (this.tipMsg && Game.time - this.tipMsg.t < 4) {
+      const a = clamp(4 - (Game.time - this.tipMsg.t), 0, 1);
+      UI.text(this.tipMsg.text, W / 2, lay(860, 1040), 18, { fill: '#8dff8a', raw: true, sw: 5, alpha: a, maxW: W - 40 });
+    }
     UI.begin(this);
     const BX = lay(160, 1180), BY = i => lay(890 + i * 84, 360 + i * 110);   // 三顆按鈕
     if (UI.button(this, '再玩一次', BX, BY(0), 400, 64, { lacquer: true })) App.goto('game', { song: this.song });
