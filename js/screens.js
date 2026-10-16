@@ -714,8 +714,9 @@ Screens.shop = {
       ctx.restore();
       if (it.tag) {   // 稀有／限定：左上角的金邊朱漆小牌（會微微發亮）
         const tt = tr(it.tag); ctx.font = `15px ${FONT}`; const tw2 = ctx.measureText(tt).width + 18;
-        ctx.save(); ctx.shadowColor = 'rgba(255,210,63,' + (0.5 + 0.4 * Math.sin(Game.time * 3 + i)) + ')'; ctx.shadowBlur = 10;
-        UI.panel(x + 9, y + 9, tw2, 24, 12, '#b8261a', '#ffd23f'); ctx.restore();
+        // 光暈用快取貼圖、透明度一明一暗（不每幀 shadowBlur：手機 GPU 最耗電）
+        ctx.save(); ctx.globalAlpha *= 0.5 + 0.4 * Math.sin(Game.time * 3 + i); UI.glow(x + 9, y + 9, tw2, 24, 12, '#ffd23f', 10); ctx.restore();
+        UI.panel(x + 9, y + 9, tw2, 24, 12, '#b8261a', '#ffd23f');
         UI.text(tt, x + 9 + tw2 / 2, y + 22, 15, { fill: '#fff6c8', stroke: null, raw: true });
       }
       UI.text(it.name, x + G.cw / 2, y + th + (G.ch - th) / 2 + 2, LAND ? 21 : 16, { fill: on ? '#ffd23f' : '#fff', stroke: null, maxW: G.cw - 14 });
