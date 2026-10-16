@@ -39,7 +39,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 | `js/pwa.js`, `sw.js`, `manifest.json` | PWA：Service Worker（離線快取）、安裝提示、APP 設定 |
 | `js/i18n.js` | 中文／日本語／English／한국어 翻譯表（以中文原文為鍵，新增文字時在此補翻譯） |
 | `assets/images/` | 遊戲用圖（已去背、裁切、壓縮） |
-| `assets/icons/` | APP 圖示（192／512／maskable／Apple／favicon） |
+| `assets/icons/` | APP 圖示（192／512／maskable／Apple／favicon；`icon-1024.png` 是 App Store／Xcode 用的不透明版）；全部由 `assets/source/app_icon.png` 經 `tools/make_pwa_icons.ps1` 產生 |
 | `assets/audio/` | 語音（開場「いらっしゃいませ！」、選曲「select song」）；音量與起始位置在 `js/audio.js` 的 `VOICES`。遊戲實際讀的是內嵌版 `js/voices.js`（file:// 開啟的桌面版也能播），換了音檔後執行 `tools/embed_voices.ps1` 重新產生 |
 | `assets/source/` | 原始圖片（企畫附圖、Excel 內的圖） |
 | `tools/` | `serve.ps1` 本機伺服器、`build.ps1` 封裝、`prep.html` + `prep_server.ps1` 素材前處理；`build-web.mjs`、`ios-setup.mjs` iOS App 建置（Mac）；`promo_maker.html` 宣傳圖／App Store 截圖產生器 |

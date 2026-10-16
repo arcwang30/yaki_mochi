@@ -1,5 +1,5 @@
 ﻿# 由 assets/source/app_icon.png（1024×1024，四角可為透明或白底）產生 assets/icons 下所有 PWA 圖示。
-# 外框外側的白色四角會去背；Apple 圖示不支援透明，改填外框深色；maskable 版縮小置中，內容落在安全區。
+# 外框外側的白色四角會去背；Apple 圖示（apple-touch-icon、App Store 用的 icon-1024）不支援透明，改填外框深色；maskable 版縮小置中，內容落在安全區。
 # 用法：powershell -ExecutionPolicy Bypass -File tools\make_pwa_icons.ps1
 $root = Split-Path -Parent $PSScriptRoot
 $src = Join-Path $root 'assets\source\app_icon.png'
@@ -23,10 +23,33 @@ public static class IconCut {
       int[] nb = { x > 0 ? i - 1 : -1, x < w - 1 ? i + 1 : -1, y > 0 ? i - w : -1, y < h - 1 ? i + w : -1 };
       foreach (var n in nb) if (n >= 0 && !outside[n] && (alpha(px[n]) < 128 || minc(px[n]) > 225)) { outside[n] = true; q.Enqueue(n); }
     }
+    // 壓縮（WebP／JPG）在外框外緣留下的淺色雜點：貼著透明區、偏亮的像素最多往內剝 3 層（外框的深色描邊不受影響）
+    for (int pass = 0; pass < 3; pass++) {
+      var peel = new List<int>();
+      for (int i = 0; i < px.Length; i++) {
+        if (outside[i] || minc(px[i]) <= 110) continue;
+        int x = i % w, y = i / w;
+        if ((x > 0 && outside[i - 1]) || (x < w - 1 && outside[i + 1]) || (y > 0 && outside[i - w]) || (y < h - 1 && outside[i + w])) peel.Add(i);
+      }
+      foreach (var i in peel) outside[i] = true;
+    }
+    // 外框邊緣 2 圈（離透明區 1～2 像素）：反鋸齒混進了白底。依白的程度給透明度，並把白色「扣掉」（去白邊 de-matte：
+    // 顏色 = (原色 − 白 × (1 − a)) ÷ a），否則貼在深色底上會留一圈白點
+    var ring = new int[w * h];   // 0 = 內部、1 = 第一圈、2 = 第二圈
+    for (int pass = 1; pass <= 2; pass++)
+      for (int i = 0; i < px.Length; i++) {
+        if (outside[i] || ring[i] != 0) continue;
+        int x = i % w, y = i / w;
+        Func<int, bool> near = n => pass == 1 ? outside[n] : ring[n] == 1;
+        if ((x > 0 && near(i - 1)) || (x < w - 1 && near(i + 1)) || (y > 0 && near(i - w)) || (y < h - 1 && near(i + w))) ring[i] = pass;
+      }
     for (int i = 0; i < px.Length; i++) {
       if (outside[i]) { px[i] = 0; continue; }
-      int x = i % w, y = i / w; bool edge = (x > 0 && outside[i - 1]) || (x < w - 1 && outside[i + 1]) || (y > 0 && outside[i - w]) || (y < h - 1 && outside[i + w]);
-      if (edge) { int a = Math.Max(0, Math.Min(255, (255 - minc(px[i])) * 255 / 120)); a = Math.Min(a, alpha(px[i])); px[i] = (px[i] & 0xFFFFFF) | (a << 24); }
+      if (ring[i] == 0) continue;
+      int c = px[i], a = Math.Max(0, Math.Min(255, (255 - minc(c)) * 255 / 120)); a = Math.Min(a, alpha(c));
+      if (a == 0) { px[i] = 0; continue; }
+      Func<int, int> un = v => Math.Max(0, Math.Min(255, (int)Math.Round((v - 255.0 * (1 - a / 255.0)) / (a / 255.0))));
+      px[i] = (a << 24) | (un((c >> 16) & 255) << 16) | (un((c >> 8) & 255) << 8) | un(c & 255);
     }
     System.Runtime.InteropServices.Marshal.Copy(px, 0, d.Scan0, px.Length); b.UnlockBits(d); return b;
   }
@@ -37,7 +60,9 @@ $cut = [IconCut]::CutCorners($img)
 $dark = [System.Drawing.Color]::FromArgb(255, 43, 14, 19)
 
 function Save-Icon($size, $name, $bg, $scale) {
-  $b = [System.Drawing.Bitmap]::new($size, $size, [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
+  # 有底色的（Apple 用）存成 24 位元 RGB：App Store 連「有 alpha 通道」都不接受，就算全部不透明也一樣
+  $fmt = if ($bg) { [System.Drawing.Imaging.PixelFormat]::Format24bppRgb } else { [System.Drawing.Imaging.PixelFormat]::Format32bppArgb }
+  $b = [System.Drawing.Bitmap]::new($size, $size, $fmt)
   $g = [System.Drawing.Graphics]::FromImage($b)
   $g.InterpolationMode = 'HighQualityBicubic'; $g.SmoothingMode = 'HighQuality'; $g.PixelOffsetMode = 'HighQuality'; $g.CompositingQuality = 'HighQuality'
   if ($bg) { $g.Clear($bg) }
@@ -51,4 +76,5 @@ Save-Icon 192 'icon-192.png' $null 1
 Save-Icon 32 'favicon-32.png' $null 1
 Save-Icon 180 'apple-touch-icon.png' $dark 1
 Save-Icon 512 'icon-maskable-512.png' $dark 0.84
+Save-Icon 1024 'icon-1024.png' $dark 1   # App Store／Xcode 的 AppIcon：不能有透明，四角填外框深色（iOS 會自己切圓角）
 $cut.Dispose(); $img.Dispose()

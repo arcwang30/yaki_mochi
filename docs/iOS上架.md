@@ -24,7 +24,7 @@ npx cap open ios         # 開 Xcode
 
 1. 左邊點 **App** 專案 → TARGETS **App** → **Signing & Capabilities**：Team 選自己的開發者帳號（帳號還沒核准前可以先用個人 Apple ID 在實機測試）
 2. **General** → Supported Destinations：確認有 iPhone、iPad；Minimum Deployments 用預設即可
-3. App 圖示：**App/Assets → AppIcon**，放 1024×1024 的圖（不可透明、不可圓角）
+3. App 圖示：**App/Assets → AppIcon**，把 `assets/icons/icon-1024.png` 拖進 1024×1024 的格子（已經是不透明、沒有 alpha 通道的版本；圖示來源是 `assets/source/app_icon.png`，換圖後執行 `powershell -ExecutionPolicy Bypass -File tools\make_pwa_icons.ps1` 重新產生各尺寸）
 4. **Signing & Capabilities** → 左上 **+ Capability** → 加入 **In-App Purchase**
 
 ## 平常改完遊戲之後
