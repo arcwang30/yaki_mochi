@@ -96,7 +96,8 @@ function waitGame() {
 function setupGame() {
   run(`
     Save.store = () => {};                    // 不寫進 localStorage
-    Sound.init();                             // AudioContext（沒有點擊所以是暫停狀態，不會出聲）
+    Sound.init();                             // AudioContext（通常沒有點擊所以是暫停狀態；但遊戲偵測音訊輸出時可能把它開起來）
+    if (A.master) A.master.gain.value = 0;    // 不管 AudioContext 有沒有在跑，一律靜音
     RES = 2; cv.width = W * 2; cv.height = H * 2;
     window.__T = 0; Game.clock = () => window.__T;   // 樂曲時鐘：由工具推進
     Screens.game.pause = () => {}; Sound.onStop = null;   // 失去焦點、音訊狀態改變都不要自動暫停
@@ -129,34 +130,44 @@ function setupGame() {
 const step = (n, auto = true) => run(`__promoStep(${n}, ${auto})`);
 const snap = () => { const c = document.createElement('canvas'), g = win().document.getElementById('game'); c.width = g.width; c.height = g.height; c.getContext('2d').drawImage(g, 0, 0); return c; };
 const until = (cond, max = 60 * 200) => { for (let i = 0; i < max; i++) { if (run(cond)) return true; step(1); } throw new Error('等不到：' + cond); };
+// 等字型下載完再擷取：中日韓字型是分段、用到才下載的，第一次畫到的字可能還是備用字型。
+// 畫一幀觸發下載 → 等遊戲頁的字型都載完（最多 10 秒）→ 再畫一幀（不打擊，只推進 1 幀）
+async function settle() {
+  step(1, false);
+  const fonts = win().document.fonts;
+  for (const t0 = performance.now(); performance.now() - t0 < 10000 && fonts.status !== 'loaded';) await yieldNow();
+  await fonts.ready;
+  step(1, false);
+}
 
 // 六個場景的遊戲畫面（每個語言各擷取一次）
 async function captureScenes(lang) {
   run(`Save.data.lang = '${lang}'; document.documentElement.lang = '${lang}'; Save.data.best.swing = { score: 61200, oko: 14, combo: 140 };`);
   const shots = {};
   // ---- 遊玩：鉄板スウィング、普通 ----
-  run(`window.__T = 0; App.cut('game', { song: songById('swing') }); Pet.reset && Pet.reset();`);
+  // 樂曲時鐘從 AudioContext 現在的時間開始：譜面的時間是以 A.ctx.currentTime 為起點（AudioContext 在跑時不是 0）
+  run(`window.__T = A.ctx ? A.ctx.currentTime : 0; App.cut('game', { song: songById('swing') }); Pet.reset && Pet.reset();`);
   step(30);
   // 2：第 3 份廣島燒完成的瞬間（飛向右上角之前）
   until(`Game.s.oko >= 3 && Game.s.okoAnims.some(a => a.t > 0.42)`);
-  shots[2] = snap();
+  await settle(); shots[2] = snap();
   // 1：30 連擊（GREAT＋「30 COMBO!」）
   until(`Game.s.combo >= 30 && Game.s.comboFx && Game.s.comboFx.n === 30 && Game.s.comboFx.t > 0.18`);
-  shots[1] = snap();
+  await settle(); shots[1] = snap();
   // 4：打完整首 → 結算（評價印章、屋台經驗條都出來之後）
   until(`App.name === 'result' && Screens.result.t > 3.2`, 60 * 400);
-  shots[4] = snap();
+  await settle(); shots[4] = snap();
   // ---- 3：選曲（ソース・ファンク 4 星，內建曲目）----
   run(`Save.data.lastSong = 'funk'; App.cut('songs');`); step(90, false);
-  shots[3] = snap();
+  await settle(); shots[3] = snap();
   // ---- 5：商店「店面背景」，選「浮世妖怪」 ----
   run(`App.cut('shop');`);
   for (const t0 = performance.now(); performance.now() - t0 < 15000 && !run(`BACKGROUNDS.every(b => IMG['bg_' + b.id])`);) await yieldNow();   // 等背景圖都載入（縮圖、預覽；圖片是非同步載入，要讓出時間）
   run(`Screens.shop.setCat(1); Screens.shop.pick(BACKGROUNDS.findIndex(b => b.id === 'yokai'));`); step(60, false);
-  shots[5] = snap();
+  await settle(); shots[5] = snap();
   // ---- 6：成就（解鎖約一半）----
   run(`const L = Achieve.list(); L.forEach((a, i) => { if (i % 2 === 0 || i < 8) Save.data.achievements[a.id] = Date.now(); }); App.cut('achievements');`); step(40, false);
-  shots[6] = snap();
+  await settle(); shots[6] = snap();
   return shots;
 }
 
@@ -333,7 +344,7 @@ async function captureReview(lang, vol) {
     Shop.store = { name: 'review', owns: () => false, price: () => ${JSON.stringify(REVIEW_PRICE)}, buy: () => Promise.resolve(false), restore: () => Promise.resolve(0) };
     App.cut('shop');`);
   for (const t0 = performance.now(); performance.now() - t0 < 15000 && !run(`BACKGROUNDS.every(b => IMG['bg_' + b.id])`);) await yieldNow();
-  run(`Screens.shop.setCat(0); Screens.shop.pick(${vol - 1});`); step(60, false);
+  run(`Screens.shop.setCat(0); Screens.shop.pick(${vol - 1});`); step(60, false); await settle();
   const game = snap(), c = document.createElement('canvas'); c.width = 1320; c.height = 2868;
   const g = c.getContext('2d'), bg = g.createRadialGradient(660, 860, 0, 660, 860, 2000);
   bg.addColorStop(0, '#2a2050'); bg.addColorStop(0.7, '#0d1024'); g.fillStyle = bg; g.fillRect(0, 0, 1320, 2868);
