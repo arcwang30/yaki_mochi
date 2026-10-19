@@ -888,6 +888,6 @@ function timingFix(errs, minN, fit) {
 // 套用：判定校正加上 ms（回傳實際加了多少）
 function applyTimingFix(ms) {
   const cur = Save.data.offset;
-  Save.data.offset = clamp(cur + ms, -200, 400); Save.store();
+  Save.data.offset = clamp(cur + ms, -200, 400); Output.mark(); Save.store();
   return Save.data.offset - cur;
 }

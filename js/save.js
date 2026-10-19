@@ -3,7 +3,7 @@
 // ===== 本機存檔：設定與成績（localStorage） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, voice: true, eco: false, lang: null, res: '1920x1080', bg: 'stall', hitSound: 'classic', pet: 'none', coins: 0, owned: null, shopSeen: false, achievements: null, achNew: null, playDays: null, langsUsed: null, coinsPaid: null, coinFirst: null, coinFc: null, xp: null, unlockSeen: null, shopNew: null, tutorialDone: false, lastSong: null,
+  data: { music: 4, sfx: 4, offset: 0, vibrate: true, voice: true, eco: false, lang: null, res: '1920x1080', bg: 'stall', hitSound: 'classic', pet: 'none', coins: 0, owned: null, shopSeen: false, achievements: null, achNew: null, playDays: null, langsUsed: null, coinsPaid: null, coinFirst: null, coinFc: null, xp: null, unlockSeen: null, shopNew: null, outKind: null, offsets: null, calDone: null, calAsked: false, tutorialDone: false, lastSong: null,
     best: null,    // 自己的最佳成績（HISCORE）：{ 紀錄id: { score, oko, combo } }（紀錄 id 見 songs.js 的 recId）
     history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
     totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次
@@ -46,6 +46,11 @@ const Save = {
     // 屋台等級（js/shop.js 的 Stall）：經驗值。舊存檔依累計場數補算（每場 10）；unlockSeen = 已經通知過「開放」的商品（null = 第一次，Stall.init 補上）
     if (!(d.xp >= 0)) d.xp = (d.totals.plays || 0) * 10;
     if (d.unlockSeen !== null && !Array.isArray(d.unlockSeen)) d.unlockSeen = null;
+    // 輸出裝置（js/audio.js 的 Output）：喇叭/有線耳機（speaker）和藍牙耳機（bt）各記一個判定校正；offset = 目前這個裝置用的值
+    // 舊存檔：校正 100ms 以上視為藍牙；已經玩過教學的不用再問「用什麼聽」
+    if (!d.offsets || typeof d.offsets !== "object" || Array.isArray(d.offsets)) d.offsets = { speaker: null, bt: null };
+    if (!d.calDone || typeof d.calDone !== "object" || Array.isArray(d.calDone)) d.calDone = { speaker: false, bt: false };
+    if (d.outKind !== "speaker" && d.outKind !== "bt") { d.outKind = d.offset >= 100 ? "bt" : "speaker"; d.calDone[d.outKind] = d.offset !== 0; if (d.tutorialDone) d.calAsked = true; }
     if (!(d.coins >= 0)) d.coins = 0;
     if (!d.lang) {   // 第一次：依瀏覽器語言
       const l = (navigator.language || 'zh').toLowerCase();
@@ -54,6 +59,7 @@ const Save = {
   },
 
   store() {
+    if (this.data.offsets && this.data.outKind) this.data.offsets[this.data.outKind] = this.data.offset;   // 目前裝置的校正值同步記進它的檔案
     const json = JSON.stringify(this.data);
     try { localStorage.setItem(this.key, json); } catch (e) { /* ignore */ }
     Native.mirrorSave(json);   // App 版：另存一份備份檔

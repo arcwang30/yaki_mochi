@@ -448,6 +448,7 @@ const Sound = {
       A.ctx = C;
       // 音訊被打斷（來電、Siri…）或暫停：通知遊戲暫停，免得樂曲時鐘停住、畫面還在跑
       C.onstatechange = () => { if (C.state !== 'running' && this.onStop) this.onStop(); };
+      Output.watch(C);   // 偵測換耳機（藍牙 / 有線 / 喇叭）
       A.master = C.createGain(); A.master.gain.value = 0.9; A.master.connect(C.destination);
       const comp = C.createDynamicsCompressor(); comp.threshold.value = -12; comp.ratio.value = 4; comp.connect(A.master);
       A.music = C.createGain(); A.music.connect(comp);
@@ -620,4 +621,95 @@ const Sound = {
   suspend() { if (A.ctx && A.ctx.state === 'running') A.ctx.suspend(); },
   // iOS：來電、Siri、鬧鐘打斷時狀態是 'interrupted'（不是 suspended），一樣要 resume
   resume() { if (A.ctx && A.ctx.state !== 'running' && A.ctx.state !== 'closed') A.ctx.resume(); },
+};
+
+// ===== 輸出裝置：喇叭／有線耳機（speaker）和藍牙耳機（bt）各記一個判定校正 =====
+// 網頁拿不到藍牙的延遲（約 150～300ms），所以讓玩家選「現在用什麼聽」，各自量一次、記起來，換裝置時自動套用。
+// Save.data.offset 永遠是「目前這個裝置」的校正（其他程式照舊讀它）；offsets 是兩個裝置各自的存檔（Save.store 會同步）；
+// calDone = 這個裝置量過／調過了沒；calAsked = 第一次玩前已經問過「用什麼聽」
+const OUT_BT_GUESS = 150;   // 藍牙還沒量過時先套用的猜測值（常見的 A2DP 延遲），之後以量到的為準
+const Output = {
+  ask: null,       // 「用什麼聽」對話框：{ first: 第一次玩前, ret: 選完要去的畫面（null = 留在原畫面）, sel }
+  pending: false,  // 偵測到輸出可能換了，等回到主選單／選曲畫面再問
+  note: null,      // 選完後的提示 { text, t }
+  kind: () => Save.data.outKind,
+  name: k => tr(k === 'bt' ? '藍牙耳機' : '喇叭／有線耳機'),
+  // 這個裝置目前的校正值（對話框顯示用）：目前裝置 = offset；另一個 = 它的存檔（沒量過：喇叭 0、藍牙猜測值）
+  offsetOf(k) { const d = Save.data; return k === d.outKind ? d.offset : d.offsets[k] !== null && d.offsets[k] !== undefined ? d.offsets[k] : k === 'bt' ? OUT_BT_GUESS : 0; },
+  // 換成這個裝置：目前的校正收進舊裝置的存檔，載入新裝置的
+  use(k) {
+    const d = Save.data;
+    if (k === d.outKind) return;
+    d.offsets[d.outKind] = d.offset;
+    const next = this.offsetOf(k);
+    d.outKind = k; d.offset = clamp(next, -200, 400); Save.store();
+  },
+  // 把目前這份校正改記在另一個裝置（自動修正發現其實是藍牙）；原本那個裝置還原成 restore
+  relabel(k, restore) {
+    const d = Save.data, old = d.outKind;
+    if (k === old) return;
+    d.offsets[old] = restore; d.outKind = k; d.calDone[k] = true; Save.store();
+  },
+  // 量過或調過校正（校正畫面套用、設定裡手動調、自動修正）→ 這個裝置不用再催
+  mark() { if (!Save.data.calDone[Save.data.outKind]) { Save.data.calDone[Save.data.outKind] = true; Save.store(); } },
+  needCal: k => !Save.data.calDone[k],
+  // 偵測輸出可能換了：先記起來，不打斷玩到一半的遊戲
+  watch(C) {
+    const ping = () => { if (Save.data.calAsked && !this.ask) this.pending = true; };
+    try { if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) navigator.mediaDevices.addEventListener('devicechange', ping); } catch (e) { /* ignore */ }
+    try { C.addEventListener('sinkchange', ping); } catch (e) { /* ignore */ }
+    // 瀏覽器有回報輸出延遲時（Chrome 連藍牙會跳到 100ms 以上），變動 40ms 以上也當作換了
+    let last = C.outputLatency || 0;
+    setInterval(() => { const l = C.outputLatency || 0; if (Math.abs(l - last) > 0.04) { last = l; ping(); } }, 2000);
+  },
+  // 第一次玩前：問一次用什麼聽（主選單按「開始遊戲」時呼叫；ret = 問完要去的畫面）
+  askFirst(ret) { this.ask = { first: true, ret, sel: 0, t: Game.time }; Sound.play('select'); },
+  // 選好之後：套用裝置；藍牙又沒量過 → 直接進校正畫面（量完再去 ret）；否則去 ret／留在原畫面並提示
+  choose(k) {
+    const a = this.ask, first = a.first; this.ask = null; this.pending = false;
+    Save.data.calAsked = true; this.use(k); Save.store(); Sound.play('confirm');
+    if (k === 'bt' && this.needCal('bt')) { App.goto('calibrate', { from: 'ask', ret: a.ret || App.name }); return; }
+    this.note = { text: tr('輸出：{0}（判定校正 {1}ms）', this.name(k), (Save.data.offset > 0 ? '+' : '') + Save.data.offset), t: Game.time };
+    if (a.ret && a.ret !== App.name) App.goto(a.ret, a.arg);
+  },
+  // 對話框（App.frame 在畫面最上層畫）；inp = 這一幀被攔下來的操作
+  drawAsk(inp) {
+    const a = this.ask, kinds = ['speaker', 'bt'], pw = lay(640, 820), ph = a.first ? lay(370, 330) : lay(430, 380), px = (W - pw) / 2, py = (H - ph) / 2;
+    UI.dim(0.65);
+    UI.panel(px, py, pw, ph, 28, 'rgba(16,22,52,.97)', '#ffd23f');
+    UI.text(tr(a.first ? '現在用什麼聽？' : '偵測到音訊輸出改變'), W / 2, py + 54, 34, { fill: '#ffd23f', sw: 7, maxW: pw - 60 });
+    UI.wrap(tr('藍牙耳機會晚一點才聽到聲音。選好之後，遊戲會套用對應的判定校正；換耳機時可以隨時重選。'), px + 36, py + 98, pw - 72, 28, 19, { fill: '#cfd8ff' });
+    const bw = (pw - 36 * 2 - 24) / 2, bh = lay(150, 130), by = py + lay(190, 170);
+    if (inp.pressed.has('left') || inp.pressed.has('right') || inp.pressed.has('up') || inp.pressed.has('down')) { a.sel ^= 1; Sound.play('select'); }
+    let pick = -1;
+    kinds.forEach((k, i) => {
+      const bx = px + 36 + i * (bw + 24), on = a.sel === i, cur = !a.first && k === Save.data.outKind;
+      UI.panel(bx, by, bw, bh, 20, on ? 'rgba(255,190,60,.28)' : 'rgba(255,255,255,.08)', on ? '#ffd23f' : 'rgba(255,255,255,.3)');
+      UI.text(this.name(k), bx + bw / 2, by + bh * 0.34, lay(26, 28), { fill: on ? '#ffd23f' : '#fff', stroke: null, raw: true, maxW: bw - 24 });
+      const o = this.offsetOf(k), sub = this.needCal(k) && k === 'bt' ? tr('還沒量過（先猜 {0}ms）', o) : (o > 0 ? '+' : '') + o + ' ms';
+      UI.text(sub, bx + bw / 2, by + bh * 0.68, lay(18, 20), { fill: '#9fb0e0', stroke: null, raw: true, maxW: bw - 24 });
+      if (cur) { UI.panel(bx + 10, by + 10, 70, 26, 13, '#2fc46a', '#fff'); UI.text(tr('目前'), bx + 45, by + 24, 15, { fill: '#fff', stroke: null, raw: true }); }
+      if (inp.taps.some(t => UI.inside(t.x, t.y, bx, by, bw, bh))) { a.sel = i; pick = i; }
+    });
+    const keep = !a.first;   // 偵測到改變時，可以維持目前的
+    if (keep) {
+      const ky = py + ph - lay(64, 56);
+      UI.text(tr('維持目前'), W / 2, ky + 14, 22, { fill: '#cfd8ff', stroke: null, raw: true });
+      if (inp.taps.some(t => UI.inside(t.x, t.y, W / 2 - 110, ky - 14, 220, 56)) || inp.pressed.has('back')) { this.ask = null; this.pending = false; Sound.play('back'); return; }
+    }
+    if (Game.time - a.t < 0.2) return;   // 剛打開時按下的那一下不算
+    if (pick < 0 && inp.pressed.has('confirm')) pick = a.sel;
+    if (pick >= 0) this.choose(kinds[pick]);
+  },
+  // 提示（選好之後 2.5 秒）
+  drawNote() {
+    const n = this.note; if (!n) return;
+    const k = Game.time - n.t; if (k > 2.5) { this.note = null; return; }
+    const al = clamp(Math.min(k / 0.2, (2.5 - k) / 0.4), 0, 1);
+    ctx.save(); ctx.globalAlpha *= al; ctx.font = `22px ${FONT}`;
+    const w = Math.min(W - 40, ctx.measureText(n.text).width + 60), y = H - lay(48, 130);
+    UI.panel(W / 2 - w / 2, y - 26, w, 52, 26, 'rgba(20,90,50,.94)', '#8dff8a');
+    UI.text(n.text, W / 2, y + 1, 22, { fill: '#fff', stroke: null, raw: true, maxW: w - 30 });
+    ctx.restore();
+  },
 };
