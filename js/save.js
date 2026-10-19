@@ -3,7 +3,7 @@
 // ===== 本機存檔：設定與成績（localStorage） =====
 const Save = {
   key: 'daioyaki.v1',
-  data: { music: 4, sfx: 4, offset: 0, vibrate: true, voice: true, eco: false, lang: null, res: '1920x1080', bg: 'stall', hitSound: 'classic', pet: 'none', coins: 0, owned: null, shopSeen: false, achievements: null, achNew: null, playDays: null, langsUsed: null, coinsPaid: null, coinFirst: null, coinFc: null, xp: null, unlockSeen: null, shopNew: null, outKind: null, offsets: null, calDone: null, calAsked: false, tutorialDone: false, lastSong: null,
+  data: { music: 4, sfx: 4, offset: 0, vibrate: false, voice: true, eco: false, lang: null, res: '1920x1080', bg: 'stall', hitSound: 'classic', pet: 'none', coins: 0, owned: null, shopSeen: false, achievements: null, achNew: null, playDays: null, langsUsed: null, coinsPaid: null, coinFirst: null, coinFc: null, xp: null, unlockSeen: null, shopNew: null, outKind: null, offsets: null, calDone: null, calAsked: false, tutorialDone: false, lastSong: null,
     best: null,    // 自己的最佳成績（HISCORE）：{ 紀錄id: { score, oko, combo } }（紀錄 id 見 songs.js 的 recId）
     history: [],   // 節奏分析：最近 100 場的遊玩紀錄（見 js/rhythm.js）
     totals: null,  // 累計：場數、廣島燒、最高連擊、每首歌玩幾次

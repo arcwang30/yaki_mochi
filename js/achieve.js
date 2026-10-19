@@ -41,7 +41,7 @@ const ACHIEVEMENTS = [
   { id: 'first_tutorial', cat: 0, tier: 'bronze', name: '開店準備', desc: '完成新手教學', prog: achHas(() => Save.data.tutorialDone) },
   { id: 'first_play', cat: 0, tier: 'bronze', name: '第一位客人', desc: '完成第一場遊戲', prog: achCnt(() => AchStat.T().plays, 1) },
   { id: 'first_oko', cat: 0, tier: 'bronze', name: '第一份廣島燒', desc: '做出第一份廣島燒', prog: achCnt(() => AchStat.T().oko, 1) },
-  { id: 'calibrate', cat: 0, tier: 'bronze', name: '調音師傅', desc: '完成一次自動校正' },
+  { id: 'calibrate', cat: 0, tier: 'bronze', name: '調音師傅', desc: '完成一次手動校正' },
   { id: 'first_share', cat: 0, tier: 'bronze', name: '口耳相傳', desc: '分享一次成績' },
   // B. 累計場數
   ...[[10, 'bronze', '常客'], [50, 'silver', '熟面孔'], [100, 'silver', '老主顧'], [300, 'gold', '夜市名人'], [1000, 'plat', '百年老店']].map(([n, tier, name]) =>

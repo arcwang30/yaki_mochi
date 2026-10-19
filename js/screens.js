@@ -1666,12 +1666,12 @@ Screens.howto = {
 // ---------- 設定 ----------
 Screens.settings = {
   sel: 0, n: 0, from: 'menu',
-  // 各列（上下鍵的順序）：直式 = 手機；橫式 = PC（全螢幕、解析度）；桌面版、App 版沒有「安裝到主畫面」
-  KEYS: LAND ? ['music', 'sfx', 'offset', 'voice', 'backup', 'full', 'res', 'eco', 'lang', ...(DESKTOP_APP || NATIVE_APP ? [] : ['install'])]
-    : ['music', 'sfx', 'offset', 'voice', 'vibrate', 'eco', 'lang', ...(NATIVE_APP ? [] : ['install']), 'backup'],
-  // 各列的位置 [x, y]：直式一欄（App 版沒有安裝，備份往上補位）；橫式兩欄（左：音量、判定校正、語音反應、備份；右：全螢幕、解析度、省電、語言、安裝）
-  POS: lay({ music: [50, 176], sfx: [50, 298], offset: [50, 420], voice: [50, 572], vibrate: [50, 668], eco: [50, 764], lang: [50, 860], install: [50, 980], backup: [50, NATIVE_APP ? 980 : 1076] },
-    { music: [300, 200], sfx: [300, 326], offset: [300, 452], voice: [300, 610], backup: [300, 706], full: [1000, 200], res: [1000, 300], eco: [1000, 424], lang: [1000, 524], install: [1000, 648] }),
+  // 各列（上下鍵的順序）：直式 = 手機；橫式 = PC（全螢幕、解析度）
+  KEYS: LAND ? ['music', 'sfx', 'offset', 'voice', 'backup', 'full', 'res', 'eco', 'lang']
+    : ['music', 'sfx', 'offset', 'voice', 'vibrate', 'eco', 'lang', 'backup'],
+  // 各列的位置 [x, y]：直式一欄；橫式兩欄（左：音量、判定校正、語音反應、備份；右：全螢幕、解析度、省電、語言）
+  POS: lay({ music: [50, 176], sfx: [50, 298], offset: [50, 420], voice: [50, 572], vibrate: [50, 668], eco: [50, 764], lang: [50, 860], backup: [50, 980] },
+    { music: [300, 200], sfx: [300, 326], offset: [300, 452], voice: [300, 610], backup: [300, 706], full: [1000, 200], res: [1000, 300], eco: [1000, 424], lang: [1000, 524] }),
   BACK: lay([230, 1176], [W / 2 - 130, 830]),
   get ROWS() { return this.KEYS.length + 1; },   // 最後一列 = 返回
   idx(k) { return this.KEYS.indexOf(k); },
@@ -1809,7 +1809,7 @@ Screens.settings = {
       // 右上：自動校正（跟著聲音點一點，量出耳機 / 喇叭的延遲）
       const openCal = () => { Sound.play('confirm'); App.goto('calibrate', { from: this.from }); };
       UI.panel(X + 402, y2 + 12, 196, 40, 20, '#e8502a', '#fff');
-      UI.text(tr('自動校正') + ' ▶', X + 500, y2 + 33, 20, { stroke: '#5a0f05', sw: 5, raw: true, maxW: 180 });
+      UI.text(tr("手動校正") + " ▶", X + 500, y2 + 33, 20, { stroke: '#5a0f05', sw: 5, raw: true, maxW: 180 });
       if (UI.tapIn(X + 396, y2 + 6, 208, 52)) { this.sel = i; openCal(); }
       if (this.sel === i && Input.was('confirm')) openCal();
       UI.text((off > 0 ? '+' : '') + off + ' ms', X + 310, y2 + 80, 36, { fill: '#ffd23f' });
@@ -1819,7 +1819,7 @@ Screens.settings = {
       if (this.sel === i) { if (Input.was('left')) this.setOffset(off - 10); if (Input.was('right')) this.setOffset(off + 10); }
       const r = Game.result;
       if (r && r.hits >= 5) UI.text(tr('上一局平均：{0} {1}ms', tr(r.avgErr >= 0 ? '晚' : '早'), Math.abs(r.avgErr)), X + 310, y2 + 124, 17, { fill: '#8dff8a', stroke: null, maxW: 580, raw: true });
-      else UI.text('用藍牙耳機會有延遲：按「自動校正」量一次就好', X + 310, y2 + 124, 17, { fill: '#cfd8ff', stroke: null, maxW: 580 }); }
+      else UI.text('用藍牙耳機會有延遲：按「手動校正」量一次就好', X + 310, y2 + 124, 17, { fill: '#cfd8ff', stroke: null, maxW: 580 }); }
 
     // 語音反應：主角在遊戲中的吆喝（打開時播一句試聽）
     this.toggle('voice', 90, '語音反應', '遊戲中主角的吆喝（いいね！、おっと！…）', Save.data.voice !== false, () => {
@@ -1838,18 +1838,6 @@ Screens.settings = {
 
     // 語言
     this.choice('lang', '語言', LANGS, Save.data.lang, l => this.setLang(l));
-
-    // 安裝到主畫面（APP；桌面版沒有）
-    if (this.idx('install') >= 0) {
-      const [X, y5, i] = this.panel('install', 90), inst = PWA.installed();
-      UI.text('安裝到主畫面', X + 34, y5 + 30, 30, { align: 'left', maxW: 400 });
-      UI.text(inst ? '已經是 APP 模式' : '變成 APP，全螢幕、離線也能玩', X + 34, y5 + 66, 16, { align: 'left', fill: '#cfd8ff', stroke: null, maxW: 400 });
-      UI.panel(X + 450, y5 + 17, 140, 56, 28, inst ? '#2fc46a' : '#e8502a', '#fff');
-      UI.text(inst ? '✓' : '教學 ▶', X + 520, y5 + 46, 24, { stroke: '#5a0f05', sw: 5 });
-      const openInstall = () => { Sound.play('confirm'); App.goto('install', { from: this.from }); };
-      if (UI.tapIn(X, y5, 620, 90)) { this.sel = i; openInstall(); }
-      if (this.sel === i && Input.was('confirm')) openInstall();
-    }
 
     // 存檔備份：匯出（複製存檔碼）／匯入（貼上存檔碼）；← → 選按鈕、ENTER 執行
     { const [X, y, i] = this.panel('backup', 84);
@@ -1908,7 +1896,7 @@ Screens.calibrate = {
   },
   frame() {
     menuBackdrop(0.78);
-    UI.header('自動校正', 'TIMING CHECK');
+    UI.header("手動校正", "TIMING CHECK");
     const now = A.ctx ? A.ctx.currentTime : 0, bd = this.bd();
     // 排「叩」聲（第 1 拍與預備拍用較高的聲音）
     while (A.ctx && !this.result && this.next < this.BEATS && this.t0 + this.next * bd < now + 0.2) {
@@ -1961,60 +1949,6 @@ Screens.calibrate = {
     UI.nav(this);
     UI.navHint();
   },
-};
-// ---------- 安裝到主畫面（APP 簡易教學） ----------
-Screens.install = {
-  sel: 0, n: 0, from: 'menu', busy: false,
-  GUIDES: {
-    ios: ['iPhone／iPad（Safari）', ['點畫面下方的「分享」按鈕 ⬆', '往下滑，選「加入主畫面」', '按右上角「新增」就完成了'], '※ 請用 Safari 開啟本頁'],
-    android: ['Android（Chrome）', ['點右上角的「︙」選單', '選「安裝應用程式」或「加到主畫面」', '按「安裝」就完成了'], ''],
-    desktop: ['電腦（Chrome／Edge）', ['點網址列右邊的「安裝」圖示 ⊕', '按「安裝」，桌面就會出現圖示'], ''],
-  },
-  enter(arg) { this.from = arg && arg.from || 'menu'; this.sel = 0; this.busy = false; },
-  back() { App.goto('settings', { from: this.from, row: 'install' }); },
-  frame() {
-    if (this.from === 'game') { Game.draw(); UI.dim(0.78); } else menuBackdrop(0.72);
-    UI.header('安裝到主畫面', 'INSTALL APP');
-    const P = lay([30, 190, 660, 850], [160, 190, 1600, 720]);
-    UI.panel(...P, 26);
-    UI.wrap('安裝後可以從主畫面直接開啟：全螢幕、開啟更快，沒有網路也能玩。', P[0] + 30, 232, P[2] - 60, 32, 21, { fill: '#fff' });
-
-    UI.begin(this);
-    let y = 316;
-    if (PWA.installed()) {
-      UI.text('✓ 目前已經是 APP 模式', W / 2, y + 20, 26, { fill: '#8dff8a', stroke: null });
-      y += 64;
-    } else if (PWA.canPrompt()) {
-      if (UI.button(this, '立即安裝', W / 2 - 170, y - 4, 340, 76, { lacquer: true, sub: 'INSTALL', size: 34 }) && !this.busy) {
-        this.busy = true; PWA.install().finally(() => { this.busy = false; });
-      }
-      y += 96;
-    }
-    // 目前的裝置排第一個並標亮
-    const mine = PWA.platform();
-    // 直式：上下排；橫式：三欄並排
-    const y0 = y;
-    ['ios', 'android', 'desktop'].sort((a, b) => (b === mine) - (a === mine)).forEach((key, c) => {
-      const [title, steps, note] = this.GUIDES[key], on = key === mine;
-      const h = LAND ? 250 : 62 + steps.length * 38 + (note ? 30 : 0), gx = lay(50, 190 + c * 520), gw = lay(620, 500);
-      if (LAND) y = y0;
-      UI.panel(gx, y, gw, h, 18, on ? 'rgba(255,190,60,.18)' : 'rgba(255,255,255,.06)', on ? '#ffd23f' : 'rgba(255,255,255,.25)');
-      UI.text(title, gx + 26, y + 32, 25, { align: 'left', fill: on ? '#fff27a' : '#cfe0ff', stroke: null, maxW: gw - 200 });
-      if (on) { UI.panel(gx + gw - 150, y + 14, 132, 36, 18, '#e8502a', '#fff'); UI.text('你的裝置', gx + gw - 84, y + 32, 17, { stroke: null, maxW: 116 }); }
-      steps.forEach((st, i) => {
-        const sy = y + 74 + i * 38;
-        ctx.fillStyle = on ? '#e8502a' : 'rgba(255,255,255,.3)'; ctx.beginPath(); ctx.arc(gx + 40, sy, 14, 0, 7); ctx.fill();
-        UI.text(String(i + 1), gx + 40, sy + 1, 17, { stroke: null, raw: true });
-        UI.text(st, gx + 66, sy, 20, { align: 'left', fill: '#fff', stroke: null, maxW: gw - 90 });
-      });
-      if (note) UI.text(note, gx + 26, y + h - 22, 17, { align: 'left', fill: '#ffb0a0', stroke: null, maxW: gw - 60 });
-      y += h + 16;
-    });
-
-    if (UI.button(this, '返回', W / 2 - 110, lay(1062, 946), 220, 68, { back: true }) || Input.was('back')) this.back();
-    UI.nav(this);
-    UI.navHint();
-  }
 };
 
 // ---------- 成就：上方總覽（已解鎖數、各等級）＋依分類列出全部成就（拖曳／滾輪／↑↓ 捲動） ----------

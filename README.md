@@ -202,7 +202,7 @@ powershell -ExecutionPolicy Bypass -File tools\serve.ps1
 ## PWA（安裝到主畫面）
 
 - 支援安裝成 APP：全螢幕直式、從主畫面直接開啟，第一次開啟後離線也能玩。
-- 遊戲內「設定 → 安裝到主畫面」有 iPhone／Android／電腦的簡易教學；支援的瀏覽器（Chrome、Edge、Android）會多一顆「立即安裝」。
+- 遊戲內的「設定 → 安裝到主畫面」選項與教學頁面已移除（正式版是 iOS App，不走網頁安裝）；網頁版仍保留 PWA 檔案，瀏覽器本身的「加到主畫面」照常可用。
 - Service Worker 只在 `https://` 或 `localhost` 下運作（例如 GitHub Pages）；直接雙擊 `index.html` 時不會啟用，但遊戲照常可玩。
 - 快取策略：網頁與程式「先上網拿最新版，離線用快取」；圖片與字型「先用快取」。
 - **更新圖片後要發佈新版時，把 `sw.js` 開頭的 `VERSION` 加 1**，玩家下次開啟就會換成新圖。

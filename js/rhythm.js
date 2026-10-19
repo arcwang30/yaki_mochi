@@ -75,7 +75,7 @@ const Rhythm = {
   // 給玩家的建議（最多兩句）
   advice(a) {
     const out = [];
-    if (a.bias > 25) out.push(tr('你習慣偏晚約 {0}ms：到「設定 → 自動校正」量一次會更準', Math.round(a.bias)));
+    if (a.bias > 25) out.push(tr('你習慣偏晚約 {0}ms：到「設定 → 手動校正」量一次會更準', Math.round(a.bias)));
     else if (a.bias < -25) out.push(tr('你習慣偏早約 {0}ms：別急，聽到拍子再按', Math.round(-a.bias)));
     if (a.sd > 55) out.push(tr('時間差忽早忽晚：跟著大鼓「咚、咚」在心裡數拍子'));
     const weak = a.stars.find(s => s.n >= 2 && s.acc < 60);
