@@ -1,7 +1,7 @@
 // 設定 iOS 專案的 Info.plist（npx cap add ios 產生 ios/ 之後執行一次；重複執行也沒關係）
 // 用法（Mac）：npm run ios:setup
 //   - iPhone：只能直式（9:16 版面）
-//   - iPad：直式＋倒立直式（同樣 9:16 版面，左右空白掛廣島燒掛簾，見 js/sides.js）
+//   - iPad：4 個方向都支援（Apple 的 iPad 多工規定）；橫放時遊戲仍是 9:16 直式置中，左右空白掛廣島燒掛簾（js/sides.js）
 //   - 隱藏狀態列（全螢幕遊戲）
 //   - 加密出口合規：只用系統內建的 HTTPS，不另外用加密 → 上傳時不用每次回答問卷
 //   - 主畫面名稱：依 iPhone 語言顯示（節奏大王燒／リズム大王焼／Tap King Yaki／리듬 대왕야키）
@@ -21,7 +21,8 @@ const KEYS = {
   'CFBundleDisplayName': `<string>${DISPLAY_NAMES['zh-Hant']}</string>`,
   'CFBundleLocalizations': `<array>\n${Object.keys(DISPLAY_NAMES).map(l => `\t\t<string>${l}</string>`).join('\n')}\n\t</array>`,   // App 支援的語言（App Store 頁面的「語言」也看這個）
   'UISupportedInterfaceOrientations': orient(['Portrait']),
-  'UISupportedInterfaceOrientations~ipad': orient(['Portrait', 'PortraitUpsideDown']),
+  // iPad：Apple 規定要支援 4 個方向（iPad 多工：分割畫面、視窗縮放）；橫放時遊戲維持直式置中，兩側掛簾補滿（js/sides.js）
+  'UISupportedInterfaceOrientations~ipad': orient(['Portrait', 'PortraitUpsideDown', 'LandscapeLeft', 'LandscapeRight']),
   'UIStatusBarHidden': '<true/>',
   'UIViewControllerBasedStatusBarAppearance': '<false/>',
   'ITSAppUsesNonExemptEncryption': '<false/>',

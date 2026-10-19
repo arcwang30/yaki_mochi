@@ -41,7 +41,7 @@ npm run sync             # 重新產生 www/ 並複製進 Xcode 專案
 | --- | --- | --- |
 | Bundle ID | `capacitor.config.json` 的 `appId` | `com.arcconceptgames.daioyaki`。**在 App Store Connect 註冊後就不能改**，要換請在 `npx cap add ios` 之前改好 |
 | App 名稱（主畫面下方的字） | `tools/ios-setup.mjs` 的 `DISPLAY_NAMES` | 依 iPhone 語言：節奏大王燒／リズム大王焼／Tap King Yaki／리듬 대왕야키（`capacitor.config.json` 的 `appName` 是 Xcode 專案名：節奏大王燒） |
-| 方向 | `tools/ios-setup.mjs` | iPhone 直式；iPad 直式＋倒立直式（左右空白掛廣島燒掛簾與燈籠，見 `js/sides.js`；點兩側也算打擊） |
+| 方向 | `tools/ios-setup.mjs` | iPhone 直式；iPad 4 個方向都支援（Apple 規定：iPad 多工要支援全部方向，否則上傳會被拒）。遊戲在 iPad 上一律是 9:16 直式置中，左右空白掛廣島燒掛簾與燈籠（`js/sides.js`；點兩側也算打擊） |
 | 原生版判斷 | `js/config.js` 的 `NATIVE_APP` | 不註冊 Service Worker、不顯示「安裝到主畫面」、忽略網址測試參數（`?fast`、`?shop=test` 等） |
 | 字型 | `tools/build-web.mjs` | 改用 App 內附的 Mochiy Pop One 和 Jua（韓文；都是 OFL 授權），不連 Google Fonts |
 
