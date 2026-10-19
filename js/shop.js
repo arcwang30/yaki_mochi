@@ -27,7 +27,7 @@ const TestStore = {
   fail: QS.has('fail'),
   list() { return Save.data.testOwned || (Save.data.testOwned = []); },
   owns(sku) { return this.list().includes(sku); },
-  price() { return 'NT$90'; },
+  price() { return 'NT$60'; },   // 測試用顯示價格（跟正式定價一樣）
   buy(sku) {
     return new Promise(res => setTimeout(() => {
       if (this.fail) return res(false);

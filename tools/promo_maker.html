@@ -338,7 +338,7 @@ function compose(n, lang, sizeKey, game, achCount) {
 // App Store Connect 建立內購商品時必附「這個商品在 App 裡的樣子」：商店「追加樂曲」分頁選中該集（鎖著、顯示價格、購買鈕）
 // 純遊戲畫面（不加標語、外框），做成 iPhone 6.9 吋全螢幕（1320×2868，遊戲上下留邊，跟實機一樣）
 // 價格：App 裡顯示的是 App Store 回傳的當地價格；這裡先放 REVIEW_PRICE，定價後改掉再輸出一次
-const REVIEW_PRICE = 'NT$90';
+const REVIEW_PRICE = 'NT$60';   // 定價：每包 NT$60（App Store Connect 的價格要選同一級）
 async function captureReview(lang, vol) {
   run(`Save.data.lang = '${lang}';
     Shop.store = { name: 'review', owns: () => false, price: () => ${JSON.stringify(REVIEW_PRICE)}, buy: () => Promise.resolve(false), restore: () => Promise.resolve(0) };

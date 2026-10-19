@@ -80,7 +80,7 @@ iPad 的截圖會自然帶到兩側的廣島燒掛簾和燈籠，是 iPad 版的
 - 版面：夜空、燈籠串、大標語、手機／平板外框、星形標章、食材與音符；下方是暖光散景（**沒有**遊戲 LOGO、名稱、©，改名時不用重做）
 - JPG 輸出（App Store 截圖不能有透明通道）
 
-**內購審核截圖**：按「內購審核截圖」輸出 `review_{zh,en}_vol{1-3}.jpg`（1320×2868）：商店「追加樂曲」分頁選中各集的實際畫面（鎖著、價格、購買鈕），App Store Connect 建立內購商品時每個商品附一張。價格先放 `REVIEW_PRICE`（NT$90），定價後改掉再輸出一次。
+**內購審核截圖**：按「內購審核截圖」輸出 `review_{zh,en}_vol{1-3}.jpg`（1320×2868）：商店「追加樂曲」分頁選中各集的實際畫面（鎖著、價格、購買鈕），App Store Connect 建立內購商品時每個商品附一張。價格是 `REVIEW_PRICE`（目前 NT$60，跟正式定價一致）；改價格時改這裡再輸出一次。
 
 **使用方式**：Code 分頁的預覽啟動 `promo`（或 `powershell -ExecutionPolicy Bypass -File tools\prep_server.ps1 -Port 5175 -Out promo\store`）→ 開 `http://localhost:5175/tools/promo_maker.html` → 選語言、尺寸 →「預覽並輸出」（全部約 2 分鐘）
 

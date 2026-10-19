@@ -85,7 +85,7 @@ App 版才會用到；網頁版行為不變。官方外掛（Haptics、Share、F
 | VOL.4～6 | `vol4`～`vol6` | `com.arcconceptgames.daioyaki.vol4`～`vol6` | 之後推出 |
 | VOL.1～3 合購包 | `vol1_3` | `com.arcconceptgames.daioyaki.vol1_3` | 規劃中 |
 
-價格在 App Store Connect 從 Apple 的價格級距選；遊戲顯示的價格是 App Store 回傳的當地價格，不寫在程式裡。
+**定價：每包 NT$60**（2026-10-19 決定）。在 App Store Connect 建立商品時，價格選台灣 NT$60 那一級，其他國家用 Apple 依匯率自動對應的價格即可；遊戲顯示的價格是 App Store 回傳的當地價格，不寫在程式裡。
 
 ### 分集推出
 
@@ -114,7 +114,7 @@ App 版才會用到；網頁版行為不變。官方外掛（Haptics、Share、F
 
 1. Xcode：**File → New → File from Template… → StoreKit Configuration File**，取名 `Products.storekit`，**不要**勾「Sync this file with an app in App Store Connect」（帳號下來、商品建好後可以再改成同步）
 2. 打開 `Products.storekit`，左下 **+ → Add Non-Consumable In-App Purchase**，建立三個商品：
-   - Reference Name `VOL.1`、Product ID `com.arcconceptgames.daioyaki.vol1`、價格隨意（例如 90）
+   - Reference Name `VOL.1`、Product ID `com.arcconceptgames.daioyaki.vol1`、價格填 60（跟正式定價一樣）
    - VOL.2、VOL.3 同樣做法（`.vol2`、`.vol3`）
 3. **Product → Scheme → Edit Scheme… → Run → Options → StoreKit Configuration** 選 `Products.storekit`
 4. ▶ 執行（模擬器即可）
