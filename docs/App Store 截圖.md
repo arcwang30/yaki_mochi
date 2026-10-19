@@ -8,9 +8,10 @@
 
 | 裝置 | 尺寸（直式） | 必要？ | 用哪台模擬器截 |
 | --- | --- | --- | --- |
-| **iPhone 6.9 吋**（Dynamic Island 大螢幕） | **1320 × 2868** | ✅ 必要 | iPhone 17 Pro Max／16 Pro Max |
+| **iPhone 6.1／6.3 吋**（配備動態島的 iPhone，中型顯示器） | **1206 × 2622**（或 1179 × 2556） | ✅ 必要（2026-10 App Store Connect 實際要求的是這一組） | iPhone 17／17 Pro／16 Pro |
+| iPhone 6.9 吋（動態島大螢幕） | 1320 × 2868 | 選填（有上傳的話大螢幕機型會用這組） | iPhone 17 Pro Max／16 Pro Max |
 | **iPad 13 吋** | **2064 × 2752** | ✅ 必要（App 支援 iPad） | iPad Pro 13 吋（M4 以後） |
-| iPhone 6.5 吋、6.3 吋、iPad 11 吋 | — | 不用另外做 | 自動用上面兩組縮小 |
+| iPad 11 吋 | — | 不用另外做 | 自動用 13 吋縮小 |
 
 也接受的其他尺寸（不用另外做，只是列出來對照）：iPhone 6.9 吋 1290×2796、1260×2736；iPad 13 吋 2048×2732。
 
@@ -67,11 +68,12 @@ iPad 的截圖會自然帶到兩側的廣島燒掛簾和燈籠，是 iPad 版的
 
 ## 產生器：`tools/promo_maker.html`
 
-照「建議的截圖內容」6 個畫面，自動輸出 **4 個語系（中／日／英／韓）× 3 種尺寸 = 72 張**到 `promo/store/`：
+照「建議的截圖內容」6 個畫面，自動輸出 **4 個語系（中／日／英／韓）× 4 種尺寸 = 96 張**到 `promo/store/`：
 
 | 檔名 | 尺寸 | 用途 |
 | --- | --- | --- |
-| `{zh,ja,en,ko}_iphone_{1-6}.jpg` | 1320 × 2868 | App Store iPhone 6.9 吋 |
+| `{zh,ja,en,ko}_iphone63_{1-6}.jpg` | 1206 × 2622 | App Store iPhone 6.1／6.3 吋（**必填**） |
+| `{zh,ja,en,ko}_iphone_{1-6}.jpg` | 1320 × 2868 | App Store iPhone 6.9 吋（選填） |
 | `{zh,ja,en,ko}_ipad_{1-6}.jpg` | 2064 × 2752 | App Store iPad 13 吋（兩側有掛簾與燈籠） |
 | `{zh,ja,en,ko}_social_{1-6}.jpg` | 1080 × 1920 | 社群貼文、限時動態 |
 

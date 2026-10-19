@@ -23,3 +23,6 @@ www/
 
 # 宣傳圖／App Store 截圖（tools/promo_maker.html 產生，隨時可以重新輸出）
 promo/store/
+
+# Office 開檔時的暫存鎖定檔（例如用 Word 打開 docs 裡的文件）
+~$*

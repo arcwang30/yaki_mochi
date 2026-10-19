@@ -324,6 +324,7 @@ The griddle's hot. Let's make some okonomiyaki!
 No account or login is required.
 In-app purchases (Song Packs VOL.1-VOL.3, non-consumable) are in the main menu: SHOP > Song Packs. The same screen has a Restore Purchases button.
 The 15 built-in songs are free and playable right away. Tap the screen (one button) when ingredients land on the griddle.
+On the first start, the game asks whether you are listening through the speaker/wired headphones or Bluetooth, so it can adjust the timing. Choose "Speaker / wired" when testing on the device speaker.
 The game plays audio even when the device is in silent mode, because music is essential to gameplay.
 ```
 
