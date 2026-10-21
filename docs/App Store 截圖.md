@@ -84,6 +84,8 @@ iPad 的截圖會自然帶到兩側的廣島燒掛簾和燈籠，是 iPad 版的
 
 **內購審核截圖**：按「內購審核截圖」輸出 `review_{zh,en}_vol{1-3}.jpg`（1320×2868）：商店「追加樂曲」分頁選中各集的實際畫面（鎖著、價格、購買鈕），App Store Connect 建立內購商品時每個商品附一張。價格是 `REVIEW_PRICE`（目前 NT$60，跟正式定價一致）；改價格時改這裡再輸出一次。
 
+**標題素材**（產品頁最上方的寬幅大圖，2026-10 新功能，只顯示在 iOS／iPadOS 27 以後；選填）：按「標題素材（21:9）」輸出 `header_21x9.jpg`（3840×1646）。屋台背景＋老闆＋鐵板＋左右飛來的食材，**沒有文字**，四個語言共用一張；重點在中間（不同裝置會裁兩側）。不能放價格、網址、©，要符合 4+。上傳位置：App Store Connect →「產品頁面資訊」→「標題和搜尋結果」→ 標題。「搜尋結果」（3:2）沒放的話會顯示截圖。已上架的 App 換這張圖不用送新版本。規格：[Creative assets specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/creative-assets-specifications/)
+
 **使用方式**：Code 分頁的預覽啟動 `promo`（或 `powershell -ExecutionPolicy Bypass -File tools\prep_server.ps1 -Port 5175 -Out promo\store`）→ 開 `http://localhost:5175/tools/promo_maker.html` → 選語言、尺寸 →「預覽並輸出」（全部約 2 分鐘）
 
 **改文案**：`promo_maker.html` 開頭的 `COPY`（每個畫面的兩行大標語、副標、標章；`[ ]` 裡的字是金橘色）

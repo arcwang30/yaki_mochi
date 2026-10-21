@@ -27,6 +27,7 @@
   <button id="preview" disabled>預覽</button>
   <button id="save" disabled>預覽並輸出到 promo/store</button>
   <button id="review" disabled>內購審核截圖</button>
+  <button id="header" disabled>標題素材（21:9）</button>
   <span id="st">載入遊戲中…</span>
 </div>
 <div id="out"></div>
@@ -369,6 +370,59 @@ async function makeReview() {
 }
 const RELEASED = 3;   // 首發的 VOL 數（和 js/config.js 的 RELEASED_VOLS 一樣）
 
+// ===================== App Store「標題素材」（產品頁最上方的寬幅大圖，iOS 27 以後）=====================
+// 21:9、3840×1646、JPG、不能透明；重點放中間（不同裝置會裁兩側）；不放文字、價格、©（四個語言共用一張）
+// 版面：中間是遊戲的屋台背景（兩側淡出到夜空），老闆在鐵板後面跳起來，食材從左右飛向鐵板
+function composeHeader() {
+  const Wd = 3840, Ht = 1646, u = Ht / 1000;
+  const c = document.createElement('canvas'); c.width = Wd; c.height = Ht; const g = c.getContext('2d');
+  drawBg(g, Wd, Ht, Ht / 1100);
+  // 屋台：高度填滿，兩側和下方淡出
+  const st = IMG('bg_stall'), sw = Ht * st.width / st.height, sx = (Wd - sw) / 2;
+  const sc = document.createElement('canvas'); sc.width = Math.round(sw); sc.height = Ht; const s = sc.getContext('2d');
+  s.drawImage(st, 0, 0, sw, Ht);
+  s.globalCompositeOperation = 'destination-in';
+  const mx = s.createLinearGradient(0, 0, sw, 0); mx.addColorStop(0, 'rgba(0,0,0,0)'); mx.addColorStop(0.3, '#000'); mx.addColorStop(0.7, '#000'); mx.addColorStop(1, 'rgba(0,0,0,0)');
+  s.fillStyle = mx; s.fillRect(0, 0, sw, Ht);
+  g.drawImage(sc, sx, 0);
+  // 屋台前的暖光
+  const warm = g.createRadialGradient(Wd / 2, Ht * 0.78, 0, Wd / 2, Ht * 0.78, 900 * u); warm.addColorStop(0, 'rgba(255,170,80,.35)'); warm.addColorStop(1, 'rgba(255,170,80,0)');
+  g.fillStyle = warm; g.fillRect(0, 0, Wd, Ht);
+  confetti(g, Wd, Ht, u * 1.6, 70);
+  // 左右飛來的食材（帶殘影）與音符
+  const fly = [['noodles_raw', 0.2, 0.36, 300, -0.25, 1], ['cabbage_raw', 0.31, 0.62, 270, 0.2, 1], ['bacon_raw', 0.69, 0.4, 290, 0.25, -1], ['crepe_raw', 0.8, 0.64, 280, -0.15, -1]];
+  for (const [nm, fx, fy, sz, rot, dir] of fly) {
+    for (let k = 3; k >= 1; k--) { g.save(); g.globalAlpha = 0.12 * (4 - k); food(g, nm, fx * Wd - dir * k * 70 * u, fy * Ht + k * 18 * u, sz * u * (1 - k * 0.06), rot); g.restore(); }
+    food(g, nm, fx * Wd, fy * Ht, sz * u, rot);
+  }
+  note(g, Wd * 0.12, Ht * 0.22, 120 * u, '♪', -0.2); note(g, Wd * 0.88, Ht * 0.2, 130 * u, '♫', 0.15);
+  note(g, Wd * 0.07, Ht * 0.7, 100 * u, '♫', 0.1); note(g, Wd * 0.93, Ht * 0.74, 105 * u, '♪', -0.1);
+  // 老闆（鐵板後面跳起來）＋鐵板＋完成的廣島燒
+  const ch = IMG('chef_cheer'), chH = 760 * u, chW = chH * ch.width / ch.height;
+  g.save(); g.shadowColor = 'rgba(0,0,0,.5)'; g.shadowBlur = 40 * u; g.drawImage(ch, Wd / 2 - chW / 2, Ht * 0.2, chW, chH); g.restore();
+  const gr = IMG('griddle'), grW = 1300 * u, grH = grW * gr.height / gr.width, grY = Ht - grH * 0.62;
+  g.save(); g.shadowColor = 'rgba(0,0,0,.55)'; g.shadowBlur = 50 * u; g.drawImage(gr, Wd / 2 - grW / 2, grY, grW, grH); g.restore();
+  const ok = IMG('okonomiyaki'), okW = 300 * u, okH = okW * ok.height / ok.width;
+  g.save(); g.shadowColor = 'rgba(0,0,0,.4)'; g.shadowBlur = 20 * u; g.drawImage(ok, Wd / 2 - okW / 2, grY + grH * 0.1 - okH * 0.35, okW, okH); g.restore();
+  for (const [x, y, r] of [[0.4, 0.7, 40], [0.6, 0.66, 34], [0.42, 0.22, 30], [0.58, 0.18, 36], [0.25, 0.15, 26], [0.75, 0.85, 28]]) sparkle(g, x * Wd, y * Ht, r * u);
+  // 下方稍微壓暗（App Store 會在上面疊 App 名稱、取得按鈕）
+  const sh = g.createLinearGradient(0, Ht * 0.7, 0, Ht); sh.addColorStop(0, 'rgba(10,6,20,0)'); sh.addColorStop(1, 'rgba(10,6,20,.45)');
+  g.fillStyle = sh; g.fillRect(0, Ht * 0.7, Wd, Ht * 0.3);
+  return c;
+}
+async function makeHeader() {
+  $('preview').disabled = $('save').disabled = $('review').disabled = $('header').disabled = true; $('out').innerHTML = '';
+  try {
+    for (const t0 = performance.now(); performance.now() - t0 < 15000 && !run(`!!IMG.bg_stall`);) await yieldNow();
+    const name = 'header_21x9.jpg', c = composeHeader(), blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.92));
+    const fig = document.createElement('figure'), img = new Image(); img.src = URL.createObjectURL(blob); img.style.height = '300px';
+    fig.append(img, Object.assign(document.createElement('figcaption'), { textContent: `${name}  ${c.width}×${c.height}` })); $('out').append(fig);
+    const r = await fetch('/__save?name=' + name, { method: 'POST', body: blob }); if (!r.ok) throw new Error('存檔失敗：' + name);
+    st('完成，標題素材已輸出到 promo/store/' + name);
+  } catch (e) { st('錯誤：' + e.message); console.error(e); }
+  $('preview').disabled = $('save').disabled = $('review').disabled = $('header').disabled = false;
+}
+
 // ===================== 執行 =====================
 async function make(save) {
   const langs = $('lang').value === 'all' ? LANGS : [$('lang').value], sizes = $('size').value === 'all' ? Object.keys(SIZES) : [$('size').value];
@@ -392,13 +446,14 @@ async function make(save) {
 $('preview').onclick = () => make(false);
 $('save').onclick = () => make(true);
 $('review').onclick = makeReview;
+$('header').onclick = makeHeader;
 
 (async () => {
   await waitGame();
   await Promise.all(['Noto Sans TC', 'Noto Sans JP', 'Noto Sans KR', 'Mochiy Pop One'].map(f => document.fonts.load(`900 40px '${f}'`)));
   await win().document.fonts.ready;
   setupGame(); ready = true;
-  st('準備好了'); $('preview').disabled = $('save').disabled = $('review').disabled = false;
+  st('準備好了'); $('preview').disabled = $('save').disabled = $('review').disabled = $('header').disabled = false;
 })();
 </script>
 </body>
