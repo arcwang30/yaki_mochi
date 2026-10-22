@@ -343,8 +343,8 @@ Hello App Review Team,
 Thank you for reviewing Tap King Yaki. Please find the requested information below.
 
 1. Screen recording
-The attached video was recorded on an iPhone 13 running the latest iOS. It starts by launching the app and shows the typical flow: the first-start question about the audio output, the tutorial, playing a song, the result screen, the shop, buying a Song Pack (TestFlight sandbox), playing a song from the unlocked pack, and Restore Purchases.
-Purchases are non-consumable and tied to the Apple Account, so packs bought earlier on this account show as owned again after reinstalling the app (the app reads current entitlements from StoreKit at launch).
+The attached video was recorded on an iPhone 13 running the latest iOS. It starts by launching the app and shows the typical flow: the first-start question about the audio output, the tutorial, playing a song, the result screen, the shop, buying Song Pack VOL.1 with a sandbox test account, playing a song from the unlocked pack, and Restore Purchases.
+The recording uses a development build of version 1.0 installed from Xcode, so that the purchase could be shown with a sandbox account that had no previous purchases. The app's language is set to Traditional Chinese in the video; English is also available (SETTINGS > Language).
 The app has no account registration, login, or user-generated content.
 
 2. Purpose and target audience
@@ -369,7 +369,7 @@ The songs are original compositions made for this game with AI assistance (as st
 
 7. In-App Purchases
 Three non-consumable Song Packs: VOL.1, VOL.2, and VOL.3. Each unlocks 10 additional songs, each with three difficulties. The 15 built-in songs remain free.
-To purchase: Main menu > SHOP > Song Packs tab > select a pack > Buy. The same screen has a Restore Purchases button.
+To purchase: Main menu > SHOP (the sign at the top left) > Song Packs tab > select a pack > Buy. The same screen has a Restore Purchases button.
 
 Thank you,
 Arc Concept Games
