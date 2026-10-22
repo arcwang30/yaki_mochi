@@ -326,6 +326,52 @@ In-app purchases (Song Packs VOL.1-VOL.3, non-consumable) are in the main menu: 
 The 15 built-in songs are free and playable right away. Tap the screen (one button) when ingredients land on the griddle.
 On the first start, the game asks whether you are listening through the speaker/wired headphones or Bluetooth, so it can adjust the timing. Choose "Speaker / wired" when testing on the device speaker.
 The game plays audio even when the device is in silent mode, because music is essential to gameplay.
+
+Purpose and audience: a casual one-button rhythm game for players of all ages (4+). It offers light, easy-to-learn entertainment and rhythm practice (timing calibration, and a rhythm analysis that shows whether taps were early or late).
+External services: Apple In-App Purchase (StoreKit) only. No accounts, servers, analytics, ads, or AI services; the game works offline.
+Regions: features and content are the same in all regions. The UI is available in English, Traditional Chinese, Japanese, and Korean.
+Third-party material: the music and sound effects are original to this game. The artwork was created for this game with AI image generation tools and edited by the developer; it does not use third-party characters, trademarks, or other copyrighted material. The chef's voice clips were made with VOICEVOX (character: 玄野武宏) and are used under the VOICEVOX and character terms of use, which allow commercial use with the credit shown on the CREDIT screen ("VOICEVOX:玄野武宏(CV:ガロ)"). Fonts are under the SIL Open Font License.
+```
+
+### 2026-10-22 審核回覆：Guideline 2.1 - Information Needed（新開發者帳號的例行資訊要求）
+
+在 App Store Connect →「App 審查」→ 回覆訊息，**附上螢幕錄影**，貼上下面的英文。上面的 Notes 也已經補上同樣的資訊（Apple 要求兩邊都放）。
+
+```
+Hello App Review Team,
+
+Thank you for reviewing Tap King Yaki. Please find the requested information below.
+
+1. Screen recording
+The attached video was recorded on an iPhone 13 running the latest iOS. It starts by launching the app and shows the typical flow: the first-start question about the audio output, the tutorial, playing a song, the result screen, the shop, buying Song Pack VOL.1 (sandbox), playing an unlocked VOL.1 song, and Restore Purchases.
+The app has no account registration, login, or user-generated content.
+
+2. Purpose and target audience
+Tap King Yaki is a casual one-button rhythm game set at a Japanese okonomiyaki food stall. Ingredients fly toward the griddle in time with the music, and the player taps the screen the moment each one lands. Collecting four ingredients completes an okonomiyaki.
+It is for players of all ages (rated 4+) who want a music game that is quick to learn and needs only one button. It provides light entertainment and rhythm practice: it includes timing calibration (including automatic calibration for Bluetooth headphone latency) and a rhythm analysis that shows whether each tap was early or late.
+
+3. How to access the main features
+No login, account, or sample files are needed.
+- On the first start, the game asks how you are listening. Choose "Speaker / wired headphones" when testing on the device speaker. A short tutorial follows.
+- Main menu > PLAY: pick one of the 15 free STANDARD songs and a difficulty (Easy / Normal / Hard), then tap anywhere on the screen when ingredients land on the griddle.
+- Main menu > SHOP: Stall Styles, Pet Buddies, and Hit Sounds (bought with coins earned by playing; no real money), and Song Packs (in-app purchases).
+- Main menu > ACHIEVEMENTS, RHYTHM (rhythm analysis), SETTINGS (volume, timing calibration, vibration, language, save backup), HOW TO, and CREDIT.
+
+4. External services
+The only external service is Apple In-App Purchase (StoreKit 2) for the Song Packs. The app has no servers, accounts, analytics, ads, or AI services, and it works offline.
+
+5. Regional differences
+The app's features and content are the same in all regions. The interface is available in English, Traditional Chinese, Japanese, and Korean.
+
+6. Third-party material
+The music and sound effects are original and were created for this game. The artwork was created for this game with AI image generation tools and edited by the developer; it does not use third-party characters, trademarks, or other copyrighted material. No AI services are used inside the app. The chef's voice clips were made with VOICEVOX (character: 玄野武宏), which allows commercial use under the VOICEVOX and character terms of use, provided the credit "VOICEVOX:玄野武宏(CV:ガロ)" is shown; it appears on the CREDIT screen. The fonts are licensed under the SIL Open Font License.
+
+7. In-App Purchases
+Three non-consumable Song Packs: VOL.1, VOL.2, and VOL.3. Each unlocks 10 additional songs, each with three difficulties. The 15 built-in songs remain free.
+To purchase: Main menu > SHOP > Song Packs tab > select a pack > Buy. The same screen has a Restore Purchases button.
+
+Thank you,
+Arc Concept Games
 ```
 
 ---
