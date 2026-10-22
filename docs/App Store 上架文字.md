@@ -330,7 +330,7 @@ The game plays audio even when the device is in silent mode, because music is es
 Purpose and audience: a casual one-button rhythm game for players of all ages (4+). It offers light, easy-to-learn entertainment and rhythm practice (timing calibration, and a rhythm analysis that shows whether taps were early or late).
 External services: Apple In-App Purchase (StoreKit) only. No accounts, servers, analytics, ads, or AI services; the game works offline.
 Regions: features and content are the same in all regions. The UI is available in English, Traditional Chinese, Japanese, and Korean.
-Third-party material: the music and sound effects are original to this game. The artwork was created for this game with AI image generation tools and edited by the developer; it does not use third-party characters, trademarks, or other copyrighted material. The chef's voice clips were made with VOICEVOX (character: 玄野武宏) and are used under the VOICEVOX and character terms of use, which allow commercial use with the credit shown on the CREDIT screen ("VOICEVOX:玄野武宏(CV:ガロ)"). Fonts are under the SIL Open Font License.
+Third-party material: the songs are original compositions made for this game with AI assistance (as stated on the CREDIT screen), and the sound effects are original. The artwork was created for this game with AI image generation tools and edited by the developer; it does not use third-party characters, trademarks, or other copyrighted material. The chef's voice clips were made with VOICEVOX (character: 玄野武宏) and are used under the VOICEVOX and character terms of use, which allow commercial use with the credit shown on the CREDIT screen ("VOICEVOX:玄野武宏(CV:ガロ)"). Fonts are under the SIL Open Font License.
 ```
 
 ### 2026-10-22 審核回覆：Guideline 2.1 - Information Needed（新開發者帳號的例行資訊要求）
@@ -343,7 +343,8 @@ Hello App Review Team,
 Thank you for reviewing Tap King Yaki. Please find the requested information below.
 
 1. Screen recording
-The attached video was recorded on an iPhone 13 running the latest iOS. It starts by launching the app and shows the typical flow: the first-start question about the audio output, the tutorial, playing a song, the result screen, the shop, buying Song Pack VOL.1 (sandbox), playing an unlocked VOL.1 song, and Restore Purchases.
+The attached video was recorded on an iPhone 13 running the latest iOS. It starts by launching the app and shows the typical flow: the first-start question about the audio output, the tutorial, playing a song, the result screen, the shop, buying a Song Pack (TestFlight sandbox), playing a song from the unlocked pack, and Restore Purchases.
+Purchases are non-consumable and tied to the Apple Account, so packs bought earlier on this account show as owned again after reinstalling the app (the app reads current entitlements from StoreKit at launch).
 The app has no account registration, login, or user-generated content.
 
 2. Purpose and target audience
@@ -364,7 +365,7 @@ The only external service is Apple In-App Purchase (StoreKit 2) for the Song Pac
 The app's features and content are the same in all regions. The interface is available in English, Traditional Chinese, Japanese, and Korean.
 
 6. Third-party material
-The music and sound effects are original and were created for this game. The artwork was created for this game with AI image generation tools and edited by the developer; it does not use third-party characters, trademarks, or other copyrighted material. No AI services are used inside the app. The chef's voice clips were made with VOICEVOX (character: 玄野武宏), which allows commercial use under the VOICEVOX and character terms of use, provided the credit "VOICEVOX:玄野武宏(CV:ガロ)" is shown; it appears on the CREDIT screen. The fonts are licensed under the SIL Open Font License.
+The songs are original compositions made for this game with AI assistance (as stated on the CREDIT screen), and the sound effects are original. The artwork was created for this game with AI image generation tools and edited by the developer; it does not use third-party characters, trademarks, or other copyrighted material. No AI services are used inside the app. The chef's voice clips were made with VOICEVOX (character: 玄野武宏), which allows commercial use under the VOICEVOX and character terms of use, provided the credit "VOICEVOX:玄野武宏(CV:ガロ)" is shown; it appears on the CREDIT screen. The fonts are licensed under the SIL Open Font License.
 
 7. In-App Purchases
 Three non-consumable Song Packs: VOL.1, VOL.2, and VOL.3. Each unlocks 10 additional songs, each with three difficulties. The 15 built-in songs remain free.
